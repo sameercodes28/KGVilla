@@ -1,3 +1,17 @@
+/**
+ * SplitLayout Component
+ * =====================
+ * 
+ * This is the core "Project View" of the application.
+ * It implements a classic "Master-Detail" or "Visual-Data" split view common in CAD software.
+ * 
+ * Features:
+ * 1.  **Resizable Panes:** Users can drag the divider to adjust the view.
+ * 2.  **Client-Side Persistence:** All changes (quantity/price updates) are saved to localStorage.
+ * 3.  **Interactive Highlighting:** Hovering a cost item highlights the corresponding element in the VisualViewer.
+ * 4.  **View Modes:** Toggles between "Phase-based" (construction timeline) and "Room-based" grouping.
+ */
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { initialBoQ, rooms, projectDetails, clientCosts } from '../../data/projectData';
 import { CostCard } from '../v3/CostCard';
@@ -12,44 +26,44 @@ import { useTranslation } from '../../contexts/LanguageContext';
 export function SplitLayout() {
     const { t } = useTranslation();
     
-    // State for BoQ Items (allows editing)
+    // --- State Management ---
+    
+    // Stores the Bill of Quantities (BoQ). Initialized with mock data, then hydrated from LocalStorage.
     const [items, setItems] = useState<BoQItem[]>(initialBoQ);
+    
+    // Tracks which item is currently being hovered for visual highlighting.
     const [highlightedItem, setHighlightedItem] = useState<BoQItem | null>(null);
+    
+    // Controls the grouping logic (by Construction Phase or by Room).
     const [viewMode, setViewMode] = useState<'phases' | 'rooms'>('phases');
 
-    // State for resizable split pane
-    const [leftPaneWidth, setLeftPaneWidth] = useState(50); // percentage
+    // --- Layout Resizing Logic ---
+    
+    const [leftPaneWidth, setLeftPaneWidth] = useState(50); // Initial width %
     const [isDragging, setIsDragging] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // State for new custom item form
-    const [isAddingItem, setIsAddingItem] = useState(false);
-    const [newItemData, setNewItemData] = useState<Partial<BoQItem>>({
-        elementName: '',
-        unitPrice: 0,
-        quantity: 1,
-        unit: 'st',
-        phase: 'structure'
-    });
+    // --- Persistence Logic ---
 
-    // Load from LocalStorage on Mount
+    // Effect 1: Load data on mount
     useEffect(() => {
         const saved = localStorage.getItem('kgvilla-boq-items');
         if (saved) {
             try {
                 setItems(JSON.parse(saved));
             } catch (e) {
-                console.error("Failed to load items", e);
+                console.error("Failed to load items from persistence", e);
             }
         }
     }, []);
 
-    // Save to LocalStorage on Change
+    // Effect 2: Save data on every change
     useEffect(() => {
         localStorage.setItem('kgvilla-boq-items', JSON.stringify(items));
     }, [items]);
 
-    // Handle mouse drag for resizing
+    // --- Resize Handlers ---
+    
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!isDragging || !containerRef.current) return;
@@ -57,7 +71,7 @@ export function SplitLayout() {
             const containerRect = containerRef.current.getBoundingClientRect();
             const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
 
-            // Constrain between 30% and 70%
+            // Constrain width between 30% and 70% to prevent unusable layouts
             const constrainedWidth = Math.min(Math.max(newWidth, 30), 70);
             setLeftPaneWidth(constrainedWidth);
         };
@@ -67,6 +81,7 @@ export function SplitLayout() {
         };
 
         if (isDragging) {
+            // Attach global listeners to ensure smooth dragging even if mouse leaves the divider
             document.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('mouseup', handleMouseUp);
         }
@@ -78,11 +93,24 @@ export function SplitLayout() {
     }, [isDragging]);
 
 
-    // Derived calculations
+    // --- State State & Calculations ---
+    
+    // State for the "Add New Item" modal
+    const [isAddingItem, setIsAddingItem] = useState(false);
+    const [newItemData, setNewItemData] = useState<Partial<BoQItem>>({
+        elementName: '',
+        unitPrice: 0,
+        quantity: 1,
+        unit: 'st',
+        phase: 'structure'
+    });
+
+    // Memoized Calculations for Performance
     const totalClientCosts = useMemo(() => clientCosts.reduce((sum, item) => sum + item.cost, 0), []);
 
     const totalConstructionCost = useMemo(() => {
         return items.reduce((sum, item) => {
+            // Use custom values if the user has overridden them
             const price = item.customUnitPrice ?? item.unitPrice;
             const qty = item.customQuantity ?? item.quantity;
             return sum + (price * qty);
@@ -91,7 +119,8 @@ export function SplitLayout() {
 
     const totalCost = totalConstructionCost + totalClientCosts;
 
-    // Handlers
+    // --- Action Handlers ---
+
     const handleUpdateItem = (id: string, updates: Partial<BoQItem>) => {
         setItems(prev => prev.map(item => {
             if (item.id !== id) return item;
@@ -99,7 +128,7 @@ export function SplitLayout() {
             // Safely merge updates
             const updatedItem = { ...item, ...updates };
 
-            // Recalculate total cost if price or quantity changed
+            // Recalculate totals immediately
             const price = updatedItem.customUnitPrice ?? updatedItem.unitPrice;
             const qty = updatedItem.customQuantity ?? updatedItem.quantity;
             updatedItem.totalCost = price * qty;
@@ -130,14 +159,16 @@ export function SplitLayout() {
 
         setItems(prev => [...prev, newItem]);
         setIsAddingItem(false);
+        // Reset form
         setNewItemData({ elementName: '', unitPrice: 0, quantity: 1, unit: 'st', phase: 'structure' });
     };
 
-    // Grouping Logic
+    // --- Grouping Helpers ---
     const itemsByPhase = (phase: string) => items.filter(i => i.phase === phase);
     const itemsByRoom = (roomId: string) => items.filter(i => i.roomId === roomId);
     const unassignedItems = items.filter(i => !i.roomId);
 
+    // Defined phases for the sort order
     const phases = [
         { id: 'ground', label: t('phase.ground') },
         { id: 'structure', label: t('phase.structure') },
@@ -157,7 +188,7 @@ export function SplitLayout() {
             >
                 <VisualViewer highlightedItem={highlightedItem ? { ...highlightedItem, name: highlightedItem.elementName } : null} />
 
-                {/* Overlay for Total Cost (Floating) */}
+                {/* Floating Cost Overlay */}
                 <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur p-4 rounded-xl shadow-lg border border-slate-200">
                     <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">{t('qto.total_estimate')}</p>
                     <p className="text-3xl font-bold text-slate-900">{totalCost.toLocaleString('sv-SE')} kr</p>
@@ -180,7 +211,7 @@ export function SplitLayout() {
                         <div className="flex justify-between items-end mb-2">
                             <h1 className="text-4xl font-serif font-bold text-slate-900 tracking-tight">{projectDetails.name}</h1>
 
-                            {/* View Switcher */}
+                            {/* View Mode Toggle */}
                             <div className="bg-slate-100 p-1 rounded-lg flex space-x-1">
                                 <button
                                     onClick={() => setViewMode('phases')}
@@ -201,7 +232,7 @@ export function SplitLayout() {
 
                     <ClientCostSection />
 
-                    {/* Content based on View Mode */}
+                    {/* Render List based on View Mode */}
                     {viewMode === 'phases' ? (
                         <div className="space-y-8">
                             {phases.map(phase => {
@@ -230,7 +261,7 @@ export function SplitLayout() {
                                 );
                             })}
 
-                            {/* Other Items Section (Items with custom/unknown phases) */}
+                            {/* Catch-all for custom items */}
                             {otherItems.length > 0 && (
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between border-b border-slate-100 pb-2">
@@ -285,7 +316,6 @@ export function SplitLayout() {
                                 );
                             })}
 
-                            {/* Unassigned Items Section */}
                             {unassignedItems.length > 0 && (
                                 <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden mt-8">
                                     <div className="bg-slate-50 px-6 py-4 border-b border-slate-100">
@@ -306,7 +336,7 @@ export function SplitLayout() {
                         </div>
                     )}
 
-                    {/* Add Custom Item Button */}
+                    {/* Custom Item Form */}
                     <div className="mt-12 border-t border-slate-200 pt-8">
                         {!isAddingItem ? (
                             <button
