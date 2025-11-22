@@ -59,11 +59,15 @@ const dictionary: Record<string, DictionaryEntry> = {
     'cost.ka': { en: 'Inspection Manager (KA)', sv: 'Kontrollansvarig (KA)' },
     'cost.ka_desc': { en: 'Certified inspector required by PBL', sv: 'Certifierad kontrollansvarig enl. PBL' },
     'cost.el': { en: 'Electricity Connection', sv: 'Elanslutning' },
-    'cost.el_desc': { en: 'Connection fee (16-25A)', sv: 'Anslutningsavgift (16-25A)' },
+    'cost.el_desc': { en: 'Connection fee (16-25A)', sv: 'Anslutningsavgift till nätägare (16-25A)' },
     'cost.fiber': { en: 'Fiber Connection', sv: 'Fiberanslutning' },
-    'cost.fiber_desc': { en: 'Installation and connection', sv: 'Installation och anslutning' },
+    'cost.fiber_desc': { en: 'Installation and connection', sv: 'Installation av fiber' },
     'cost.vatten': { en: 'Water & Sewage Connection', sv: 'VA-anslutning' },
     'cost.vatten_desc': { en: 'Municipal connection fee', sv: 'Kommunal anslutningsavgift' },
+    'cost.byggstrom': { en: 'Construction Electricity', sv: 'Byggström' },
+    'cost.byggstrom_desc': { en: 'Rental of cabinet + consumption', sv: 'Hyra av byggskåp + förbrukning' },
+    'cost.forsakring': { en: 'Construction Insurance', sv: 'Byggförsäkring' },
+    'cost.forsakring_desc': { en: 'During construction period', sv: 'Under byggtiden' },
 
     // Phases
     'phase.ground': { en: 'Ground Works', sv: 'Markarbeten' },

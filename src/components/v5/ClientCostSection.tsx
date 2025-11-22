@@ -9,17 +9,18 @@ export function ClientCostSection() {
     const totalClientCost = clientCosts.reduce((sum, item) => sum + item.cost, 0);
 
     // Map IDs to translation keys
-    const getTranslationKey = (id: number) => {
+    const getTranslationKey = (id: string) => {
         switch(id) {
-            case 1: return 'lagfart';
-            case 2: return 'pantbrev';
-            case 3: return 'bygglov';
-            case 4: return 'karta';
-            case 5: return 'utstakning';
-            case 6: return 'ka';
-            case 7: return 'el';
-            case 8: return 'fiber';
-            case 9: return 'vatten';
+            case 'cc-01': return 'lagfart';
+            case 'cc-02': return 'pantbrev';
+            case 'cc-03': return 'bygglov';
+            case 'cc-04': return 'karta';
+            case 'cc-05': return 'utstakning';
+            case 'cc-06': return 'ka';
+            case 'cc-07': return 'el';
+            case 'cc-08': return 'fiber';
+            case 'cc-09': return 'byggstrom'; // Note: Updated key name if needed, defaulting to lagfart if missing
+            case 'cc-10': return 'forsakring';
             default: return 'lagfart';
         }
     };
@@ -40,6 +41,10 @@ export function ClientCostSection() {
             <div className="space-y-3">
                 {clientCosts.map((item) => {
                     const key = getTranslationKey(item.id);
+                    // Fallback to English description if translation is missing or default
+                    const title = t(`cost.${key}`) !== `cost.${key}` ? t(`cost.${key}`) : item.name;
+                    const desc = t(`cost.${key}_desc`) !== `cost.${key}_desc` ? t(`cost.${key}_desc`) : item.description;
+
                     return (
                         <div key={item.id} className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                             <div className="flex items-start space-x-3">
@@ -47,8 +52,8 @@ export function ClientCostSection() {
                                     <Info className="h-4 w-4" />
                                 </div>
                                 <div>
-                                    <div className="font-semibold text-slate-900">{t(`cost.${key}`)}</div>
-                                    <div className="text-xs text-slate-500">{t(`cost.${key}_desc`)}</div>
+                                    <div className="font-semibold text-slate-900">{title}</div>
+                                    <div className="text-xs text-slate-500">{desc}</div>
                                 </div>
                             </div>
                             <div className="font-mono font-medium text-slate-700">
