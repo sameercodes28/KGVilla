@@ -1,21 +1,11 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Send, Bot, Sparkles, Paperclip, X, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { CostItem } from '@/types';
-import { API_URL } from '@/lib/api';
-
-interface Message {
-    id: string;
-    role: 'ai' | 'user';
-    text?: string;
-    items?: CostItem[]; // Optional: Structured cost items returned by the AI
-    file?: File;       // Optional: File uploaded by the user
-    timestamp: Date;
-}
+import { useChat } from '@/hooks/useChat';
 
 /**
  * AIChatPage Component
@@ -23,33 +13,25 @@ interface Message {
  * This is the main interface for the "AI Analysis" tab.
  * It provides a chat-like experience similar to ChatGPT but specialized for construction.
  * 
- * Key Features:
- * - File Upload: Allows attaching PDF/Image floor plans.
- * - API Integration: Sends files to the `/analyze` backend endpoint.
- * - Structured Rendering: Renders JSON cost data as nice UI cards instead of raw text.
+ * Architecture:
+ * - Uses `useChat` hook for state and API logic.
+ * - Pure UI component.
  */
 export default function AIChatPage() {
     const { t } = useTranslation();
-    
-    // State Management
-    const [messages, setMessages] = useState<Message[]>([]);
-    const [input, setInput] = useState('');
-    const [isTyping, setIsTyping] = useState(false); // Controls the "thinking" animation
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const { 
+        messages, 
+        input, 
+        setInput, 
+        selectedFile, 
+        setSelectedFile, 
+        isTyping, 
+        sendMessage 
+    } = useChat();
     
     // Refs for auto-scrolling and hidden file input
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // Initialize with a welcome message on mount
-    useEffect(() => {
-        setMessages([{
-            id: 'welcome',
-            role: 'ai',
-            text: t('chat.welcome'),
-            timestamp: new Date()
-        }]);
-    }, [t]);
 
     // Auto-scroll to bottom whenever messages change
     const scrollToBottom = () => {
@@ -67,83 +49,10 @@ export default function AIChatPage() {
         }
     };
 
-    // Main Send Handler
-    const handleSend = async () => {
-        if (!input.trim() && !selectedFile) return;
-
-        // 1. Optimistic UI: Immediately add the user's message to the chat
-        const userMsg: Message = {
-            id: Date.now().toString(),
-            role: 'user',
-            text: input,
-            file: selectedFile || undefined,
-            timestamp: new Date()
-        };
-        setMessages(prev => [...prev, userMsg]);
-        
-        // Capture current state before clearing
-        const currentFile = selectedFile;
-        
-        // Clear inputs immediately for better UX
-        setInput('');
-        setSelectedFile(null);
+    const handleSend = () => {
+        sendMessage();
+        // Reset file input ref visually
         if (fileInputRef.current) fileInputRef.current.value = '';
-        
-        setIsTyping(true);
-
-        // 2. Determine Action: File Analysis OR Text Chat
-        if (currentFile) {
-            // FILE MODE: Send to backend API
-            try {
-                const formData = new FormData();
-                formData.append('file', currentFile);
-
-                // Call our Cloud Run Backend
-                const response = await fetch(`${API_URL}/analyze`, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!response.ok) throw new Error('Analysis failed');
-
-                // Parse the JSON result (List of CostItems)
-                const data: CostItem[] = await response.json();
-
-                // Add AI Response containing the structured data
-                const aiMsg: Message = {
-                    id: (Date.now() + 1).toString(),
-                    role: 'ai',
-                    text: `I've analyzed **${currentFile.name}**. Here is the preliminary Bill of Quantities based on BBR 2025 standards:`,
-                    items: data,
-                    timestamp: new Date()
-                };
-                setMessages(prev => [...prev, aiMsg]);
-
-            } catch (error) {
-                console.error(error);
-                setMessages(prev => [...prev, {
-                    id: Date.now().toString(),
-                    role: 'ai',
-                    text: "Sorry, I encountered an error analyzing that file. Please try again.",
-                    timestamp: new Date()
-                }]);
-            }
-        } else {
-            // TEXT MODE: Currently a mock placeholder
-            // In Phase 3, this will connect to a text-only LLM endpoint
-            setTimeout(() => {
-                const aiMsg: Message = {
-                    id: (Date.now() + 1).toString(),
-                    role: 'ai',
-                    text: "I am currently optimized for analyzing floor plans. Please upload a PDF or Image for me to calculate costs!",
-                    timestamp: new Date()
-                };
-                setMessages(prev => [...prev, aiMsg]);
-                setIsTyping(false);
-            }, 1000);
-        }
-        
-        setIsTyping(false);
     };
 
     return (
@@ -217,7 +126,7 @@ export default function AIChatPage() {
                                             {/* AI Reasoning "Thought Bubble" */}
                                             {item.calculationLogic && (
                                                 <p className="mt-2 text-xs text-slate-600 italic border-t border-slate-200 pt-2">
-                                                    "{item.calculationLogic}"
+                                                    &quot;{item.calculationLogic}&quot;
                                                 </p>
                                             )}
                                         </div>
