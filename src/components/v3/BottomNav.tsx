@@ -1,31 +1,58 @@
 'use client';
 
-import { Home, Settings, FileText, MessageSquare } from 'lucide-react';
+import { Home, FileText, MessageSquare, Sparkles } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useTranslation } from '@/contexts/LanguageContext';
+import { cn } from '@/lib/utils';
 
 export function BottomNav() {
+    const pathname = usePathname();
+    const { t } = useTranslation();
+
+    const isActive = (path: string) => {
+        if (path === '/') return pathname === '/';
+        return pathname.startsWith(path);
+    };
+
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-slate-200 px-6 py-4 z-50">
-            <div className="max-w-2xl mx-auto flex justify-between items-center">
-                <Link href="/" className="flex flex-col items-center text-blue-600">
-                    <Home className="h-6 w-6" />
-                    <span className="text-[10px] font-medium mt-1">Home</span>
+        <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-200 px-6 py-2 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+            <div className="max-w-md mx-auto flex justify-around items-center">
+                <Link 
+                    href="/" 
+                    className={cn(
+                        "flex flex-col items-center p-2 rounded-xl transition-all duration-300",
+                        isActive('/') ? "text-blue-600 scale-105" : "text-slate-400 hover:text-slate-600"
+                    )}
+                >
+                    <Home className={cn("h-6 w-6 mb-1", isActive('/') && "fill-blue-600/10")} />
+                    <span className="text-[10px] font-medium tracking-wide">{t('nav.home')}</span>
                 </Link>
 
-                <button className="flex flex-col items-center text-slate-400 hover:text-slate-600 transition-colors" onClick={() => alert("Report generation coming soon!")}>
-                    <FileText className="h-6 w-6" />
-                    <span className="text-[10px] font-medium mt-1">Report</span>
-                </button>
+                <Link 
+                    href="/qto" 
+                    className={cn(
+                        "flex flex-col items-center p-2 rounded-xl transition-all duration-300",
+                        isActive('/qto') && !pathname.includes('/chat') ? "text-blue-600 scale-105" : "text-slate-400 hover:text-slate-600"
+                    )}
+                >
+                    <FileText className={cn("h-6 w-6 mb-1", isActive('/qto') && !pathname.includes('/chat') && "fill-blue-600/10")} />
+                    <span className="text-[10px] font-medium tracking-wide">{t('nav.project_view')}</span>
+                </Link>
 
-                <button className="flex flex-col items-center text-slate-400 hover:text-slate-600 transition-colors" onClick={() => alert("AI Chat coming soon!")}>
-                    <MessageSquare className="h-6 w-6" />
-                    <span className="text-[10px] font-medium mt-1">Ask AI</span>
-                </button>
-
-                <button className="flex flex-col items-center text-slate-400 hover:text-slate-600 transition-colors" onClick={() => alert("Settings coming soon!")}>
-                    <Settings className="h-6 w-6" />
-                    <span className="text-[10px] font-medium mt-1">Settings</span>
-                </button>
+                <Link 
+                    href="/qto/chat" 
+                    className={cn(
+                        "flex flex-col items-center p-2 rounded-xl transition-all duration-300",
+                        isActive('/qto/chat') ? "text-purple-600 scale-105" : "text-slate-400 hover:text-slate-600"
+                    )}
+                >
+                    <div className="relative">
+                        <MessageSquare className={cn("h-6 w-6 mb-1", isActive('/qto/chat') && "fill-purple-600/10")} />
+                        <Sparkles className={cn("absolute -top-1 -right-1 h-3 w-3 text-purple-500 animate-pulse", !isActive('/qto/chat') && "hidden")} />
+                    </div>
+                    <span className="text-[10px] font-medium tracking-wide">{t('nav.ai_analysis')}</span>
+                </Link>
             </div>
         </div>
     );

@@ -7,21 +7,19 @@ type Language = 'en' | 'sv';
 type DictionaryEntry = { en: string; sv: string };
 const dictionary: Record<string, DictionaryEntry> = {
     // Navigation
-    'nav.dashboard': { en: 'Dashboard', sv: 'Översikt' },
-    'nav.projects': { en: 'Projects', sv: 'Projekt' },
-    'nav.qto': { en: 'Quantity Take-Off', sv: 'Mängdning (QTO)' },
-    'nav.settings': { en: 'Settings', sv: 'Inställningar' },
+    'nav.home': { en: 'Home', sv: 'Hem' },
+    'nav.project_view': { en: 'Project View', sv: 'Projektvy' },
+    'nav.ai_analysis': { en: 'AI Analysis', sv: 'AI Analys' },
 
-    // Dashboard
+    // Dashboard / Home
     'dash.welcome': { en: 'Welcome back', sv: 'Välkommen tillbaka' },
     'dash.overview': { en: 'Here is an overview of your project', sv: 'Här är en översikt över ditt pågående projekt' },
     'dash.export': { en: 'Export Report', sv: 'Exportera Rapport' },
     'dash.new_qto': { en: 'Start New QTO', sv: 'Starta ny mängdning' },
-    'dash.drawings': { en: 'Uploaded Drawings', sv: 'Uppladdade Ritningar' },
-    'dash.elements': { en: 'Quantified Elements', sv: 'Mängdade Element' },
-    'dash.assemblies': { en: 'Assemblies', sv: 'Byggdelar' },
-    'dash.upload_title': { en: 'Upload New Documents', sv: 'Ladda upp nya underlag' },
-    'dash.upload_desc': { en: 'Upload architectural (A) or structural (K) drawings to start analysis.', sv: 'Ladda upp A-ritningar eller K-ritningar för att starta analysen.' },
+    'dash.create_project': { en: 'Create New Project', sv: 'Skapa Nytt Projekt' },
+    'dash.manage_desc': { en: 'Manage your house estimates and calculations.', sv: 'Hantera dina huskalkyler och beräkningar.' },
+    'dash.my_projects': { en: 'My Projects', sv: 'Mina Projekt' },
+    'dash.updated': { en: 'Updated', sv: 'Uppdaterad' },
 
     // QTO Page / Split Layout
     'qto.title': { en: 'Quantity Take-Off & Analysis', sv: 'Mängdning & Analys' },
@@ -69,6 +67,13 @@ const dictionary: Record<string, DictionaryEntry> = {
     // Total Summary
     'summary.title': { en: 'Total Estimated Cost', sv: 'Total Beräknad Kostnad' },
     'summary.subtitle': { en: 'Includes material, labor, and VAT (25%)', sv: 'Inkluderar material, arbete och moms (25%)' },
+    
+    // AI Chat
+    'chat.title': { en: 'AI Project Consultant', sv: 'AI Projektkonsult' },
+    'chat.subtitle': { en: 'Expert in Swedish building regulations & costs', sv: 'Expert på svenska byggregler & kostnader' },
+    'chat.placeholder': { en: 'Ask about budget, BBR regulations, or savings...', sv: 'Fråga om budget, BBR-regler eller besparingar...' },
+    'chat.welcome': { en: 'Hi! I can help you optimize your budget. Try asking: "How can I reduce the total cost by 500,000 SEK?"', sv: 'Hej! Jag kan hjälpa dig att optimera din budget. Prova att fråga: "Hur kan jag minska totalkostnaden med 500 000 kr?"' },
+    'chat.typing': { en: 'AI is thinking...', sv: 'AI tänker...' },
 
     // BoQ Table (Legacy/Table View)
     'boq.title': { en: 'Bill of Quantities', sv: 'Mängdförteckning (BoQ)' },

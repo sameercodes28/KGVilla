@@ -3,13 +3,19 @@
 import { Plus, FolderOpen, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { mockProject } from '@/data/projectData';
+import { useTranslation } from '@/contexts/LanguageContext';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
 export default function Home() {
+  const { t } = useTranslation();
+
   return (
     <div className="max-w-2xl mx-auto pt-20 px-4">
+      <LanguageToggle />
+      
       <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold text-slate-900 tracking-tight mb-4">My Projects</h1>
-        <p className="text-slate-500 text-lg">Manage your house estimates and calculations.</p>
+        <h1 className="text-4xl font-bold text-slate-900 tracking-tight mb-4">{t('dash.my_projects')}</h1>
+        <p className="text-slate-500 text-lg">{t('dash.manage_desc')}</p>
       </div>
 
       {/* Project List */}
@@ -23,7 +29,7 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="font-semibold text-slate-900 text-lg">{mockProject.name}</h3>
-                <p className="text-slate-500">{mockProject.location} • Updated 2h ago</p>
+                <p className="text-slate-500">{mockProject.location} • {t('dash.updated')} 2h ago</p>
               </div>
             </div>
             <ArrowRight className="h-5 w-5 text-slate-300 group-hover:text-blue-600 transition-colors" />
@@ -33,7 +39,7 @@ export default function Home() {
         {/* New Project Button */}
         <button className="w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-6 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:border-slate-300 hover:bg-slate-100 transition-all group">
           <Plus className="h-6 w-6 mr-2 group-hover:scale-110 transition-transform" />
-          <span className="font-medium">Create New Project</span>
+          <span className="font-medium">{t('dash.create_project')}</span>
         </button>
       </div>
     </div>

@@ -4,7 +4,6 @@ import { CostCard } from '../v3/CostCard';
 import { TotalSummary } from '../v3/TotalSummary';
 import { VisualViewer } from './VisualViewer';
 import { ClientCostSection } from '../v5/ClientCostSection';
-import { AICostChat } from './AICostChat';
 import { BoQItem } from '../../types';
 import { cn } from '../../lib/utils';
 import { Plus, GripVertical } from 'lucide-react';
@@ -381,9 +380,6 @@ export function SplitLayout() {
                     <div className="mt-12">
                         <TotalSummary totalCost={totalCost} area={projectDetails.totalArea || 0} />
                     </div>
-
-                    {/* AI Cost Chat Widget */}
-                    <AICostChat />
                 </div>
             </div>
         </div>
