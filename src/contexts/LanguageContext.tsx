@@ -45,6 +45,26 @@ const dictionary: Record<string, DictionaryEntry> = {
     'client.desc': { en: 'Fees, permits, and connections paid directly by you.', sv: 'Avgifter, lov och anslutningar som betalas direkt av dig.' },
     'client.est_total': { en: 'Est. Total', sv: 'Est. Totalt' },
 
+    // Client Costs Items
+    'cost.lagfart': { en: 'Title Deed (Lagfart)', sv: 'Lagfart' },
+    'cost.lagfart_desc': { en: 'Stamp duty (1.5% of purchase price) + admin fee', sv: 'Stämpelskatt (1.5% av köpeskilling) + exp.avgift' },
+    'cost.pantbrev': { en: 'Mortgage Deed (Pantbrev)', sv: 'Pantbrev' },
+    'cost.pantbrev_desc': { en: 'Stamp duty (2% of mortgage) + admin fee', sv: 'Stämpelskatt (2% av pantbrev) + exp.avgift' },
+    'cost.bygglov': { en: 'Building Permit (Bygglov)', sv: 'Bygglov & Planavgift' },
+    'cost.bygglov_desc': { en: 'Municipal fee for permit handling', sv: 'Kommunal avgift för bygglovshantering' },
+    'cost.karta': { en: 'Site Map (Nybyggnadskarta)', sv: 'Nybyggnadskarta' },
+    'cost.karta_desc': { en: 'Basis for the site plan', sv: 'Underlag för situationsplan' },
+    'cost.utstakning': { en: 'Staking out (Utstakning)', sv: 'Utstakning' },
+    'cost.utstakning_desc': { en: 'Rough and fine staking of the house position', sv: 'Grov- och finutstakning' },
+    'cost.ka': { en: 'Inspection Manager (KA)', sv: 'Kontrollansvarig (KA)' },
+    'cost.ka_desc': { en: 'Certified inspector required by PBL', sv: 'Certifierad kontrollansvarig enl. PBL' },
+    'cost.el': { en: 'Electricity Connection', sv: 'Elanslutning' },
+    'cost.el_desc': { en: 'Connection fee (16-25A)', sv: 'Anslutningsavgift (16-25A)' },
+    'cost.fiber': { en: 'Fiber Connection', sv: 'Fiberanslutning' },
+    'cost.fiber_desc': { en: 'Installation and connection', sv: 'Installation och anslutning' },
+    'cost.vatten': { en: 'Water & Sewage Connection', sv: 'VA-anslutning' },
+    'cost.vatten_desc': { en: 'Municipal connection fee', sv: 'Kommunal anslutningsavgift' },
+
     // Phases
     'phase.ground': { en: 'Ground Works', sv: 'Markarbeten' },
     'phase.structure': { en: 'Structure & Roof', sv: 'Stomme & Tak' },
