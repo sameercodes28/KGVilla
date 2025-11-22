@@ -17,10 +17,10 @@ automatically generates documentation (Swagger UI), and is strictly typed (Pydan
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from typing import List, Optional
 import os
 from ai_service import analyze_image_with_gemini
+from models import BoQItem, Project
 
 # Initialize the FastAPI app
 app = FastAPI(title="KGVilla API", version="0.1.0")
@@ -36,35 +36,6 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers (Authentication, etc.)
 )
-
-# --- Data Models (Pydantic) ---
-# These classes define the structure of the data we expect to send/receive.
-# They match the TypeScript interfaces in the Frontend (`src/types/index.ts`).
-
-class BoQItem(BaseModel):
-    """
-    Represents a single line item in the Bill of Quantities (BoQ).
-    Example: "15m2 of Parquet Flooring"
-    """
-    id: str
-    projectId: str
-    phase: str  # e.g., "ground", "structure", "interior"
-    elementName: str  # e.g., "Ekparkett 3-stav"
-    description: str
-    quantity: float
-    unit: str  # e.g., "m2", "st"
-    unitPrice: float  # Estimated cost per unit in SEK
-    totalCost: float
-    confidenceScore: float = 1.0  # How confident the AI is (0.0 - 1.0)
-    calculationLogic: Optional[str] = None  # Explanation of how this was calculated
-
-class Project(BaseModel):
-    """
-    Basic metadata for a construction project.
-    """
-    id: str
-    name: str
-    location: str
 
 # --- API Routes ---
 

@@ -5,65 +5,55 @@
  * This is the core "Project View" of the application.
  * It implements a classic "Master-Detail" or "Visual-Data" split view common in CAD software.
  * 
- * Features:
- * 1.  **Resizable Panes:** Users can drag the divider to adjust the view.
- * 2.  **Client-Side Persistence:** All changes (quantity/price updates) are saved to localStorage.
- * 3.  **Interactive Highlighting:** Hovering a cost item highlights the corresponding element in the VisualViewer.
- * 4.  **View Modes:** Toggles between "Phase-based" (construction timeline) and "Room-based" grouping.
+ * Architecture:
+ * - Uses `useProjectData` hook for business logic and state.
+ * - Handles UI-specific state (resizing, view modes) locally.
  */
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { initialBoQ, rooms, projectDetails, clientCosts } from '../../data/projectData';
+import React, { useState, useRef, useEffect } from 'react';
+import { projectDetails } from '../../data/projectData';
 import { CostCard } from '../v3/CostCard';
 import { TotalSummary } from '../v3/TotalSummary';
 import { VisualViewer } from './VisualViewer';
 import { ClientCostSection } from '../v5/ClientCostSection';
 import { BoQItem } from '../../types';
 import { cn } from '../../lib/utils';
-import { Plus, GripVertical } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useTranslation } from '../../contexts/LanguageContext';
+import { useProjectData } from '@/hooks/useProjectData';
 
 export function SplitLayout() {
     const { t } = useTranslation();
     
-    // --- State Management ---
+    // --- Business Logic (Hook) ---
+    const { 
+        items, 
+        totalCost, 
+        updateItem, 
+        addItem, 
+        getItemsByPhase, 
+        getItemsByRoom, 
+        getUnassignedItems 
+    } = useProjectData();
     
-    // Stores the Bill of Quantities (BoQ). Initialized with mock data, then hydrated from LocalStorage.
-    const [items, setItems] = useState<BoQItem[]>(initialBoQ);
-    
-    // Tracks which item is currently being hovered for visual highlighting.
+    // --- UI State ---
     const [highlightedItem, setHighlightedItem] = useState<BoQItem | null>(null);
-    
-    // Controls the grouping logic (by Construction Phase or by Room).
     const [viewMode, setViewMode] = useState<'phases' | 'rooms'>('phases');
-
-    // --- Layout Resizing Logic ---
-    
     const [leftPaneWidth, setLeftPaneWidth] = useState(50); // Initial width %
     const [isDragging, setIsDragging] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // --- Persistence Logic ---
-
-    // Effect 1: Load data on mount
-    useEffect(() => {
-        const saved = localStorage.getItem('kgvilla-boq-items');
-        if (saved) {
-            try {
-                setItems(JSON.parse(saved));
-            } catch (e) {
-                console.error("Failed to load items from persistence", e);
-            }
-        }
-    }, []);
-
-    // Effect 2: Save data on every change
-    useEffect(() => {
-        localStorage.setItem('kgvilla-boq-items', JSON.stringify(items));
-    }, [items]);
+    // State for the "Add New Item" modal
+    const [isAddingItem, setIsAddingItem] = useState(false);
+    const [newItemData, setNewItemData] = useState<Partial<BoQItem>>({
+        elementName: '',
+        unitPrice: 0,
+        quantity: 1,
+        unit: 'st',
+        phase: 'structure'
+    });
 
     // --- Resize Handlers ---
-    
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!isDragging || !containerRef.current) return;
@@ -81,7 +71,6 @@ export function SplitLayout() {
         };
 
         if (isDragging) {
-            // Attach global listeners to ensure smooth dragging even if mouse leaves the divider
             document.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('mouseup', handleMouseUp);
         }
@@ -92,83 +81,16 @@ export function SplitLayout() {
         };
     }, [isDragging]);
 
-
-    // --- State State & Calculations ---
-    
-    // State for the "Add New Item" modal
-    const [isAddingItem, setIsAddingItem] = useState(false);
-    const [newItemData, setNewItemData] = useState<Partial<BoQItem>>({
-        elementName: '',
-        unitPrice: 0,
-        quantity: 1,
-        unit: 'st',
-        phase: 'structure'
-    });
-
-    // Memoized Calculations for Performance
-    const totalClientCosts = useMemo(() => clientCosts.reduce((sum, item) => sum + item.cost, 0), []);
-
-    const totalConstructionCost = useMemo(() => {
-        return items.reduce((sum, item) => {
-            // Use custom values if the user has overridden them
-            const price = item.customUnitPrice ?? item.unitPrice;
-            const qty = item.customQuantity ?? item.quantity;
-            return sum + (price * qty);
-        }, 0);
-    }, [items]);
-
-    const totalCost = totalConstructionCost + totalClientCosts;
-
-    // --- Action Handlers ---
-
-    const handleUpdateItem = (id: string, updates: Partial<BoQItem>) => {
-        setItems(prev => prev.map(item => {
-            if (item.id !== id) return item;
-
-            // Safely merge updates
-            const updatedItem = { ...item, ...updates };
-
-            // Recalculate totals immediately
-            const price = updatedItem.customUnitPrice ?? updatedItem.unitPrice;
-            const qty = updatedItem.customQuantity ?? updatedItem.quantity;
-            updatedItem.totalCost = price * qty;
-            updatedItem.totalQuantity = qty;
-
-            return updatedItem;
-        }));
-    };
-
-    const handleAddItem = () => {
-        if (!newItemData.elementName || newItemData.unitPrice === undefined) return;
-
-        const newItem: BoQItem = {
-            id: `custom-${Date.now()}`,
-            projectId: projectDetails.id,
-            phase: newItemData.phase as any || 'structure',
-            elementName: newItemData.elementName,
-            description: 'Custom builder item',
-            quantity: newItemData.quantity || 1,
-            unit: newItemData.unit || 'st',
-            unitPrice: newItemData.unitPrice,
-            totalQuantity: newItemData.quantity || 1,
-            totalCost: (newItemData.unitPrice || 0) * (newItemData.quantity || 1),
-            confidenceScore: 1.0,
-            isUserAdded: true,
-            system: 'structure' // Default
-        };
-
-        setItems(prev => [...prev, newItem]);
+    // --- Action Wrappers ---
+    const onAddItem = () => {
+        addItem(newItemData, projectDetails.id);
         setIsAddingItem(false);
-        // Reset form
         setNewItemData({ elementName: '', unitPrice: 0, quantity: 1, unit: 'st', phase: 'structure' });
     };
 
-    // --- Grouping Helpers ---
-    const itemsByPhase = (phase: string) => items.filter(i => i.phase === phase);
-    const itemsByRoom = (roomId: string) => items.filter(i => i.roomId === roomId);
-    const unassignedItems = items.filter(i => !i.roomId);
-
-    // Defined phases for the sort order
+    // --- Constants ---
+    const { rooms } = require('../../data/projectData'); // Lazy load rooms
+    
     const phases = [
         { id: 'ground', label: t('phase.ground') },
         { id: 'structure', label: t('phase.structure') },
@@ -236,7 +158,7 @@ export function SplitLayout() {
                     {viewMode === 'phases' ? (
                         <div className="space-y-8">
                             {phases.map(phase => {
-                                const phaseItems = itemsByPhase(phase.id);
+                                const phaseItems = getItemsByPhase(phase.id);
                                 if (phaseItems.length === 0) return null;
 
                                 return (
@@ -252,7 +174,7 @@ export function SplitLayout() {
                                                 <div key={item.id} onMouseEnter={() => setHighlightedItem(item)} onMouseLeave={() => setHighlightedItem(null)}>
                                                     <CostCard
                                                         item={item}
-                                                        onUpdate={(updates) => handleUpdateItem(item.id, updates)}
+                                                        onUpdate={(updates) => updateItem(item.id, updates)}
                                                     />
                                                 </div>
                                             ))}
@@ -275,7 +197,7 @@ export function SplitLayout() {
                                             <div key={item.id} onMouseEnter={() => setHighlightedItem(item)} onMouseLeave={() => setHighlightedItem(null)}>
                                                 <CostCard
                                                     item={item}
-                                                    onUpdate={(updates) => handleUpdateItem(item.id, updates)}
+                                                    onUpdate={(updates) => updateItem(item.id, updates)}
                                                 />
                                             </div>
                                         ))}
@@ -285,8 +207,8 @@ export function SplitLayout() {
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            {rooms.map(room => {
-                                const roomItems = itemsByRoom(room.id);
+                            {rooms.map((room: any) => {
+                                const roomItems = getItemsByRoom(room.id);
                                 if (roomItems.length === 0) return null;
 
                                 return (
@@ -307,7 +229,7 @@ export function SplitLayout() {
                                                 <div key={item.id} onMouseEnter={() => setHighlightedItem(item)} onMouseLeave={() => setHighlightedItem(null)}>
                                                     <CostCard
                                                         item={item}
-                                                        onUpdate={(updates) => handleUpdateItem(item.id, updates)}
+                                                        onUpdate={(updates) => updateItem(item.id, updates)}
                                                     />
                                                 </div>
                                             ))}
@@ -316,17 +238,17 @@ export function SplitLayout() {
                                 );
                             })}
 
-                            {unassignedItems.length > 0 && (
+                            {getUnassignedItems().length > 0 && (
                                 <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden mt-8">
                                     <div className="bg-slate-50 px-6 py-4 border-b border-slate-100">
                                         <h3 className="font-bold text-slate-900">{t('qto.general_unassigned')}</h3>
                                     </div>
                                     <div className="p-4 space-y-2">
-                                        {unassignedItems.map(item => (
+                                        {getUnassignedItems().map(item => (
                                             <div key={item.id} onMouseEnter={() => setHighlightedItem(item)} onMouseLeave={() => setHighlightedItem(null)}>
                                                 <CostCard
                                                     item={item}
-                                                    onUpdate={(updates) => handleUpdateItem(item.id, updates)}
+                                                    onUpdate={(updates) => updateItem(item.id, updates)}
                                                 />
                                             </div>
                                         ))}
@@ -391,7 +313,7 @@ export function SplitLayout() {
                                 </div>
                                 <div className="flex space-x-3 pt-2">
                                     <button
-                                        onClick={handleAddItem}
+                                        onClick={onAddItem}
                                         className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                                     >
                                         {t('qto.btn_add')}

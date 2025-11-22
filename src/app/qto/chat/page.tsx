@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { BoQItem } from '@/types';
+import { API_URL } from '@/lib/api';
 
 /**
  * Message Interface
@@ -103,7 +104,7 @@ export default function AIChatPage() {
                 formData.append('file', currentFile);
 
                 // Call our Cloud Run Backend
-                const response = await fetch('https://kgvilla-api-30314481610.europe-north1.run.app/analyze', {
+                const response = await fetch(`${API_URL}/analyze`, {
                     method: 'POST',
                     body: formData,
                 });
