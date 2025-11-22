@@ -19,7 +19,11 @@ When the user uploads a floor plan in the "AI Analysis" tab, the file is sent to
 3.  It sends the file + the rules to **Google Gemini** (the AI).
 
 ### Step 3: The Result
-The AI looks at the drawing, counts the walls, windows, and sockets, and checks them against the rules. It returns a list of items (e.g., "30m² Parquet Flooring - 15,000 kr"). The website displays this as a nice chat message.
+The AI looks at the drawing and performs a "Chain of Thought" analysis:
+1.  **Scale & Segment:** Measures pixels to real-world meters.
+2.  **Infer Systems:** "See a kitchen? Add stove wiring and leakage trays." (Things not drawn but required).
+3.  **Price Assemblies:** Applies 2025 unit rates for specific wall/floor recipes (e.g., Wet Room Wall vs Standard Wall).
+4.  **Return Data:** Returns a structured JSON with a detailed cost breakdown.
 
 ---
 
@@ -41,6 +45,7 @@ We chose specific technologies to make this **fast, cheap, and scalable**.
 ### **AI Engine: Google Vertex AI (Gemini 1.5)**
 *   **Choice:** Gemini 1.5 Flash.
 *   **Why:** It is "Multimodal" (can see images directly) and has a huge memory context (can read the entire building code book in one go). "Flash" is the faster, cheaper version of the model, perfect for real-time chat.
+*   **Assembly Inference:** We don't just OCR text; we use Gemini's reasoning to "infer" construction assemblies (layers of material) that aren't explicitly drawn, ensuring the price is realistic.
 *   **Context Awareness:** The Chat system is project-aware. It loads the chat history specific to the active project ID from `localStorage` (`kgvilla-chat-[ID]`), allowing users to switch contexts seamlessly.
 
 ---

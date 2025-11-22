@@ -5,7 +5,8 @@ KGVilla is an intelligent Quantity Take-Off (QTO) tool designed for the Swedish 
 ## 🚀 Key Features
 
 *   **AI Blueprint Analysis:** Upload a floor plan, and the AI identifies rooms, walls, and components, calculating quantities automatically.
-*   **Swedish Compliance:** Built-in knowledge of **BBR 2025**, **Säker Vatten**, and **SS 436 40 00** standards. The AI flags non-compliant designs (e.g., accessibility issues).
+*   **Assembly-Based Pricing:** Uses advanced logic to infer hidden costs (e.g., waterproofing in bathrooms, electrical feeds in kitchens) based on 2025 Swedish market rates.
+*   **Swedish Compliance:** Checks designs against **BBR 2025** and **Säker Vatten** rules to flag potential issues early.
 *   **Interactive Split View:** A CAD-like interface connecting the visual plan with the data feed. Hover over a cost item to see it on the plan.
 *   **Real-Time Chat:** Discuss the project with an AI consultant to optimize costs ("How can I save 500k SEK?").
 *   **Bilingual:** Instant toggling between English and Swedish.
