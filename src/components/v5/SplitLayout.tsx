@@ -16,7 +16,7 @@ import { CostCard } from '../v3/CostCard';
 import { TotalSummary } from '../v3/TotalSummary';
 import { VisualViewer } from './VisualViewer';
 import { ClientCostSection } from '../v5/ClientCostSection';
-import { BoQItem } from '../../types';
+import { CostItem } from '../../types';
 import { cn } from '../../lib/utils';
 import { Plus } from 'lucide-react';
 import { useTranslation } from '../../contexts/LanguageContext';
@@ -37,49 +37,18 @@ export function SplitLayout() {
     } = useProjectData();
     
     // --- UI State ---
-    const [highlightedItem, setHighlightedItem] = useState<BoQItem | null>(null);
+    const [highlightedItem, setHighlightedItem] = useState<CostItem | null>(null);
     const [viewMode, setViewMode] = useState<'phases' | 'rooms'>('phases');
-    const [leftPaneWidth, setLeftPaneWidth] = useState(50); // Initial width %
-    const [isDragging, setIsDragging] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
-
+    
     // State for the "Add New Item" modal
     const [isAddingItem, setIsAddingItem] = useState(false);
-    const [newItemData, setNewItemData] = useState<Partial<BoQItem>>({
+    const [newItemData, setNewItemData] = useState<Partial<CostItem>>({
         elementName: '',
         unitPrice: 0,
         quantity: 1,
         unit: 'st',
         phase: 'structure'
     });
-
-    // --- Resize Handlers ---
-    useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            if (!isDragging || !containerRef.current) return;
-
-            const containerRect = containerRef.current.getBoundingClientRect();
-            const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
-
-            // Constrain width between 30% and 70% to prevent unusable layouts
-            const constrainedWidth = Math.min(Math.max(newWidth, 30), 70);
-            setLeftPaneWidth(constrainedWidth);
-        };
-
-        const handleMouseUp = () => {
-            setIsDragging(false);
-        };
-
-        if (isDragging) {
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', handleMouseUp);
-        }
-
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [isDragging]);
 
     // --- Action Wrappers ---
     const onAddItem = () => {
@@ -102,12 +71,9 @@ export function SplitLayout() {
     const otherItems = items.filter(i => !phases.some(p => p.id === i.phase));
 
     return (
-        <div ref={containerRef} className="flex h-screen bg-slate-50 relative select-none">
-            {/* Left Pane - Visual Viewer */}
-            <div
-                className="h-full overflow-hidden"
-                style={{ width: `${leftPaneWidth}%` }}
-            >
+        <div className="flex h-screen bg-slate-50 relative select-none">
+            {/* Left Pane - Visual Viewer (Static 50%) */}
+            <div className="w-1/2 h-full overflow-hidden border-r border-slate-200 bg-slate-900 relative">
                 <VisualViewer highlightedItem={highlightedItem ? { ...highlightedItem, name: highlightedItem.elementName } : null} />
 
                 {/* Floating Cost Overlay */}
@@ -118,8 +84,8 @@ export function SplitLayout() {
                 </div>
             </div>
 
-            {/* Right Pane: Data Feed */}
-            <div className="w-full lg:w-1/2 h-full overflow-y-auto bg-white">
+            {/* Right Pane: Data Feed (Static 50%) */}
+            <div className="w-1/2 h-full overflow-y-auto bg-white">
                 <div className="max-w-2xl mx-auto p-8 pb-32">
                     <header className="mb-8">
                         <div className="flex items-center space-x-2 text-sm text-slate-500 mb-4">

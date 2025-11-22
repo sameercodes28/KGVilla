@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { CostItem } from '@/types';
+import { API_URL } from '@/lib/api';
 
 interface Message {
     id: string;

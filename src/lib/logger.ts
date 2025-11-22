@@ -1,4 +1,4 @@
-import { LogLevel } from './logger';
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 // Configure the logger
 export const LOG_LEVEL: LogLevel = 'info'; // 'debug' | 'info' | 'warn' | 'error'
@@ -10,8 +10,6 @@ export interface LogEntry {
     message: string;
     data?: any;
 }
-
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 class Logger {
     private logs: LogEntry[] = [];

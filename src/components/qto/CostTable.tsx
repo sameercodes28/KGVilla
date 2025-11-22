@@ -1,19 +1,19 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { BoQItem } from '@/types';
-import { initialBoQ as mockBoQ } from '@/data/projectData';
+import { CostItem } from '@/types';
+import { initialCostItems as mockBoQ } from '@/data/projectData';
 import { ChevronDown, MoreHorizontal, AlertCircle, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { TechnicalTerm } from '@/components/ui/TechnicalTerm';
 
-interface BoQTableProps {
+interface CostTableProps {
     currentLevelId: string;
 }
 
-export function BoQTable({ currentLevelId }: BoQTableProps) {
-    const [items, setItems] = useState<BoQItem[]>(mockBoQ);
+export function CostTable({ currentLevelId }: CostTableProps) {
+    const [items, setItems] = useState<CostItem[]>(mockBoQ);
     const { t } = useTranslation();
 
     const filteredItems = useMemo(() => {
