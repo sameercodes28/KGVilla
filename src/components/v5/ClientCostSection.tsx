@@ -2,20 +2,22 @@
 
 import { clientCosts } from '@/data/projectData';
 import { Info } from 'lucide-react';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 export function ClientCostSection() {
+    const { t } = useTranslation();
     const totalClientCost = clientCosts.reduce((sum, item) => sum + item.cost, 0);
 
     return (
         <div className="mb-8 bg-slate-50 rounded-2xl border border-slate-200 p-6">
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h3 className="text-xl font-bold text-slate-900">Client Costs (Byggherrekostnader)</h3>
-                    <p className="text-slate-500 text-sm mt-1">Fees, permits, and connections paid directly by you.</p>
+                    <h3 className="text-xl font-bold text-slate-900">{t('client.title')}</h3>
+                    <p className="text-slate-500 text-sm mt-1">{t('client.desc')}</p>
                 </div>
                 <div className="text-right">
                     <div className="text-xl font-bold text-slate-900">{totalClientCost.toLocaleString('sv-SE')} kr</div>
-                    <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">Est. Total</div>
+                    <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">{t('client.est_total')}</div>
                 </div>
             </div>
 

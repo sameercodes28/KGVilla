@@ -3,7 +3,6 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { BottomNav } from "@/components/v3/BottomNav";
-import { ClarificationInterface } from "@/components/qto/ClarificationInterface";
 
 // Premium font configuration
 const inter = Inter({
@@ -35,7 +34,6 @@ export default function RootLayout({
           <main className="min-h-screen">
             {children}
           </main>
-          <ClarificationInterface />
           <BottomNav />
         </LanguageProvider>
       </body>

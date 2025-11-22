@@ -1,0 +1,10 @@
+# Ignore everything by default
+*
+
+# Allow these specific files
+!main.py
+!models.py
+!requirements.txt
+!Dockerfile
+!utils.py
+!.gcloudignore

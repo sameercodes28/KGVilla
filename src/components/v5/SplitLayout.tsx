@@ -4,11 +4,15 @@ import { CostCard } from '../v3/CostCard';
 import { TotalSummary } from '../v3/TotalSummary';
 import { VisualViewer } from './VisualViewer';
 import { ClientCostSection } from '../v5/ClientCostSection';
+import { AICostChat } from './AICostChat';
 import { BoQItem } from '../../types';
 import { cn } from '../../lib/utils';
 import { Plus, GripVertical } from 'lucide-react';
+import { useTranslation } from '../../contexts/LanguageContext';
 
 export function SplitLayout() {
+    const { t } = useTranslation();
+    
     // State for BoQ Items (allows editing)
     const [items, setItems] = useState<BoQItem[]>(initialBoQ);
     const [highlightedItem, setHighlightedItem] = useState<BoQItem | null>(null);
@@ -136,11 +140,11 @@ export function SplitLayout() {
     const unassignedItems = items.filter(i => !i.roomId);
 
     const phases = [
-        { id: 'ground', label: 'Markarbeten' },
-        { id: 'structure', label: 'Stomme & Tak' },
-        { id: 'electrical', label: 'El & Belysning' },
-        { id: 'plumbing', label: 'VVS & Värme' },
-        { id: 'interior', label: 'Invändigt & Kök' },
+        { id: 'ground', label: t('phase.ground') },
+        { id: 'structure', label: t('phase.structure') },
+        { id: 'electrical', label: t('phase.electrical') },
+        { id: 'plumbing', label: t('phase.plumbing') },
+        { id: 'interior', label: t('phase.interior') },
     ];
 
     const otherItems = items.filter(i => !phases.some(p => p.id === i.phase));
@@ -156,7 +160,7 @@ export function SplitLayout() {
 
                 {/* Overlay for Total Cost (Floating) */}
                 <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur p-4 rounded-xl shadow-lg border border-slate-200">
-                    <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Total Estimate</p>
+                    <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">{t('qto.total_estimate')}</p>
                     <p className="text-3xl font-bold text-slate-900">{totalCost.toLocaleString('sv-SE')} kr</p>
                     <p className="text-xs text-slate-400 mt-1">{(totalCost / (projectDetails.totalArea || 1)).toLocaleString('sv-SE', { maximumFractionDigits: 0 })} kr/m²</p>
                 </div>
@@ -167,7 +171,7 @@ export function SplitLayout() {
                 <div className="max-w-2xl mx-auto p-8 pb-32">
                     <header className="mb-8">
                         <div className="flex items-center space-x-2 text-sm text-slate-500 mb-4">
-                            <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">BETA</span>
+                            <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">{t('qto.beta')}</span>
                             <span>•</span>
                             <span>{projectDetails.id}</span>
                             <span>•</span>
@@ -183,13 +187,13 @@ export function SplitLayout() {
                                     onClick={() => setViewMode('phases')}
                                     className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-all", viewMode === 'phases' ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700")}
                                 >
-                                    Phases
+                                    {t('qto.view_phases')}
                                 </button>
                                 <button
                                     onClick={() => setViewMode('rooms')}
                                     className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-all", viewMode === 'rooms' ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700")}
                                 >
-                                    Rooms
+                                    {t('qto.view_rooms')}
                                 </button>
                             </div>
                         </div>
@@ -231,7 +235,7 @@ export function SplitLayout() {
                             {otherItems.length > 0 && (
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                                        <h2 className="text-xl font-bold text-slate-900">Other / Custom</h2>
+                                        <h2 className="text-xl font-bold text-slate-900">{t('qto.other_custom')}</h2>
                                         <span className="text-sm font-mono text-slate-500">
                                             {otherItems.reduce((sum, i) => sum + i.totalCost, 0).toLocaleString('sv-SE')} kr
                                         </span>
@@ -286,7 +290,7 @@ export function SplitLayout() {
                             {unassignedItems.length > 0 && (
                                 <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden mt-8">
                                     <div className="bg-slate-50 px-6 py-4 border-b border-slate-100">
-                                        <h3 className="font-bold text-slate-900">General / Unassigned</h3>
+                                        <h3 className="font-bold text-slate-900">{t('qto.general_unassigned')}</h3>
                                     </div>
                                     <div className="p-4 space-y-2">
                                         {unassignedItems.map(item => (
@@ -311,14 +315,14 @@ export function SplitLayout() {
                                 className="w-full py-4 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-medium hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center justify-center space-x-2"
                             >
                                 <Plus className="w-5 h-5" />
-                                <span>Add Custom Cost Item</span>
+                                <span>{t('qto.add_custom_item')}</span>
                             </button>
                         ) : (
                             <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-4">
-                                <h3 className="font-bold text-slate-900">Add New Item</h3>
+                                <h3 className="font-bold text-slate-900">{t('qto.add_new_item')}</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="col-span-2">
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Item Name</label>
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.item_name')}</label>
                                         <input
                                             type="text"
                                             className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
@@ -328,7 +332,7 @@ export function SplitLayout() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Price (SEK)</label>
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.price')}</label>
                                         <input
                                             type="number"
                                             className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
@@ -337,7 +341,7 @@ export function SplitLayout() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Quantity</label>
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.quantity')}</label>
                                         <input
                                             type="number"
                                             className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
@@ -346,7 +350,7 @@ export function SplitLayout() {
                                         />
                                     </div>
                                     <div className="col-span-2">
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">Phase</label>
+                                        <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.phase')}</label>
                                         <select
                                             className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
                                             value={newItemData.phase}
@@ -361,13 +365,13 @@ export function SplitLayout() {
                                         onClick={handleAddItem}
                                         className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                                     >
-                                        Add Item
+                                        {t('qto.btn_add')}
                                     </button>
                                     <button
                                         onClick={() => setIsAddingItem(false)}
                                         className="px-4 py-2 text-slate-500 hover:text-slate-700 font-medium"
                                     >
-                                        Cancel
+                                        {t('qto.btn_cancel')}
                                     </button>
                                 </div>
                             </div>
@@ -377,6 +381,9 @@ export function SplitLayout() {
                     <div className="mt-12">
                         <TotalSummary totalCost={totalCost} area={projectDetails.totalArea || 0} />
                     </div>
+
+                    {/* AI Cost Chat Widget */}
+                    <AICostChat />
                 </div>
             </div>
         </div>

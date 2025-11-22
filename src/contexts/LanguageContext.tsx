@@ -23,12 +23,54 @@ const dictionary: Record<string, DictionaryEntry> = {
     'dash.upload_title': { en: 'Upload New Documents', sv: 'Ladda upp nya underlag' },
     'dash.upload_desc': { en: 'Upload architectural (A) or structural (K) drawings to start analysis.', sv: 'Ladda upp A-ritningar eller K-ritningar för att starta analysen.' },
 
-    // QTO Page
+    // QTO Page / Split Layout
     'qto.title': { en: 'Quantity Take-Off & Analysis', sv: 'Mängdning & Analys' },
     'qto.subtitle': { en: 'Review AI analysis of', sv: 'Granska AI-analysen av' },
     'qto.download': { en: 'Download PDF', sv: 'Ladda ner PDF' },
+    'qto.total_estimate': { en: 'Total Estimate', sv: 'Total Kostnadskalkyl' },
+    'qto.view_phases': { en: 'Phases', sv: 'Faser' },
+    'qto.view_rooms': { en: 'Rooms', sv: 'Rum' },
+    'qto.add_custom_item': { en: 'Add Custom Cost Item', sv: 'Lägg till egen kostnadspost' },
+    'qto.add_new_item': { en: 'Add New Item', sv: 'Lägg till ny post' },
+    'qto.item_name': { en: 'Item Name', sv: 'Benämning' },
+    'qto.price': { en: 'Price (SEK)', sv: 'Pris (SEK)' },
+    'qto.quantity': { en: 'Quantity', sv: 'Antal/Mängd' },
+    'qto.phase': { en: 'Phase', sv: 'Fas' },
+    'qto.btn_add': { en: 'Add Item', sv: 'Lägg till' },
+    'qto.btn_cancel': { en: 'Cancel', sv: 'Avbryt' },
+    'qto.beta': { en: 'BETA', sv: 'BETA' },
+    'qto.other_custom': { en: 'Other / Custom', sv: 'Övrigt / Eget' },
+    'qto.general_unassigned': { en: 'General / Unassigned', sv: 'Allmänt / Ej tilldelat' },
 
-    // BoQ Table
+    // Client Costs
+    'client.title': { en: 'Client Costs (Byggherrekostnader)', sv: 'Byggherrekostnader' },
+    'client.desc': { en: 'Fees, permits, and connections paid directly by you.', sv: 'Avgifter, lov och anslutningar som betalas direkt av dig.' },
+    'client.est_total': { en: 'Est. Total', sv: 'Est. Totalt' },
+
+    // Phases
+    'phase.ground': { en: 'Ground Works', sv: 'Markarbeten' },
+    'phase.structure': { en: 'Structure & Roof', sv: 'Stomme & Tak' },
+    'phase.electrical': { en: 'Electrical', sv: 'El & Belysning' },
+    'phase.plumbing': { en: 'Plumbing & HVAC', sv: 'VVS & Värme' },
+    'phase.interior': { en: 'Interior & Kitchen', sv: 'Invändigt & Kök' },
+
+    // Cost Card
+    'card.qty': { en: 'Qty:', sv: 'Antal:' },
+    'card.price': { en: 'Price:', sv: 'Pris:' },
+    'card.select_option': { en: 'Select Option', sv: 'Välj Alternativ' },
+    'card.breakdown': { en: 'Estimated Breakdown', sv: 'Kostnadsfördelning' },
+    'card.materials': { en: 'Materials', sv: 'Material' },
+    'card.labor': { en: 'Labor', sv: 'Arbete' },
+    'card.ai_calculation': { en: 'AI Calculation', sv: 'AI-Beräkning' },
+    'card.guideline': { en: 'Guideline', sv: 'Riktlinje' },
+    'card.custom': { en: 'Custom', sv: 'Egen' },
+    'card.edited': { en: 'Edited', sv: 'Ändrad' },
+
+    // Total Summary
+    'summary.title': { en: 'Total Estimated Cost', sv: 'Total Beräknad Kostnad' },
+    'summary.subtitle': { en: 'Includes material, labor, and VAT (25%)', sv: 'Inkluderar material, arbete och moms (25%)' },
+
+    // BoQ Table (Legacy/Table View)
     'boq.title': { en: 'Bill of Quantities', sv: 'Mängdförteckning (BoQ)' },
     'boq.export_excel': { en: 'Export Excel', sv: 'Exportera Excel' },
     'boq.save': { en: 'Save Changes', sv: 'Spara ändringar' },
