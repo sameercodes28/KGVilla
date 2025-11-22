@@ -2,7 +2,7 @@
   "src/**/*.{ts,tsx}": [
     "eslint --fix",
     "bash -c 'tsc --noEmit'",
-    "npm test -- --bail --findRelatedTests",
+    "npm test -- --bail --findRelatedTests --passWithNoTests",
     "bash -c './scripts/validate-docs.sh'"
   ]
 }

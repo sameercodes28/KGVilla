@@ -1,21 +1,10 @@
-/**
- * SplitLayout Component
- * =====================
- * 
- * This is the core "Project View" of the application.
- * It implements a classic "Master-Detail" or "Visual-Data" split view common in CAD software.
- * 
- * Architecture:
- * - Uses `useProjectData` hook for business logic and state.
- * - Handles UI-specific state (resizing, view modes) locally.
- */
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { projectDetails, rooms } from '../../data/projectData';
 import { CostCard } from '../v3/CostCard';
 import { TotalSummary } from '../v3/TotalSummary';
 import { VisualViewer } from './VisualViewer';
 import { ClientCostSection } from '../v5/ClientCostSection';
+import { PhaseSection } from './PhaseSection';
 import { CostItem, Room, ConstructionPhase } from '../../types';
 import { cn } from '../../lib/utils';
 import { Plus } from 'lucide-react';
@@ -31,15 +20,16 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
     const { t } = useTranslation();
     
     // --- Business Logic (Hook) ---
-    const {
-        items,
-        totalCost,
-        updateItem,
-        addItem,
-        getItemsByPhase,
-        getItemsByRoom,
+    const { 
+        items, 
+        totalCost, 
+        updateItem, 
+        addItem, 
+        getItemsByPhase, 
+        getItemsByRoom, 
         getUnassignedItems 
-    } = useProjectData(projectId);    
+    } = useProjectData(projectId);
+    
     // --- UI State ---
     const [highlightedItem, setHighlightedItem] = useState<CostItem | null>(null);
     const [viewMode, setViewMode] = useState<'phases' | 'rooms'>('phases');
@@ -54,11 +44,16 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
         phase: 'structure'
     });
 
+    useEffect(() => {
+        logger.info('SplitLayout', 'Project View Loaded', { itemCount: items.length, totalCost });
+    }, []);
+
     // --- Action Wrappers ---
     const onAddItem = () => {
         addItem(newItemData);
         setIsAddingItem(false);
         setNewItemData({ elementName: '', unitPrice: 0, quantity: 1, unit: 'st', phase: 'structure' });
+        logger.info('SplitLayout', 'Added new item', newItemData);
     };
 
     // --- Constants ---
@@ -79,7 +74,7 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
                 <VisualViewer highlightedItem={highlightedItem ? { ...highlightedItem, name: highlightedItem.elementName } : null} />
 
                 {/* Floating Cost Overlay */}
-                <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur p-4 rounded-xl shadow-lg border border-slate-200">
+                <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur p-4 rounded-xl shadow-lg border border-slate-200 pointer-events-none">
                     <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">{t('qto.total_estimate')}</p>
                     <p className="text-3xl font-bold text-slate-900">{totalCost.toLocaleString('sv-SE')} kr</p>
                     <p className="text-xs text-slate-400 mt-1">{(totalCost / (projectDetails.totalArea || 1)).toLocaleString('sv-SE', { maximumFractionDigits: 0 })} kr/m²</p>
@@ -124,53 +119,33 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
 
                     {/* Render List based on View Mode */}
                     {viewMode === 'phases' ? (
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                             {phases.map(phase => {
                                 const phaseItems = getItemsByPhase(phase.id);
                                 if (phaseItems.length === 0) return null;
+                                const phaseTotal = phaseItems.reduce((sum, i) => sum + i.totalCost, 0);
 
                                 return (
-                                    <div key={phase.id} className="space-y-4">
-                                        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                                            <h2 className="text-xl font-bold text-slate-900">{phase.label}</h2>
-                                            <span className="text-sm font-mono text-slate-500">
-                                                {phaseItems.reduce((sum, i) => sum + i.totalCost, 0).toLocaleString('sv-SE')} kr
-                                            </span>
-                                        </div>
-                                        <div className="space-y-3">
-                                            {phaseItems.map(item => (
-                                                <div key={item.id} onMouseEnter={() => setHighlightedItem(item)} onMouseLeave={() => setHighlightedItem(null)}>
-                                                    <CostCard
-                                                        item={item}
-                                                        onUpdate={(updates) => updateItem(item.id, updates)}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    <PhaseSection
+                                        key={phase.id}
+                                        title={phase.label}
+                                        totalCost={phaseTotal}
+                                        items={phaseItems}
+                                        onUpdateItem={updateItem}
+                                        onHoverItem={setHighlightedItem}
+                                    />
                                 );
                             })}
 
                             {/* Catch-all for custom items */}
                             {otherItems.length > 0 && (
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                                        <h2 className="text-xl font-bold text-slate-900">{t('qto.other_custom')}</h2>
-                                        <span className="text-sm font-mono text-slate-500">
-                                            {otherItems.reduce((sum, i) => sum + i.totalCost, 0).toLocaleString('sv-SE')} kr
-                                        </span>
-                                    </div>
-                                    <div className="space-y-3">
-                                        {otherItems.map(item => (
-                                            <div key={item.id} onMouseEnter={() => setHighlightedItem(item)} onMouseLeave={() => setHighlightedItem(null)}>
-                                                <CostCard
-                                                    item={item}
-                                                    onUpdate={(updates) => updateItem(item.id, updates)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                <PhaseSection
+                                    title={t('qto.other_custom')}
+                                    totalCost={otherItems.reduce((sum, i) => sum + i.totalCost, 0)}
+                                    items={otherItems}
+                                    onUpdateItem={updateItem}
+                                    onHoverItem={setHighlightedItem}
+                                />
                             )}
                         </div>
                     ) : (
@@ -178,50 +153,28 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
                             {rooms.map((room: Room) => {
                                 const roomItems = getItemsByRoom(room.id);
                                 if (roomItems.length === 0) return null;
+                                const roomTotal = roomItems.reduce((sum, i) => sum + i.totalCost, 0);
 
                                 return (
-                                    <div key={room.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                                        <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                                            <div>
-                                                <h3 className="font-bold text-slate-900">{room.name}</h3>
-                                                <p className="text-xs text-slate-500 uppercase tracking-wider">{room.area} m² • {room.type}</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="font-mono font-medium text-slate-900">
-                                                    {roomItems.reduce((sum, i) => sum + i.totalCost, 0).toLocaleString('sv-SE')} kr
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="p-4 space-y-2">
-                                            {roomItems.map(item => (
-                                                <div key={item.id} onMouseEnter={() => setHighlightedItem(item)} onMouseLeave={() => setHighlightedItem(null)}>
-                                                    <CostCard
-                                                        item={item}
-                                                        onUpdate={(updates) => updateItem(item.id, updates)}
-                                                    />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    <PhaseSection
+                                        key={room.id}
+                                        title={room.name}
+                                        totalCost={roomTotal}
+                                        items={roomItems}
+                                        onUpdateItem={updateItem}
+                                        onHoverItem={setHighlightedItem}
+                                    />
                                 );
                             })}
 
                             {getUnassignedItems().length > 0 && (
-                                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden mt-8">
-                                    <div className="bg-slate-50 px-6 py-4 border-b border-slate-100">
-                                        <h3 className="font-bold text-slate-900">{t('qto.general_unassigned')}</h3>
-                                    </div>
-                                    <div className="p-4 space-y-2">
-                                        {getUnassignedItems().map(item => (
-                                            <div key={item.id} onMouseEnter={() => setHighlightedItem(item)} onMouseLeave={() => setHighlightedItem(null)}>
-                                                <CostCard
-                                                    item={item}
-                                                    onUpdate={(updates) => updateItem(item.id, updates)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                <PhaseSection
+                                    title={t('qto.general_unassigned')}
+                                    totalCost={getUnassignedItems().reduce((sum, i) => sum + i.totalCost, 0)}
+                                    items={getUnassignedItems()}
+                                    onUpdateItem={updateItem}
+                                    onHoverItem={setHighlightedItem}
+                                />
                             )}
                         </div>
                     )}
