@@ -1,13 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { projectDetails, rooms } from '../../data/projectData';
-import { CostCard } from '../v3/CostCard';
-import { TotalSummary } from '../v3/TotalSummary';
+import { projectDetails } from '../../data/projectData';
 import { VisualViewer } from './VisualViewer';
-import { ClientCostSection } from '../v5/ClientCostSection';
-import { PhaseSection } from './PhaseSection';
-import { CostItem, Room, ConstructionPhase } from '../../types';
-import { cn } from '../../lib/utils';
-import { Plus } from 'lucide-react';
+import { ProjectDataFeed } from './ProjectDataFeed';
+import { CostItem } from '../../types';
 import { useTranslation } from '../../contexts/LanguageContext';
 import { useProjectData } from '@/hooks/useProjectData';
 import { logger } from '@/lib/logger';
@@ -20,52 +15,28 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
     const { t } = useTranslation();
     
     // --- Business Logic (Hook) ---
-    const { 
-        items, 
-        totalCost, 
-        updateItem, 
-        addItem, 
-        getItemsByPhase, 
-        getItemsByRoom, 
+    const {
+        items,
+        totalCost,
+        updateItem,
+        addItem,
+        getItemsByPhase,
+        getItemsByRoom,
         getUnassignedItems 
     } = useProjectData(projectId);
     
-    // --- UI State ---
+    // --- UI State (Only for shared interactions like highlighting) ---
     const [highlightedItem, setHighlightedItem] = useState<CostItem | null>(null);
-    const [viewMode, setViewMode] = useState<'phases' | 'rooms'>('phases');
-    
-    // State for the "Add New Item" modal
-    const [isAddingItem, setIsAddingItem] = useState(false);
-    const [newItemData, setNewItemData] = useState<Partial<CostItem>>({
-        elementName: '',
-        unitPrice: 0,
-        quantity: 1,
-        unit: 'st',
-        phase: 'structure'
-    });
 
     useEffect(() => {
         logger.info('SplitLayout', 'Project View Loaded', { itemCount: items.length, totalCost });
     }, []);
 
-    // --- Action Wrappers ---
-    const onAddItem = () => {
-        addItem(newItemData);
-        setIsAddingItem(false);
-        setNewItemData({ elementName: '', unitPrice: 0, quantity: 1, unit: 'st', phase: 'structure' });
-        logger.info('SplitLayout', 'Added new item', newItemData);
+    // Action Wrapper
+    const onAddItem = (item: Partial<CostItem>) => {
+        addItem(item);
+        logger.info('SplitLayout', 'Added new item', item);
     };
-
-    // --- Constants ---
-    const phases = [
-        { id: 'ground', label: t('phase.ground') },
-        { id: 'structure', label: t('phase.structure') },
-        { id: 'electrical', label: t('phase.electrical') },
-        { id: 'plumbing', label: t('phase.plumbing') },
-        { id: 'interior', label: t('phase.interior') },
-    ];
-
-    const otherItems = items.filter(i => !phases.some(p => p.id === i.phase));
 
     return (
         <div className="flex h-screen bg-slate-50 relative select-none">
@@ -82,179 +53,16 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
             </div>
 
             {/* Right Pane: Data Feed (Static 50%) */}
-            <div className="w-1/2 h-full overflow-y-auto bg-white">
-                <div className="max-w-2xl mx-auto p-8 pb-32">
-                    <header className="mb-8">
-                        <div className="flex items-center space-x-2 text-sm text-slate-500 mb-4">
-                            <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">{t('qto.beta')}</span>
-                            <span>•</span>
-                            <span>{projectDetails.id}</span>
-                            <span>•</span>
-                            <span>{projectDetails.lastModified}</span>
-                        </div>
-
-                        <div className="flex justify-between items-end mb-2">
-                            <h1 className="text-4xl font-serif font-bold text-slate-900 tracking-tight">{projectDetails.name}</h1>
-
-                            {/* View Mode Toggle */}
-                            <div className="bg-slate-100 p-1 rounded-lg flex space-x-1">
-                                <button
-                                    onClick={() => setViewMode('phases')}
-                                    className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-all", viewMode === 'phases' ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700")}
-                                >
-                                    {t('qto.view_phases')}
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('rooms')}
-                                    className={cn("px-3 py-1.5 text-xs font-medium rounded-md transition-all", viewMode === 'rooms' ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700")}
-                                >
-                                    {t('qto.view_rooms')}
-                                </button>
-                            </div>
-                        </div>
-                        <p className="text-slate-500 text-lg">{projectDetails.address} • {projectDetails.totalArea} m²</p>
-                    </header>
-
-                    <ClientCostSection />
-
-                    {/* Render List based on View Mode */}
-                    {viewMode === 'phases' ? (
-                        <div className="space-y-6">
-                            {phases.map(phase => {
-                                const phaseItems = getItemsByPhase(phase.id);
-                                if (phaseItems.length === 0) return null;
-                                const phaseTotal = phaseItems.reduce((sum, i) => sum + i.totalCost, 0);
-
-                                return (
-                                    <PhaseSection
-                                        key={phase.id}
-                                        title={phase.label}
-                                        totalCost={phaseTotal}
-                                        items={phaseItems}
-                                        onUpdateItem={updateItem}
-                                        onHoverItem={setHighlightedItem}
-                                    />
-                                );
-                            })}
-
-                            {/* Catch-all for custom items */}
-                            {otherItems.length > 0 && (
-                                <PhaseSection
-                                    title={t('qto.other_custom')}
-                                    totalCost={otherItems.reduce((sum, i) => sum + i.totalCost, 0)}
-                                    items={otherItems}
-                                    onUpdateItem={updateItem}
-                                    onHoverItem={setHighlightedItem}
-                                />
-                            )}
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-                            {rooms.map((room: Room) => {
-                                const roomItems = getItemsByRoom(room.id);
-                                if (roomItems.length === 0) return null;
-                                const roomTotal = roomItems.reduce((sum, i) => sum + i.totalCost, 0);
-
-                                return (
-                                    <PhaseSection
-                                        key={room.id}
-                                        title={room.name}
-                                        totalCost={roomTotal}
-                                        items={roomItems}
-                                        onUpdateItem={updateItem}
-                                        onHoverItem={setHighlightedItem}
-                                    />
-                                );
-                            })}
-
-                            {getUnassignedItems().length > 0 && (
-                                <PhaseSection
-                                    title={t('qto.general_unassigned')}
-                                    totalCost={getUnassignedItems().reduce((sum, i) => sum + i.totalCost, 0)}
-                                    items={getUnassignedItems()}
-                                    onUpdateItem={updateItem}
-                                    onHoverItem={setHighlightedItem}
-                                />
-                            )}
-                        </div>
-                    )}
-
-                    {/* Custom Item Form */}
-                    <div className="mt-12 border-t border-slate-200 pt-8">
-                        {!isAddingItem ? (
-                            <button
-                                onClick={() => setIsAddingItem(true)}
-                                className="w-full py-4 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-medium hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center justify-center space-x-2"
-                            >
-                                <Plus className="w-5 h-5" />
-                                <span>{t('qto.add_custom_item')}</span>
-                            </button>
-                        ) : (
-                            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-4">
-                                <h3 className="font-bold text-slate-900">{t('qto.add_new_item')}</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="col-span-2">
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.item_name')}</label>
-                                        <input
-                                            type="text"
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
-                                            placeholder="e.g. Extra Insulation"
-                                            value={newItemData.elementName}
-                                            onChange={e => setNewItemData({ ...newItemData, elementName: e.target.value })}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.price')}</label>
-                                        <input
-                                            type="number"
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
-                                            value={newItemData.unitPrice}
-                                            onChange={e => setNewItemData({ ...newItemData, unitPrice: Number(e.target.value) })}
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.quantity')}</label>
-                                        <input
-                                            type="number"
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
-                                            value={newItemData.quantity}
-                                            onChange={e => setNewItemData({ ...newItemData, quantity: Number(e.target.value) })}
-                                        />
-                                    </div>
-                                    <div className="col-span-2">
-                                        <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.phase')}</label>
-                                        <select
-                                            className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
-                                            value={newItemData.phase}
-                                            onChange={e => setNewItemData({ ...newItemData, phase: e.target.value as ConstructionPhase })}
-                                        >
-                                            {phases.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="flex space-x-3 pt-2">
-                                    <button
-                                        onClick={onAddItem}
-                                        className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                                    >
-                                        {t('qto.btn_add')}
-                                    </button>
-                                    <button
-                                        onClick={() => setIsAddingItem(false)}
-                                        className="px-4 py-2 text-slate-500 hover:text-slate-700 font-medium"
-                                    >
-                                        {t('qto.btn_cancel')}
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="mt-12">
-                        <TotalSummary totalCost={totalCost} area={projectDetails.totalArea || 0} />
-                    </div>
-                </div>
-            </div>
+            <ProjectDataFeed 
+                items={items}
+                totalCost={totalCost}
+                onUpdateItem={updateItem}
+                onAddItem={onAddItem}
+                onHoverItem={setHighlightedItem}
+                getItemsByPhase={getItemsByPhase}
+                getItemsByRoom={getItemsByRoom}
+                getUnassignedItems={getUnassignedItems}
+            />
         </div>
     );
 }
