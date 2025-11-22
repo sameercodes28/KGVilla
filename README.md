@@ -10,6 +10,14 @@ KGVilla is an intelligent Quantity Take-Off (QTO) tool designed for the Swedish 
 *   **Real-Time Chat:** Discuss the project with an AI consultant to optimize costs ("How can I save 500k SEK?").
 *   **Bilingual:** Instant toggling between English and Swedish.
 
+## 🛡 Quality Assurance
+
+We use a "Shift Left" strategy to catch errors before they reach the cloud.
+
+*   **Husky & Lint-Staged:** Every commit automatically runs a type check (`tsc`) and linter. If your code has errors, you cannot commit it.
+*   **Error Boundaries:** If the app crashes in production, users see a friendly "Blueprint Blew Away" screen with a one-click debug report generator.
+*   **Telemetry:** We log key actions to `logger.ts`, which helps LLMs (like Gemini/Claude) debug issues by providing a recent history of events.
+
 ## 🛠 Technical Architecture
 
 The project is built on a **Serverless Cloud Native** stack:
@@ -17,6 +25,7 @@ The project is built on a **Serverless Cloud Native** stack:
 *   **Frontend:** Next.js 16 (React) hosted on GitHub Pages.
 *   **Backend:** Python FastAPI hosted on Google Cloud Run.
 *   **AI Engine:** Google Vertex AI (Gemini 1.5 Flash/Pro).
+*   **Data Model:** We use the term **`CostItem`** (formerly BoQ) to represent line items in the estimate.
 
 For a deep dive into the stack and design decisions, see [Technical Architecture](docs/technical_architecture.md).
 

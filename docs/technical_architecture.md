@@ -27,9 +27,10 @@ The AI looks at the drawing, counts the walls, windows, and sockets, and checks 
 
 We chose specific technologies to make this **fast, cheap, and scalable**.
 
-### **Frontend: Next.js (React)**
+### **Frontend: Next.js 16 (React)**
 *   **Choice:** Next.js 16 (Static Export).
 *   **Why:** It allows us to host the website for **free** on GitHub Pages. We don't need a dedicated server just to show the buttons and text. It's extremely fast because it loads as static files.
+*   **State Management:** We use a custom hook `useProjectData` to manage the "Cost Items" (previously BoQ) and persist them to `localStorage`. This keeps the UI components clean.
 
 ### **Backend: Python FastAPI**
 *   **Choice:** Python running on Google Cloud Run.

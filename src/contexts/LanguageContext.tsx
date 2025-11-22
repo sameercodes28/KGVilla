@@ -99,18 +99,18 @@ const dictionary: Record<string, DictionaryEntry> = {
     'chat.welcome': { en: 'Hi! I can help you optimize your budget. Try asking: "How can I reduce the total cost by 500,000 SEK?"', sv: 'Hej! Jag kan hjälpa dig att optimera din budget. Prova att fråga: "Hur kan jag minska totalkostnaden med 500 000 kr?"' },
     'chat.typing': { en: 'AI is thinking...', sv: 'AI tänker...' },
 
-    // BoQ Table (Legacy/Table View)
-    'boq.title': { en: 'Bill of Quantities', sv: 'Mängdförteckning (BoQ)' },
-    'boq.export_excel': { en: 'Export Excel', sv: 'Exportera Excel' },
-    'boq.save': { en: 'Save Changes', sv: 'Spara ändringar' },
-    'boq.col.element': { en: 'Element / Material', sv: 'Byggdel / Material' },
-    'boq.col.quantity': { en: 'Qty (Net)', sv: 'Mängd (Netto)' },
-    'boq.col.unit': { en: 'Unit', sv: 'Enhet' },
-    'boq.col.waste': { en: 'Waste (%)', sv: 'Spill (%)' },
-    'boq.col.total': { en: 'Total (Gross)', sv: 'Totalt (Brutto)' },
-    'boq.col.status': { en: 'Status', sv: 'Status' },
-    'boq.col.source': { en: 'Price Source', sv: 'Priskälla' },
-    'boq.col.cost': { en: 'Total Cost', sv: 'Total Kostnad' },
+    // Cost Table (Legacy View)
+    'cost.title': { en: 'Bill of Quantities', sv: 'Mängdförteckning' },
+    'cost.export_excel': { en: 'Export Excel', sv: 'Exportera Excel' },
+    'cost.save': { en: 'Save Changes', sv: 'Spara ändringar' },
+    'cost.col.element': { en: 'Element / Material', sv: 'Byggdel / Material' },
+    'cost.col.quantity': { en: 'Qty (Net)', sv: 'Mängd (Netto)' },
+    'cost.col.unit': { en: 'Unit', sv: 'Enhet' },
+    'cost.col.waste': { en: 'Waste (%)', sv: 'Spill (%)' },
+    'cost.col.total': { en: 'Total (Gross)', sv: 'Totalt (Brutto)' },
+    'cost.col.status': { en: 'Status', sv: 'Status' },
+    'cost.col.source': { en: 'Price Source', sv: 'Priskälla' },
+    'cost.col.cost': { en: 'Total Cost', sv: 'Total Kostnad' },
 
     // Assumption Dashboard
     'assump.title': { en: 'AI Assumptions & Alerts', sv: 'AI Antaganden & Avvikelser' },
@@ -133,6 +133,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const saved = localStorage.getItem('kgvilla-lang');
         if (saved === 'en' || saved === 'sv') {
+            // eslint-disable-next-line
             setLanguageState(saved);
         }
     }, []);
