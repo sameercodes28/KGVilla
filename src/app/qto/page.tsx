@@ -3,12 +3,23 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SplitLayout } from '@/components/v5/SplitLayout';
+import { ProjectList } from '@/components/v5/ProjectList';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { BottomNav } from '@/components/v3/BottomNav';
 
 function QTOContent() {
     const searchParams = useSearchParams();
     const projectId = searchParams.get('project') || undefined;
+
+    if (!projectId) {
+        return (
+            <>
+                <ProjectList />
+                <LanguageToggle />
+                <BottomNav />
+            </>
+        );
+    }
 
     return (
         <>

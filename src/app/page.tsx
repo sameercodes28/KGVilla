@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Plus, FolderOpen, ArrowRight, MapPin, X, UploadCloud } from 'lucide-react';
+import { Plus, FolderOpen, ArrowRight, MapPin, X, UploadCloud, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { mockProject } from '@/data/projectData';
 import { useTranslation } from '@/contexts/LanguageContext';
@@ -13,7 +13,7 @@ import { CostItem } from '@/types';
 
 export default function Home() {
   const { t } = useTranslation();
-  const { projects, createProject } = useProjects();
+  const { projects, createProject, deleteProject } = useProjects();
   const router = useRouter();
   
   // Modal State
@@ -65,6 +65,14 @@ export default function Home() {
     router.push(`/qto?project=${id}`); 
   };
 
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (confirm('Are you sure you want to delete this project?')) {
+          deleteProject(id);
+      }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50/50">
       <LanguageToggle />
@@ -100,12 +108,14 @@ export default function Home() {
 
             {/* Project Cards */}
             {projects.map((project) => (
-                <Link key={project.id} href={`/qto?project=${project.id}`} className="block group">
+                <Link key={project.id} href={`/qto?project=${project.id}`} className="block group relative">
                     <div className="h-64 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden">
                         <div className="h-32 bg-gradient-to-br from-slate-100 to-slate-200 relative flex items-center justify-center">
                             <FolderOpen className="h-12 w-12 text-slate-300" />
-                            <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-[10px] font-bold uppercase text-slate-500">
-                                {project.status || 'DRAFT'}
+                            <div className="absolute top-4 right-4 flex space-x-2">
+                                <div className="bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-[10px] font-bold uppercase text-slate-500">
+                                    {project.status || 'DRAFT'}
+                                </div>
                             </div>
                         </div>
                         <div className="p-6 flex-1 flex flex-col justify-between">
@@ -122,6 +132,12 @@ export default function Home() {
                             </div>
                         </div>
                     </div>
+                    <button 
+                        onClick={(e) => handleDelete(e, project.id)}
+                        className="absolute top-4 left-4 p-2 bg-white/50 hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-full backdrop-blur transition-colors z-10"
+                    >
+                        <Trash2 className="h-4 w-4" />
+                    </button>
                 </Link>
             ))}
         </div>

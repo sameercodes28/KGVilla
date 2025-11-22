@@ -58,5 +58,13 @@ export function useProjects() {
         return newProject.id;
     };
 
-    return { projects, createProject };
+    const deleteProject = (id: string) => {
+        setProjects(prev => prev.filter(p => p.id !== id));
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem(`kgvilla-cost-items-${id}`);
+            localStorage.removeItem(`kgvilla-plan-${id}`);
+        }
+    };
+
+    return { projects, createProject, deleteProject };
 }
