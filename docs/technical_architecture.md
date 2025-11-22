@@ -41,6 +41,7 @@ We chose specific technologies to make this **fast, cheap, and scalable**.
 ### **AI Engine: Google Vertex AI (Gemini 1.5)**
 *   **Choice:** Gemini 1.5 Flash.
 *   **Why:** It is "Multimodal" (can see images directly) and has a huge memory context (can read the entire building code book in one go). "Flash" is the faster, cheaper version of the model, perfect for real-time chat.
+*   **Context Awareness:** The Chat system is project-aware. It loads the chat history specific to the active project ID from `localStorage` (`kgvilla-chat-[ID]`), allowing users to switch contexts seamlessly.
 
 ---
 
