@@ -69,7 +69,7 @@ const dictionary: Record<string, DictionaryEntry> = {
     'cost.forsakring': { en: 'Construction Insurance', sv: 'Byggförsäkring' },
     'cost.forsakring_desc': { en: 'During construction period', sv: 'Under byggtiden' },
 
-    // Cost Items (BoQ)
+    // Cost Items
     'item.item-mark-01': { en: 'Site Setup & Excavation', sv: 'Etablering & Schaktning' },
     'item.item-mark-01_desc': { en: 'Setup, rough excavation for slab on grade, removal of masses.', sv: 'Etablering, grovschaktning för platta på mark, bortforsling av massor.' },
     
