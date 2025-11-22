@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { CostItem } from '@/types';
-import { initialCostItems as mockBoQ } from '@/data/projectData';
+import { initialCostItems as mockItems } from '@/data/projectData';
 import { ChevronDown, MoreHorizontal, AlertCircle, Filter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
@@ -12,8 +12,14 @@ interface CostTableProps {
     currentLevelId: string;
 }
 
+/**
+ * CostTable Component (Legacy View)
+ * 
+ * A traditional spreadsheet-style view of the Cost Items.
+ * Used as an alternative to the SplitLayout "Card View".
+ */
 export function CostTable({ currentLevelId }: CostTableProps) {
-    const [items, setItems] = useState<CostItem[]>(mockBoQ);
+    const [items, setItems] = useState<CostItem[]>(mockItems);
     const { t } = useTranslation();
 
     const filteredItems = useMemo(() => {

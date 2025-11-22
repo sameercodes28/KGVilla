@@ -10,13 +10,13 @@
  * - Handles UI-specific state (resizing, view modes) locally.
  */
 
-import React, { useState, useRef, useEffect } from 'react';
-import { projectDetails } from '../../data/projectData';
+import React, { useState } from 'react';
+import { projectDetails, rooms } from '../../data/projectData';
 import { CostCard } from '../v3/CostCard';
 import { TotalSummary } from '../v3/TotalSummary';
 import { VisualViewer } from './VisualViewer';
 import { ClientCostSection } from '../v5/ClientCostSection';
-import { CostItem } from '../../types';
+import { CostItem, Room, ConstructionPhase } from '../../types';
 import { cn } from '../../lib/utils';
 import { Plus } from 'lucide-react';
 import { useTranslation } from '../../contexts/LanguageContext';
@@ -52,14 +52,12 @@ export function SplitLayout() {
 
     // --- Action Wrappers ---
     const onAddItem = () => {
-        addItem(newItemData, projectDetails.id);
+        addItem(newItemData);
         setIsAddingItem(false);
         setNewItemData({ elementName: '', unitPrice: 0, quantity: 1, unit: 'st', phase: 'structure' });
     };
 
     // --- Constants ---
-    const { rooms } = require('../../data/projectData'); // Lazy load rooms
-    
     const phases = [
         { id: 'ground', label: t('phase.ground') },
         { id: 'structure', label: t('phase.structure') },
@@ -173,7 +171,7 @@ export function SplitLayout() {
                         </div>
                     ) : (
                         <div className="space-y-6">
-                            {rooms.map((room: any) => {
+                            {rooms.map((room: Room) => {
                                 const roomItems = getItemsByRoom(room.id);
                                 if (roomItems.length === 0) return null;
 
@@ -271,7 +269,7 @@ export function SplitLayout() {
                                         <select
                                             className="w-full px-3 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
                                             value={newItemData.phase}
-                                            onChange={e => setNewItemData({ ...newItemData, phase: e.target.value as any })}
+                                            onChange={e => setNewItemData({ ...newItemData, phase: e.target.value as ConstructionPhase })}
                                         >
                                             {phases.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
                                         </select>

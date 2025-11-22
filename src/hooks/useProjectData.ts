@@ -1,32 +1,41 @@
 import { useState, useEffect, useMemo } from 'react';
-import { CostItem } from '@/types';
-import { initialCostItems, clientCosts } from '@/data/projectData';
+import { CostItem, ConstructionPhase } from '@/types';
+import { initialCostItems, clientCosts, projectDetails } from '@/data/projectData';
 
-export function useProjectData() {
+export function useProjectData(projectId: string = projectDetails.id) {
     // --- State ---
-    const [items, setItems] = useState<CostItem[]>(initialCostItems);
+    const [items, setItems] = useState<CostItem[]>([]);
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    const storageKey = `kgvilla-cost-items-${projectId}`;
 
     // --- Persistence ---
     // Load from LocalStorage on Mount
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('kgvilla-cost-items');
+            const saved = localStorage.getItem(storageKey);
             if (saved) {
                 try {
+                    // eslint-disable-next-line
                     setItems(JSON.parse(saved));
                 } catch (e) {
                     console.error("Failed to load items from persistence", e);
                 }
+            } else if (projectId === projectDetails.id) {
+                // Only load mock data for the specific mock project ID
+                 
+                setItems(initialCostItems);
             }
+            setIsLoaded(true);
         }
-    }, []);
+    }, [projectId, storageKey]);
 
     // Save to LocalStorage on Change
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            localStorage.setItem('kgvilla-cost-items', JSON.stringify(items));
+        if (typeof window !== 'undefined' && isLoaded) {
+            localStorage.setItem(storageKey, JSON.stringify(items));
         }
-    }, [items]);
+    }, [items, storageKey, isLoaded]);
 
     // --- Calculations ---
     const totalClientCosts = useMemo(() => clientCosts.reduce((sum, item) => sum + item.cost, 0), []);
@@ -58,13 +67,13 @@ export function useProjectData() {
         }));
     };
 
-    const addItem = (newItemData: Partial<CostItem>, projectId: string) => {
+    const addItem = (newItemData: Partial<CostItem>) => {
         if (!newItemData.elementName || newItemData.unitPrice === undefined) return;
 
         const newItem: CostItem = {
             id: `custom-${Date.now()}`,
             projectId: projectId,
-            phase: (newItemData.phase as any) || 'structure',
+            phase: (newItemData.phase as ConstructionPhase) || 'structure',
             elementName: newItemData.elementName,
             description: 'Custom builder item',
             quantity: newItemData.quantity || 1,
