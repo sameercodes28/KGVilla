@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, FolderOpen, ArrowRight, MapPin, X } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Plus, FolderOpen, ArrowRight, MapPin, X, UploadCloud } from 'lucide-react';
 import Link from 'next/link';
+import { mockProject } from '@/data/projectData';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { useProjects } from '@/hooks/useProjects';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/lib/api';
+import { CostItem } from '@/types';
 
 export default function Home() {
   const { t } = useTranslation();
@@ -17,10 +20,47 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectLocation, setNewProjectLocation] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleCreate = () => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+        setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleCreate = async () => {
     if (!newProjectName) return;
-    const id = createProject(newProjectName, newProjectLocation);
+    
+    setIsAnalyzing(true);
+    let initialItems: CostItem[] = [];
+    let planUrl = '';
+
+    if (selectedFile) {
+        // 1. Create Preview URL
+        const reader = new FileReader();
+        const previewPromise = new Promise<string>((resolve) => {
+            reader.onload = (e) => resolve(e.target?.result as string);
+            reader.readAsDataURL(selectedFile);
+        });
+        planUrl = await previewPromise;
+
+        // 2. Analyze
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            const res = await fetch(`${API_URL}/analyze`, { method: 'POST', body: formData });
+            if (res.ok) initialItems = await res.json();
+        } catch (e) {
+            console.error("Analysis failed", e);
+        }
+    }
+
+    // 3. Create Project with Data
+    const id = createProject(newProjectName, newProjectLocation, selectedFile ? { items: initialItems, planUrl } : undefined);
+    
+    setIsAnalyzing(false);
     setIsModalOpen(false);
     router.push(`/qto?project=${id}`); 
   };
@@ -90,7 +130,15 @@ export default function Home() {
       {/* Create Project Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 relative">
+                {isAnalyzing && (
+                    <div className="absolute inset-0 z-50 bg-white/90 backdrop-blur flex flex-col items-center justify-center">
+                        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="font-bold text-slate-900">Analyzing Blueprint...</p>
+                        <p className="text-sm text-slate-500">This may take 10-20 seconds</p>
+                    </div>
+                )}
+                
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center">
                     <h3 className="text-xl font-bold text-slate-900">New Project</h3>
                     <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
@@ -119,12 +167,36 @@ export default function Home() {
                             onChange={e => setNewProjectLocation(e.target.value)}
                         />
                     </div>
+                    
+                    {/* File Upload Area */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Floor Plan (Optional)</label>
+                        <div 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="border-2 border-dashed border-slate-200 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors"
+                        >
+                            <input 
+                                type="file" 
+                                ref={fileInputRef}
+                                className="hidden" 
+                                onChange={handleFileSelect}
+                                accept="image/*,application/pdf"
+                            />
+                            <UploadCloud className="h-8 w-8 text-blue-500 mb-2" />
+                            {selectedFile ? (
+                                <span className="text-sm font-medium text-blue-600">{selectedFile.name}</span>
+                            ) : (
+                                <span className="text-xs text-slate-400">Click to upload PDF/Image</span>
+                            )}
+                        </div>
+                    </div>
+
                     <button 
                         onClick={handleCreate}
                         disabled={!newProjectName}
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-4"
                     >
-                        Create Project
+                        {selectedFile ? 'Analyze & Create' : 'Create Project'}
                     </button>
                 </div>
             </div>

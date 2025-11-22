@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Project } from '@/types';
+import { Project, CostItem } from '@/types';
 import { projectDetails } from '@/data/projectData';
 
 const STORAGE_KEY = 'kgvilla-projects';
@@ -27,7 +27,7 @@ export function useProjects() {
         }
     }, [projects]);
 
-    const createProject = (name: string, location: string) => {
+    const createProject = (name: string, location: string, initialData?: { items: CostItem[], planUrl: string }) => {
         const newProject: Project = {
             id: `p-${Date.now()}`,
             name,
@@ -43,7 +43,18 @@ export function useProjects() {
             lastModified: new Date().toLocaleDateString(),
             version: '1.0.0'
         };
+        
+        // Save Metadata
         setProjects(prev => [newProject, ...prev]);
+
+        // Save Initial Data (if any)
+        if (initialData) {
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(`kgvilla-cost-items-${newProject.id}`, JSON.stringify(initialData.items));
+                localStorage.setItem(`kgvilla-plan-${newProject.id}`, initialData.planUrl);
+            }
+        }
+
         return newProject.id;
     };
 
