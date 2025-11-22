@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { initialBoQ, rooms, projectDetails } from '../../data/projectData';
+import { initialBoQ, rooms, projectDetails, clientCosts } from '../../data/projectData';
 import { CostCard } from '../v3/CostCard';
 import { TotalSummary } from '../v3/TotalSummary';
 import { VisualViewer } from './VisualViewer';
@@ -28,6 +28,23 @@ export function SplitLayout() {
         unit: 'st',
         phase: 'structure'
     });
+
+    // Load from LocalStorage on Mount
+    useEffect(() => {
+        const saved = localStorage.getItem('kgvilla-boq-items');
+        if (saved) {
+            try {
+                setItems(JSON.parse(saved));
+            } catch (e) {
+                console.error("Failed to load items", e);
+            }
+        }
+    }, []);
+
+    // Save to LocalStorage on Change
+    useEffect(() => {
+        localStorage.setItem('kgvilla-boq-items', JSON.stringify(items));
+    }, [items]);
 
     // Handle mouse drag for resizing
     useEffect(() => {
@@ -59,13 +76,17 @@ export function SplitLayout() {
 
 
     // Derived calculations
-    const totalCost = useMemo(() => {
+    const totalClientCosts = useMemo(() => clientCosts.reduce((sum, item) => sum + item.cost, 0), []);
+
+    const totalConstructionCost = useMemo(() => {
         return items.reduce((sum, item) => {
             const price = item.customUnitPrice ?? item.unitPrice;
             const qty = item.customQuantity ?? item.quantity;
             return sum + (price * qty);
         }, 0);
     }, [items]);
+
+    const totalCost = totalConstructionCost + totalClientCosts;
 
     // Handlers
     const handleUpdateItem = (id: string, updates: Partial<BoQItem>) => {
@@ -86,7 +107,7 @@ export function SplitLayout() {
     };
 
     const handleAddItem = () => {
-        if (!newItemData.elementName || !newItemData.unitPrice) return;
+        if (!newItemData.elementName || newItemData.unitPrice === undefined) return;
 
         const newItem: BoQItem = {
             id: `custom-${Date.now()}`,
@@ -121,6 +142,8 @@ export function SplitLayout() {
         { id: 'plumbing', label: 'VVS & Värme' },
         { id: 'interior', label: 'Invändigt & Kök' },
     ];
+
+    const otherItems = items.filter(i => !phases.some(p => p.id === i.phase));
 
     return (
         <div ref={containerRef} className="flex h-screen bg-slate-50 relative select-none">
@@ -203,6 +226,28 @@ export function SplitLayout() {
                                     </div>
                                 );
                             })}
+
+                            {/* Other Items Section (Items with custom/unknown phases) */}
+                            {otherItems.length > 0 && (
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                                        <h2 className="text-xl font-bold text-slate-900">Other / Custom</h2>
+                                        <span className="text-sm font-mono text-slate-500">
+                                            {otherItems.reduce((sum, i) => sum + i.totalCost, 0).toLocaleString('sv-SE')} kr
+                                        </span>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {otherItems.map(item => (
+                                            <div key={item.id} onMouseEnter={() => setHighlightedItem(item)} onMouseLeave={() => setHighlightedItem(null)}>
+                                                <CostCard
+                                                    item={item}
+                                                    onUpdate={(updates) => handleUpdateItem(item.id, updates)}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="space-y-6">

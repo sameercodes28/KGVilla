@@ -20,6 +20,9 @@ interface VisualViewerProps {
 export function VisualViewer({ highlightedItem }: VisualViewerProps) {
     const [zoom, setZoom] = useState(1);
     const [activeLayers, setActiveLayers] = useState({ el: true, vvs: true, structure: true });
+    const [imageError, setImageError] = useState(false);
+
+    const basePath = process.env.NODE_ENV === 'production' ? '/KGVilla' : '';
 
     return (
         <div className="h-full w-full bg-slate-900 relative overflow-hidden flex items-center justify-center">
@@ -53,22 +56,42 @@ export function VisualViewer({ highlightedItem }: VisualViewerProps) {
                 className="relative transition-transform duration-300 ease-out"
                 style={{ transform: `scale(${zoom})` }}
             >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                    src="/hus-1405-plan.jpg"
-                    alt="Floor Plan - Villa JB-1405"
-                    className="object-contain max-w-[90vw] max-h-[90vh] opacity-90"
-                    style={{ maxHeight: '80vh', width: 'auto' }}
-                    onError={(e) => {
-                        // Hide broken image and show placeholder
-                        e.currentTarget.style.display = 'none';
-                        const placeholder = document.getElementById('floor-plan-placeholder');
-                        if (placeholder) placeholder.style.display = 'flex';
-                    }}
-                />
+                {!imageError ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                        src={`${basePath}/hus-1405-plan.jpg`}
+                        alt="Floor Plan - Villa JB-1405"
+                        className="object-contain max-w-[90vw] max-h-[90vh] opacity-90"
+                        style={{ maxHeight: '80vh', width: 'auto' }}
+                        onError={() => setImageError(true)}
+                    />
+                ) : (
+                    /* Placeholder for missing floor plan */
+                    <div
+                        id="floor-plan-placeholder"
+                        className="flex flex-col items-center justify-center p-12 bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-600 max-w-2xl"
+                    >
+                        <svg className="w-24 h-24 text-slate-500 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <h3 className="text-xl font-bold text-white mb-2">Floor Plan Not Found</h3>
+                        <p className="text-slate-400 text-center mb-6 max-w-md">
+                            Add your architectural drawing to display it here.
+                        </p>
+                        <div className="bg-slate-900/80 rounded-lg p-6 text-sm text-slate-300 font-mono max-w-lg">
+                            <p className="text-blue-400 font-semibold mb-2">To add your floor plan:</p>
+                            <ol className="list-decimal list-inside space-y-2 ml-2">
+                                <li>Save your floor plan as <span className="text-green-400">hus-1405-plan.jpg</span></li>
+                                <li>Place it in the <span className="text-green-400">/public/</span> folder</li>
+                                <li>Refresh the page</li>
+                            </ol>
+                            <p className="mt-4 text-xs text-slate-500">Supported formats: JPG, PNG (recommended: 1920x1080px)</p>
+                        </div>
+                    </div>
+                )}
 
                 {/* Electrical Layer Overlay */}
-                {activeLayers.el && (
+                {activeLayers.el && !imageError && (
                     <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.7 }}>
                         {/* Kitchen electrical points */}
                         <circle cx="45%" cy="65%" r="8" fill="#3b82f6" stroke="white" strokeWidth="2" />
@@ -85,7 +108,7 @@ export function VisualViewer({ highlightedItem }: VisualViewerProps) {
                 )}
 
                 {/* Plumbing Layer Overlay */}
-                {activeLayers.vvs && (
+                {activeLayers.vvs && !imageError && (
                     <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.7 }}>
                         {/* Kitchen plumbing */}
                         <rect x="43%" y="63%" width="16" height="16" fill="#10b981" stroke="white" strokeWidth="2" rx="2" />
@@ -96,32 +119,8 @@ export function VisualViewer({ highlightedItem }: VisualViewerProps) {
                     </svg>
                 )}
 
-                {/* Placeholder for missing floor plan */}
-                <div
-                    id="floor-plan-placeholder"
-                    className="hidden flex-col items-center justify-center p-12 bg-slate-800/50 rounded-2xl border-2 border-dashed border-slate-600 max-w-2xl"
-                    style={{ display: 'none' }}
-                >
-                    <svg className="w-24 h-24 text-slate-500 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <h3 className="text-xl font-bold text-white mb-2">Floor Plan Not Found</h3>
-                    <p className="text-slate-400 text-center mb-6 max-w-md">
-                        Add your architectural drawing to display it here.
-                    </p>
-                    <div className="bg-slate-900/80 rounded-lg p-6 text-sm text-slate-300 font-mono max-w-lg">
-                        <p className="text-blue-400 font-semibold mb-2">To add your floor plan:</p>
-                        <ol className="list-decimal list-inside space-y-2 ml-2">
-                            <li>Save your floor plan as <span className="text-green-400">hus-1405-plan.jpg</span></li>
-                            <li>Place it in the <span className="text-green-400">/public/</span> folder</li>
-                            <li>Refresh the page</li>
-                        </ol>
-                        <p className="mt-4 text-xs text-slate-500">Supported formats: JPG, PNG (recommended: 1920x1080px)</p>
-                    </div>
-                </div>
-
                 {/* Highlight Overlay */}
-                {highlightedItem && highlightedItem.validationData && (
+                {highlightedItem && highlightedItem.validationData && !imageError && (
                     <div className="absolute inset-0 pointer-events-none">
                         {highlightedItem.validationData.type === 'point' ? (
                             // Render Points (e.g. Sockets)

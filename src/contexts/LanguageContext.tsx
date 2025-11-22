@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 type Language = 'en' | 'sv';
 
@@ -57,7 +57,19 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-    const [language, setLanguage] = useState<Language>('en');
+    const [language, setLanguageState] = useState<Language>('sv');
+
+    useEffect(() => {
+        const saved = localStorage.getItem('kgvilla-lang');
+        if (saved === 'en' || saved === 'sv') {
+            setLanguageState(saved);
+        }
+    }, []);
+
+    const setLanguage = (lang: Language) => {
+        setLanguageState(lang);
+        localStorage.setItem('kgvilla-lang', lang);
+    };
 
     const t = (key: string) => {
         const entry = dictionary[key];
