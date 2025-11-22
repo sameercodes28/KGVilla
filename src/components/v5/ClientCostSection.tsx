@@ -30,9 +30,12 @@ export function ClientCostSection() {
 
     return (
         <div className="mb-8 bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden transition-all duration-300">
-            <button 
+            <div 
+                role="button"
+                tabIndex={0}
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between p-6 hover:bg-slate-100/50 transition-colors text-left group"
+                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setIsOpen(!isOpen)}
+                className="w-full flex items-center justify-between p-6 hover:bg-slate-100/50 transition-colors text-left group cursor-pointer outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
             >
                 <div>
                     <h3 className="text-lg font-bold text-slate-900">{t('client.title')}</h3>
@@ -50,7 +53,7 @@ export function ClientCostSection() {
                         <ChevronDown className="h-5 w-5" />
                     </div>
                 </div>
-            </button>
+            </div>
 
             {isOpen && (
                 <div className="px-6 pb-6 space-y-3 animate-in slide-in-from-top-2 duration-200">

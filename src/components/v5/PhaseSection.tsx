@@ -20,9 +20,12 @@ export function PhaseSection({ title, totalCost, items, onUpdateItem, onHoverIte
     return (
         <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden transition-all duration-300">
             {/* Header - Always Visible */}
-            <button 
+            <div 
+                role="button"
+                tabIndex={0}
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between p-6 hover:bg-slate-100/50 transition-colors text-left group"
+                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setIsOpen(!isOpen)}
+                className="w-full flex items-center justify-between p-6 hover:bg-slate-100/50 transition-colors text-left group cursor-pointer outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
             >
                 <div>
                     <h3 className="text-lg font-bold text-slate-900">{title}</h3>
@@ -48,7 +51,7 @@ export function PhaseSection({ title, totalCost, items, onUpdateItem, onHoverIte
                         <ChevronDown className="h-5 w-5" />
                     </div>
                 </div>
-            </button>
+            </div>
 
             {/* Body - Collapsible */}
             {isOpen && (
