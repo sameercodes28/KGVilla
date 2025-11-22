@@ -14,6 +14,13 @@ class Option(BaseModel):
     description: Optional[str] = None
     priceModifier: float
 
+class CostBreakdown(BaseModel):
+    material: Optional[float] = 0
+    labor: Optional[float] = 0
+    formula: Optional[str] = None
+    components: Optional[List[str]] = []
+    source: Optional[str] = "Generic Market Rate 2025"
+
 class CostItem(BaseModel):
     """
     Represents a single line item in the Project Cost Breakdown.
@@ -38,6 +45,9 @@ class CostItem(BaseModel):
     assemblyId: Optional[str] = None
     calculationLogic: Optional[str] = None
     guidelineReference: Optional[str] = None
+    
+    # Detailed Cost Breakdown (Explainability)
+    breakdown: Optional[CostBreakdown] = None
     
     # Interactive Data
     options: Optional[List[Option]] = None

@@ -9,9 +9,10 @@ import { useTranslation } from '@/contexts/LanguageContext';
 interface CostCardProps {
     item: CostItem;
     onUpdate?: (updatedItem: CostItem) => void;
+    onInspect?: (item: CostItem) => void;
 }
 
-export function CostCard({ item, onUpdate }: CostCardProps) {
+export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
     const { t } = useTranslation();
     const [isExpanded, setIsExpanded] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -77,6 +78,15 @@ export function CostCard({ item, onUpdate }: CostCardProps) {
                     <div className="flex-1">
                         <div className="flex items-center space-x-2">
                             <h4 className="font-semibold text-slate-900">{translatedName}</h4>
+                            {onInspect && (
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); onInspect(item); }}
+                                    className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                    title="View Cost Analysis"
+                                >
+                                    <Info className="h-4 w-4" />
+                                </button>
+                            )}
                             {item.isUserAdded && (
                                 <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold uppercase rounded">{t('card.custom')}</span>
                             )}

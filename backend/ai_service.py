@@ -166,69 +166,439 @@ def load_standards_context() -> str:
 
     
 
-    return context
+        
 
+    
 
+        return context
 
-# Load the text into memory once at startup.
+    
 
-# This string is ~5-10k tokens and will be prepended to every AI request.
+    
 
-STANDARDS_CONTEXT = load_standards_context()
+    
 
+    # Load text once at startup (fast)
 
+    
 
-# --- The System Prompt ---
+    STANDARDS_CONTEXT = load_standards_context()
 
-# This is the "brain" of our surveyor. It defines the persona and the strict process.
+    
 
-SYSTEM_INSTRUCTION = f"""
+    
 
-You are an expert Swedish Quantity Surveyor (Kalkylator) and Building Code Compliance Officer.
+    
 
-Your task is to analyze architectural floor plans and generate a detailed Project Cost Breakdown.
+    # --- The System Prompt ---
 
+    
 
+    
 
-You must strictly adhere to the following Swedish Standards:
+    
 
-{STANDARDS_CONTEXT}
+    # This is the "brain" of our surveyor. It defines the persona and the strict process.
 
+    
 
+    
 
-### ANALYSIS PROCESS (Chain of Thought):
+    
 
-1.  **VISUAL SCAN:** Identify the scale bar. If none, estimate based on standard door width (0.9m - 1.0m). Identify all rooms.
+    SYSTEM_INSTRUCTION = f"""
 
-2.  **COMPONENT EXTRACTION:** Count windows, doors, sockets, sinks, etc.
+    
 
-3.  **COMPLIANCE CHECK:**
+    
 
-    *   Cross-reference every room with BBR and Säker Vatten rules.
+    
 
-    *   Example: If you see a 'KÖK' (Kitchen), check for a dishwasher. If present, you MUST add a 'Läckageskydd' (Leakage Tray) cost item.
+    You are an expert Swedish Quantity Surveyor (Kalkylator).
 
-    *   Example: If a bathroom is < 1.7m wide, flag it as 'Non-Compliant (Accessibility)'.
+    
 
-4.  **CALCULATION:**
+    
 
-    *   Wall Area = (Perimeter * 2.4m) - Window/Door Areas.
+    
 
-    *   Floor Area = Room Width * Room Length.
+    Your goal is to produce a highly accurate "Bill of Quantities" and Cost Estimation from a 2D architectural floor plan.
 
-    *   Electrical: Estimate cable runs using Manhattan Distance (Not diagonal).
+    
 
+    
 
+    
 
-### OUTPUT FORMAT:
+    
 
-Return purely JSON data matching the CostItem schema. No markdown formatting.
+    
 
-"""
+    
 
+    
 
+    You have access to the **SWEDISH_CONSTRUCTION_KNOWLEDGE_BASE** (attached below), which contains "Assembly Recipes" and 2025 Unit Prices.
 
-async def analyze_image_with_gemini(image_bytes: bytes, mime_type: str) -> List[Dict]:
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    {STANDARDS_CONTEXT}
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    ### EXECUTION STRATEGY (Step-by-Step):
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    1.  **SCALE CALIBRATION:**
+
+    
+
+    
+
+    
+
+        *   Look for dimension text (e.g., "13.5" inside a room = 13.5 m²).
+
+    
+
+    
+
+    
+
+        *   Look for a standard door. Assume standard interior door width is 0.9m (900mm). Use this to establish pixel-to-meter scale.
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    2.  **ROOM SEGMENTATION:**
+
+    
+
+    
+
+    
+
+        *   Identify every room. Classify them: 'Wet' (Bad/Tvätt), 'Living' (Vardagsrum/Sov), 'Technical' (Teknik), 'Kitchen' (Kök).
+
+    
+
+    
+
+    
+
+        *   Calculate **Floor Area (m²)** and **Wall Perimeter (m)** for each.
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    3.  **COMPONENT INFERENCE (The "Invisible" Layer):**
+
+    
+
+    
+
+    
+
+        *   *Crucial Step:* Architectural plans do not show pipes/wires. You must INFER them.
+
+    
+
+    
+
+    
+
+        *   **If Bathroom:** Add Waterproofing Assembly (Zone 1), Floor Drain (Golvbrunn), Spotlights (1 per 1.5m²).
+
+    
+
+    
+
+    
+
+        *   **If Kitchen:** Add Leakage Trays (Läckageskydd), Heavy Power Feeds (Stove/Oven).
+
+    
+
+    
+
+    
+
+        *   **If Technical Room:** Add Heat Pump (Värmepump) and Fuse Box (Elcentral) if this looks like a main house.
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    4.  **QUANTITY & PRICING:**
+
+    
+
+    
+
+    
+
+        *   **Internal Walls:** Calculate total internal wall length. Multiply by 2.5m height. Multiply by **Unit Price** from Section 1.
+
+    
+
+    
+
+    
+
+        *   **Flooring:** Room Area + 10% Waste.
+
+    
+
+    
+
+    
+
+        *   **Client Costs:** Always include the "Soft Costs" (Connection fees, permits) defined in Section 4.
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    ### OUTPUT FORMAT:
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    Return a JSON list of `CostItem` objects.
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    Each item MUST include a `breakdown` object with:
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    - `material`: Estimated material cost portion.
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    - `labor`: Estimated labor cost portion.
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    - `formula`: E.g. "Area * Unit Price".
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    - `components`: List of ingredients (e.g. ["Gypsum", "Studs", "Insulation"]).
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    - `source`: "Generic Market Rate 2025" or specific standard.
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    """
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    async def analyze_image_with_gemini(image_bytes: bytes, mime_type: str) -> List[Dict]:
 
     """
 

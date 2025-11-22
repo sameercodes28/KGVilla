@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { projectDetails } from '../../data/projectData';
 import { VisualViewer } from './VisualViewer';
 import { ProjectDataFeed } from './ProjectDataFeed';
+import { CostInspector } from './CostInspector';
 import { CostItem } from '../../types';
 import { useTranslation } from '../../contexts/LanguageContext';
 import { useProjectData } from '@/hooks/useProjectData';
@@ -32,6 +33,7 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
     
     // --- UI State (Only for shared interactions like highlighting) ---
     const [highlightedItem, setHighlightedItem] = useState<CostItem | null>(null);
+    const [inspectingItem, setInspectingItem] = useState<CostItem | null>(null);
 
     useEffect(() => {
         logger.info('SplitLayout', 'Project View Loaded', { itemCount: items.length, totalCost });
@@ -94,12 +96,18 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
                         onUpdateItem={updateItem}
                         onAddItem={onAddItem}
                         onHoverItem={setHighlightedItem}
+                        onInspectItem={setInspectingItem}
                         getItemsByPhase={getItemsByPhase}
                         getItemsByRoom={getItemsByRoom}
                         getUnassignedItems={getUnassignedItems}
                     />
                 </div>
             </div>
+
+            <CostInspector 
+                item={inspectingItem} 
+                onClose={() => setInspectingItem(null)} 
+            />
         </div>
     );
 }

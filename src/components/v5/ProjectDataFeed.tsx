@@ -16,6 +16,7 @@ interface ProjectDataFeedProps {
     onUpdateItem: (id: string, updates: Partial<CostItem>) => void;
     onAddItem: (item: Partial<CostItem>) => void;
     onHoverItem: (item: CostItem | null) => void;
+    onInspectItem: (item: CostItem) => void;
     // Helpers from hook
     getItemsByPhase: (phase: string) => CostItem[];
     getItemsByRoom: (roomId: string) => CostItem[];
@@ -28,6 +29,7 @@ export function ProjectDataFeed({
     onUpdateItem, 
     onAddItem, 
     onHoverItem,
+    onInspectItem,
     getItemsByPhase, 
     getItemsByRoom, 
     getUnassignedItems 
@@ -98,6 +100,7 @@ export function ProjectDataFeed({
                                     items={phaseItems}
                                     onUpdateItem={onUpdateItem}
                                     onHoverItem={onHoverItem}
+                                    onInspectItem={onInspectItem}
                                 />
                             );
                         })}
@@ -109,6 +112,7 @@ export function ProjectDataFeed({
                                 items={otherItems}
                                 onUpdateItem={onUpdateItem}
                                 onHoverItem={onHoverItem}
+                                onInspectItem={onInspectItem}
                             />
                         )}
                     </div>
@@ -127,6 +131,7 @@ export function ProjectDataFeed({
                                     items={roomItems}
                                     onUpdateItem={onUpdateItem}
                                     onHoverItem={onHoverItem}
+                                    onInspectItem={onInspectItem}
                                 />
                             );
                         })}
@@ -138,6 +143,7 @@ export function ProjectDataFeed({
                                 items={getUnassignedItems()}
                                 onUpdateItem={onUpdateItem}
                                 onHoverItem={onHoverItem}
+                                onInspectItem={onInspectItem}
                             />
                         )}
                     </div>

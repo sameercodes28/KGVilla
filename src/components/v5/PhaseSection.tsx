@@ -11,9 +11,10 @@ interface PhaseSectionProps {
     items: CostItem[];
     onUpdateItem: (id: string, updates: Partial<CostItem>) => void;
     onHoverItem: (item: CostItem | null) => void;
+    onInspectItem: (item: CostItem) => void;
 }
 
-export function PhaseSection({ title, totalCost, items, onUpdateItem, onHoverItem }: PhaseSectionProps) {
+export function PhaseSection({ title, totalCost, items, onUpdateItem, onHoverItem, onInspectItem }: PhaseSectionProps) {
     const TotalDisplay = (
         <div className="text-right">
             <div className="text-lg font-bold text-slate-900 font-mono">
@@ -40,6 +41,7 @@ export function PhaseSection({ title, totalCost, items, onUpdateItem, onHoverIte
                     <CostCard
                         item={item}
                         onUpdate={(updates) => onUpdateItem(item.id, updates)}
+                        onInspect={onInspectItem}
                     />
                 </div>
             ))}

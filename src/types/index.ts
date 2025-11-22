@@ -50,6 +50,14 @@ export interface Assembly {
 
 export type ConstructionPhase = 'ground' | 'structure' | 'installations' | 'interior' | 'completion';
 
+export interface CostBreakdown {
+  material: number;
+  labor: number;
+  formula: string;
+  components: string[];
+  source: string;
+}
+
 export interface CostItem {
   id: string;
   projectId: string;
@@ -68,6 +76,10 @@ export interface CostItem {
   assemblyId?: string;
   calculationLogic?: string; // Explanation of how the quantity was derived
   guidelineReference?: string; // Reference to BBR, AMA, or standard practice
+  
+  // Detailed Breakdown (Explainability)
+  breakdown?: CostBreakdown;
+
   options?: {
     id: string;
     name: string;

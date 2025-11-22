@@ -17,6 +17,7 @@ describe('PhaseSection', () => {
         items={initialCostItems} 
         onUpdateItem={() => {}} 
         onHoverItem={() => {}}
+        onInspectItem={() => {}}
       />
     );
     
