@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 import os
+from ai_service import analyze_image_with_gemini
 
 app = FastAPI(title="KGVilla API", version="0.1.0")
 
@@ -51,6 +52,14 @@ def get_project(project_id: str):
     }
 
 @app.post("/analyze")
-def analyze_drawing(project_id: str):
-    # TODO: Receive file, send to Vertex AI, return BoQItems
-    return {"message": "AI Analysis stub - Implementation coming in Phase 2"}
+async def analyze_drawing(file: UploadFile = File(...)):
+    """
+    Receives a floor plan (PDF/Image), analyzes it with Gemini 1.5 Pro,
+    and returns a breakdown of costs and quantities.
+    """
+    try:
+        contents = await file.read()
+        result = await analyze_image_with_gemini(contents, file.content_type)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
