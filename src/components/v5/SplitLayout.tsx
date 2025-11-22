@@ -20,6 +20,9 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
         totalCost,
         updateItem,
         addItem,
+        analyzePlan,
+        floorPlanUrl,
+        isAnalyzing,
         getItemsByPhase,
         getItemsByRoom,
         getUnassignedItems 
@@ -42,7 +45,19 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
         <div className="flex h-screen bg-slate-50 relative select-none">
             {/* Left Pane - Visual Viewer (Static 50%) */}
             <div className="w-1/2 h-full overflow-hidden border-r border-slate-200 bg-slate-900 relative">
-                <VisualViewer highlightedItem={highlightedItem ? { ...highlightedItem, name: highlightedItem.elementName } : null} />
+                {isAnalyzing && (
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm text-white">
+                        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <p className="text-lg font-bold">AI Architect is analyzing your plan...</p>
+                        <p className="text-sm text-slate-400">Identifying rooms, walls, and requirements.</p>
+                    </div>
+                )}
+                
+                <VisualViewer 
+                    floorPlanUrl={floorPlanUrl}
+                    onUpload={analyzePlan}
+                    highlightedItem={highlightedItem ? { ...highlightedItem, name: highlightedItem.elementName } : null} 
+                />
 
                 {/* Floating Cost Overlay */}
                 <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur p-4 rounded-xl shadow-lg border border-slate-200 pointer-events-none">
