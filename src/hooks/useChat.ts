@@ -12,24 +12,51 @@ export interface Message {
     timestamp: Date;
 }
 
-export function useChat() {
+export function useChat(projectId?: string) {
     const { t } = useTranslation();
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-    // Initialize welcome message
+    const storageKey = projectId ? `kgvilla-chat-${projectId}` : null;
+
+    // Load Chat History
     useEffect(() => {
-        if (messages.length === 0) {
-            setMessages([{
-                id: 'welcome',
-                role: 'ai',
-                text: t('chat.welcome'),
-                timestamp: new Date()
-            }]);
+        if (typeof window !== 'undefined' && storageKey) {
+            const saved = localStorage.getItem(storageKey);
+            if (saved) {
+                try {
+                     
+                    const parsed = JSON.parse(saved);
+                    // Restore Date objects
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const restored = parsed.map((m: any) => ({
+                        ...m,
+                        timestamp: new Date(m.timestamp)
+                    }));
+                    setMessages(restored);
+                } catch (e) {
+                    console.error("Failed to load chat history", e);
+                }
+            } else {
+                // Default welcome if no history
+                setMessages([{
+                    id: 'welcome',
+                    role: 'ai',
+                    text: t('chat.welcome'),
+                    timestamp: new Date()
+                }]);
+            }
         }
-    }, [t, messages.length]);
+    }, [storageKey, t]);
+
+    // Save Chat History
+    useEffect(() => {
+        if (typeof window !== 'undefined' && storageKey && messages.length > 0) {
+            localStorage.setItem(storageKey, JSON.stringify(messages));
+        }
+    }, [messages, storageKey]);
 
     const sendMessage = async () => {
         if (!input.trim() && !selectedFile) return;

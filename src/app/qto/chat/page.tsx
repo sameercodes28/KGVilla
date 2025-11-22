@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useRef, useEffect } from 'react';
-import { Send, Bot, Sparkles, Paperclip, X, FileText } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { Send, Bot, Sparkles, Paperclip, X, FileText, ChevronDown, Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { useChat } from '@/hooks/useChat';
+import { useProjects } from '@/hooks/useProjects';
+import { useProjectData } from '@/hooks/useProjectData';
 
 /**
  * AIChatPage Component
@@ -15,10 +17,28 @@ import { useChat } from '@/hooks/useChat';
  * 
  * Architecture:
  * - Uses `useChat` hook for state and API logic.
- * - Pure UI component.
+ * - Uses `useProjects` to allow switching context.
  */
 export default function AIChatPage() {
     const { t } = useTranslation();
+    const { projects } = useProjects();
+    
+    // Project Selection State
+    const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+
+    // Select first project by default if available
+    useEffect(() => {
+        if (projects.length > 0 && !selectedProjectId) {
+            // eslint-disable-next-line
+            setSelectedProjectId(projects[0].id);
+        }
+    }, [projects, selectedProjectId]);
+
+    const selectedProject = projects.find(p => p.id === selectedProjectId);
+    
+    // Fetch data for context card
+    const { totalCost, floorPlanUrl } = useProjectData(selectedProjectId);
+
     const { 
         messages, 
         input, 
@@ -27,7 +47,7 @@ export default function AIChatPage() {
         setSelectedFile, 
         isTyping, 
         sendMessage 
-    } = useChat();
+    } = useChat(selectedProjectId);
     
     // Refs for auto-scrolling and hidden file input
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -56,24 +76,77 @@ export default function AIChatPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 pb-32 relative">
+        <div className="min-h-screen bg-slate-50 pb-32 relative flex flex-col">
             <LanguageToggle />
             
-            {/* Sticky Header */}
+            {/* Sticky Header with Project Selector */}
             <div className="bg-white border-b border-slate-200 sticky top-0 z-10 px-6 py-4 shadow-sm">
-                <div className="max-w-3xl mx-auto flex items-center space-x-3">
-                    <div className="bg-purple-100 p-2 rounded-xl">
-                        <Sparkles className="h-6 w-6 text-purple-600" />
+                <div className="max-w-3xl mx-auto flex justify-between items-center">
+                    <div className="flex items-center space-x-3">
+                        <div className="bg-purple-100 p-2 rounded-xl">
+                            <Sparkles className="h-6 w-6 text-purple-600" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-bold text-slate-900">{t('chat.title')}</h1>
+                            <p className="text-sm text-slate-500">{t('chat.subtitle')}</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-xl font-bold text-slate-900">{t('chat.title')}</h1>
-                        <p className="text-sm text-slate-500">{t('chat.subtitle')}</p>
+
+                    {/* Project Selector */}
+                    <div className="relative group">
+                        <button className="flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium transition-colors">
+                            <Building className="h-4 w-4 text-slate-500" />
+                            <span>{selectedProject?.name || 'Select Project'}</span>
+                            <ChevronDown className="h-4 w-4 text-slate-400" />
+                        </button>
+                        {/* Dropdown Menu */}
+                        <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden hidden group-hover:block z-50">
+                            {projects.map(p => (
+                                <button 
+                                    key={p.id}
+                                    onClick={() => setSelectedProjectId(p.id)}
+                                    className={cn(
+                                        "w-full text-left px-4 py-3 text-sm hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0",
+                                        selectedProjectId === p.id ? "bg-blue-50 text-blue-700 font-semibold" : "text-slate-700"
+                                    )}
+                                >
+                                    {p.name}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
 
+            {/* Project Context Card */}
+            {selectedProject && (
+                <div className="max-w-3xl mx-auto w-full px-4 mt-6">
+                    <div className="bg-white border border-slate-200 rounded-2xl p-4 flex items-center space-x-4 shadow-sm">
+                        {/* Thumbnail */}
+                        <div className="h-20 w-20 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden flex-shrink-0">
+                            {floorPlanUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={floorPlanUrl} alt="Plan" className="h-full w-full object-cover" />
+                            ) : (
+                                <div className="h-full w-full flex items-center justify-center text-slate-300">
+                                    <FileText className="h-8 w-8" />
+                                </div>
+                            )}
+                        </div>
+                        {/* Details */}
+                        <div className="flex-1">
+                            <h3 className="font-bold text-slate-900">{selectedProject.name}</h3>
+                            <p className="text-xs text-slate-500 mb-2">{selectedProject.location}</p>
+                            <div className="inline-flex items-center px-2.5 py-1 rounded-md bg-green-50 text-green-700 text-xs font-bold">
+                                Est. Cost: {totalCost.toLocaleString('sv-SE')} kr
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Chat Messages Area */}
-            <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+            <div className="max-w-3xl mx-auto w-full px-4 py-8 space-y-6 flex-1">
                 {messages.map((msg) => (
                     <div
                         key={msg.id}
