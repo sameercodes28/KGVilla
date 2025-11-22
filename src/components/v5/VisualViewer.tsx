@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { Maximize2, ZoomIn, ZoomOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+import { electricalPoints, plumbingPoints } from '@/data/floorPlanOverlays';
+
 interface VisualViewerProps {
     highlightedItem?: {
         id: string;
@@ -93,29 +95,18 @@ export function VisualViewer({ highlightedItem }: VisualViewerProps) {
                 {/* Electrical Layer Overlay */}
                 {activeLayers.el && !imageError && (
                     <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.7 }}>
-                        {/* Kitchen electrical points */}
-                        <circle cx="45%" cy="65%" r="8" fill="#3b82f6" stroke="white" strokeWidth="2" />
-                        <circle cx="48%" cy="68%" r="8" fill="#3b82f6" stroke="white" strokeWidth="2" />
-                        <circle cx="42%" cy="62%" r="8" fill="#3b82f6" stroke="white" strokeWidth="2" />
-                        {/* Living room electrical */}
-                        <circle cx="35%" cy="45%" r="8" fill="#3b82f6" stroke="white" strokeWidth="2" />
-                        <circle cx="30%" cy="50%" r="8" fill="#3b82f6" stroke="white" strokeWidth="2" />
-                        {/* Bedrooms electrical */}
-                        <circle cx="70%" cy="30%" r="8" fill="#3b82f6" stroke="white" strokeWidth="2" />
-                        <circle cx="75%" cy="45%" r="8" fill="#3b82f6" stroke="white" strokeWidth="2" />
-                        <circle cx="70%" cy="60%" r="8" fill="#3b82f6" stroke="white" strokeWidth="2" />
+                        {electricalPoints.map((p, i) => (
+                            <circle key={i} cx={`${p.x}%`} cy={`${p.y}%`} r="8" fill="#3b82f6" stroke="white" strokeWidth="2" />
+                        ))}
                     </svg>
                 )}
 
                 {/* Plumbing Layer Overlay */}
                 {activeLayers.vvs && !imageError && (
                     <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.7 }}>
-                        {/* Kitchen plumbing */}
-                        <rect x="43%" y="63%" width="16" height="16" fill="#10b981" stroke="white" strokeWidth="2" rx="2" />
-                        {/* Bathrooms plumbing */}
-                        <rect x="78%" y="25%" width="16" height="16" fill="#10b981" stroke="white" strokeWidth="2" rx="2" />
-                        <rect x="68%" y="55%" width="16" height="16" fill="#10b981" stroke="white" strokeWidth="2" rx="2" />
-                        <rect x="72%" y="72%" width="16" height="16" fill="#10b981" stroke="white" strokeWidth="2" rx="2" />
+                        {plumbingPoints.map((p, i) => (
+                            <rect key={i} x={`${p.x}%`} y={`${p.y}%`} width="16" height="16" fill="#10b981" stroke="white" strokeWidth="2" rx="2" />
+                        ))}
                     </svg>
                 )}
 
