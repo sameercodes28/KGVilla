@@ -1,16 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
-import { BoQItem } from '@/types';
-import { initialBoQ, clientCosts } from '@/data/projectData';
+import { CostItem } from '@/types';
+import { initialCostItems, clientCosts } from '@/data/projectData';
 
 export function useProjectData() {
     // --- State ---
-    const [items, setItems] = useState<BoQItem[]>(initialBoQ);
+    const [items, setItems] = useState<CostItem[]>(initialCostItems);
 
     // --- Persistence ---
     // Load from LocalStorage on Mount
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('kgvilla-boq-items');
+            const saved = localStorage.getItem('kgvilla-cost-items');
             if (saved) {
                 try {
                     setItems(JSON.parse(saved));
@@ -24,7 +24,7 @@ export function useProjectData() {
     // Save to LocalStorage on Change
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            localStorage.setItem('kgvilla-boq-items', JSON.stringify(items));
+            localStorage.setItem('kgvilla-cost-items', JSON.stringify(items));
         }
     }, [items]);
 
@@ -42,7 +42,7 @@ export function useProjectData() {
     const totalCost = totalConstructionCost + totalClientCosts;
 
     // --- Actions ---
-    const updateItem = (id: string, updates: Partial<BoQItem>) => {
+    const updateItem = (id: string, updates: Partial<CostItem>) => {
         setItems(prev => prev.map(item => {
             if (item.id !== id) return item;
 
@@ -58,10 +58,10 @@ export function useProjectData() {
         }));
     };
 
-    const addItem = (newItemData: Partial<BoQItem>, projectId: string) => {
+    const addItem = (newItemData: Partial<CostItem>, projectId: string) => {
         if (!newItemData.elementName || newItemData.unitPrice === undefined) return;
 
-        const newItem: BoQItem = {
+        const newItem: CostItem = {
             id: `custom-${Date.now()}`,
             projectId: projectId,
             phase: (newItemData.phase as any) || 'structure',

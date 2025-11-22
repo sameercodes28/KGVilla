@@ -50,7 +50,7 @@ export interface Assembly {
 
 export type ConstructionPhase = 'ground' | 'structure' | 'installations' | 'interior' | 'completion';
 
-export interface BoQItem {
+export interface CostItem {
   id: string;
   projectId: string;
   levelId?: string; // Linked to a specific level

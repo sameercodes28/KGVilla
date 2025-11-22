@@ -20,7 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 import os
 from ai_service import analyze_image_with_gemini
-from models import BoQItem, Project
+from models import CostItem, Project
 
 # Initialize the FastAPI app
 app = FastAPI(title="KGVilla API", version="0.1.0")
@@ -69,7 +69,7 @@ async def analyze_drawing(file: UploadFile = File(...)):
     1.  Receives a floor plan file (PDF or Image) from the frontend.
     2.  Reads the file into memory.
     3.  Passes it to `ai_service.analyze_image_with_gemini` for processing.
-    4.  Returns a structured JSON list of `BoQItem` objects.
+    4.  Returns a structured JSON list of `CostItem` objects.
     
     Error Handling:
     Catches any errors from the AI service and returns a 500 Internal Server Error.

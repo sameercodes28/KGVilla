@@ -14,9 +14,9 @@ class Option(BaseModel):
     description: Optional[str] = None
     priceModifier: float
 
-class BoQItem(BaseModel):
+class CostItem(BaseModel):
     """
-    Represents a single line item in the Bill of Quantities (BoQ).
+    Represents a single line item in the Project Cost Breakdown.
     Must strictly match src/types/index.ts interface.
     """
     id: str

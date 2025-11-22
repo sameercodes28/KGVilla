@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { BoQItem } from '@/types';
+import { CostItem } from '@/types';
 import { ChevronDown, ChevronUp, Info, AlertCircle, CheckCircle2, Edit2, Save, X, Calculator, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
 
 interface CostCardProps {
-    item: BoQItem;
-    onUpdate?: (updatedItem: BoQItem) => void;
+    item: CostItem;
+    onUpdate?: (updatedItem: CostItem) => void;
 }
 
 export function CostCard({ item, onUpdate }: CostCardProps) {

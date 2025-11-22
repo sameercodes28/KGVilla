@@ -1,4 +1,4 @@
-import { BoQItem, Project, Room } from '../types';
+import { CostItem, Project, Room } from '../types';
 
 export const projectDetails: Project = {
     id: 'p-jb-1405',
@@ -51,12 +51,12 @@ export const rooms: Room[] = [
     { id: 'r-09', name: 'Teknikrum', type: 'utility', area: 4.0, levelId: 'l-01' }
 ];
 
-export const initialBoQ: BoQItem[] = [
+export const initialCostItems: CostItem[] = [
     // ----------------------------------------------------------------------
     // 1. MARKARBETEN (Groundwork)
     // ----------------------------------------------------------------------
     {
-        id: 'boq-mark-01',
+        id: 'item-mark-01',
         projectId: 'p-jb-1405',
         phase: 'ground',
         elementName: 'Etablering & Schaktning',
@@ -72,7 +72,7 @@ export const initialBoQ: BoQItem[] = [
         system: 'structure'
     },
     {
-        id: 'boq-mark-02',
+        id: 'item-mark-02',
         projectId: 'p-jb-1405',
         phase: 'ground',
         elementName: 'Grundläggning (Platta på mark)',
@@ -89,7 +89,7 @@ export const initialBoQ: BoQItem[] = [
         validationData: { type: 'area', coordinates: [[10, 10], [90, 10], [90, 90], [10, 90]] }
     },
     {
-        id: 'boq-mark-03',
+        id: 'item-mark-03',
         projectId: 'p-jb-1405',
         phase: 'ground',
         elementName: 'VA & Dränering (Utvändigt)',
@@ -107,7 +107,7 @@ export const initialBoQ: BoQItem[] = [
     // 2. STOMME & YTTERVÄGGAR (Structure)
     // ----------------------------------------------------------------------
     {
-        id: 'boq-stom-01',
+        id: 'item-stom-01',
         projectId: 'p-jb-1405',
         phase: 'structure',
         elementName: 'Ytterväggar (Prefab)',
@@ -124,7 +124,7 @@ export const initialBoQ: BoQItem[] = [
         validationData: { type: 'line', coordinates: [[10, 10], [90, 10], [90, 90], [10, 90], [10, 10]] }
     },
     {
-        id: 'boq-stom-02',
+        id: 'item-stom-02',
         projectId: 'p-jb-1405',
         phase: 'structure',
         elementName: 'Takstolar & Yttertak',
@@ -139,7 +139,7 @@ export const initialBoQ: BoQItem[] = [
         system: 'structure'
     },
     {
-        id: 'boq-stom-03',
+        id: 'item-stom-03',
         projectId: 'p-jb-1405',
         phase: 'structure',
         elementName: 'Fönster & Ytterdörrar',
@@ -159,7 +159,7 @@ export const initialBoQ: BoQItem[] = [
     // ----------------------------------------------------------------------
     // Kök
     {
-        id: 'boq-el-k-01',
+        id: 'item-el-k-01',
         projectId: 'p-jb-1405',
         phase: 'installations',
         elementName: 'Eluttag (Kök)',
@@ -175,7 +175,7 @@ export const initialBoQ: BoQItem[] = [
         validationData: { type: 'point', coordinates: [[20, 20], [25, 20], [30, 20], [20, 25]] }
     },
     {
-        id: 'boq-el-k-02',
+        id: 'item-el-k-02',
         projectId: 'p-jb-1405',
         phase: 'installations',
         elementName: 'Belysning Spotlights (Kök)',
@@ -192,7 +192,7 @@ export const initialBoQ: BoQItem[] = [
     },
     // Vardagsrum
     {
-        id: 'boq-el-v-01',
+        id: 'item-el-v-01',
         projectId: 'p-jb-1405',
         phase: 'installations',
         elementName: 'Eluttag (Vardagsrum)',
@@ -209,7 +209,7 @@ export const initialBoQ: BoQItem[] = [
     },
     // Sovrum (Generellt)
     {
-        id: 'boq-el-s-01',
+        id: 'item-el-s-01',
         projectId: 'p-jb-1405',
         phase: 'installations',
         elementName: 'Eluttag (Sovrum)',
@@ -225,7 +225,7 @@ export const initialBoQ: BoQItem[] = [
     },
     // Central & Matning
     {
-        id: 'boq-el-01',
+        id: 'item-el-01',
         projectId: 'p-jb-1405',
         phase: 'installations',
         elementName: 'Elcentral & Mätarskåp',
@@ -244,7 +244,7 @@ export const initialBoQ: BoQItem[] = [
     // 4. VVS (Plumbing)
     // ----------------------------------------------------------------------
     {
-        id: 'boq-vvs-01',
+        id: 'item-vvs-01',
         projectId: 'p-jb-1405',
         phase: 'installations',
         elementName: 'Vattenburen Golvvärme',
@@ -258,7 +258,7 @@ export const initialBoQ: BoQItem[] = [
         system: 'vvs'
     },
     {
-        id: 'boq-vvs-02',
+        id: 'item-vvs-02',
         projectId: 'p-jb-1405',
         phase: 'installations',
         elementName: 'Värmepump (Frånluft)',
@@ -274,7 +274,7 @@ export const initialBoQ: BoQItem[] = [
     },
     // Badrum 1
     {
-        id: 'boq-vvs-b1-01',
+        id: 'item-vvs-b1-01',
         projectId: 'p-jb-1405',
         phase: 'installations',
         elementName: 'WC-stol (Badrum 1)',
@@ -290,7 +290,7 @@ export const initialBoQ: BoQItem[] = [
         validationData: { type: 'point', coordinates: [[65, 35]] }
     },
     {
-        id: 'boq-vvs-b1-02',
+        id: 'item-vvs-b1-02',
         projectId: 'p-jb-1405',
         phase: 'installations',
         elementName: 'Tvättställsblandare (Badrum 1)',
@@ -305,7 +305,7 @@ export const initialBoQ: BoQItem[] = [
         system: 'vvs'
     },
     {
-        id: 'boq-vvs-b1-03',
+        id: 'item-vvs-b1-03',
         projectId: 'p-jb-1405',
         phase: 'installations',
         elementName: 'Duschväggar & Blandare',
@@ -324,7 +324,7 @@ export const initialBoQ: BoQItem[] = [
     // 5. INTERIÖR & YTSKIKT (Interior)
     // ----------------------------------------------------------------------
     {
-        id: 'boq-int-01',
+        id: 'item-int-01',
         projectId: 'p-jb-1405',
         phase: 'interior',
         elementName: 'Parkettgolv (Kährs)',
@@ -339,7 +339,7 @@ export const initialBoQ: BoQItem[] = [
         system: 'interior'
     },
     {
-        id: 'boq-int-02',
+        id: 'item-int-02',
         projectId: 'p-jb-1405',
         phase: 'interior',
         elementName: 'Klinker & Kakel (Badrum/Hall)',
@@ -354,7 +354,7 @@ export const initialBoQ: BoQItem[] = [
         system: 'interior'
     },
     {
-        id: 'boq-int-03',
+        id: 'item-int-03',
         projectId: 'p-jb-1405',
         phase: 'interior',
         elementName: 'Innerdörrar',
@@ -368,7 +368,7 @@ export const initialBoQ: BoQItem[] = [
         system: 'interior'
     },
     {
-        id: 'boq-int-04',
+        id: 'item-int-04',
         projectId: 'p-jb-1405',
         phase: 'interior',
         elementName: 'Köksinredning',
@@ -383,7 +383,7 @@ export const initialBoQ: BoQItem[] = [
         system: 'interior'
     },
     {
-        id: 'boq-int-05',
+        id: 'item-int-05',
         projectId: 'p-jb-1405',
         phase: 'interior',
         elementName: 'Vitvaror',

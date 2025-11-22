@@ -5,19 +5,13 @@ import { Send, Bot, Sparkles, Paperclip, X, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { BoQItem } from '@/types';
-import { API_URL } from '@/lib/api';
+import { CostItem } from '@/types';
 
-/**
- * Message Interface
- * Represents a single bubble in the chat stream.
- * Can contain text, an uploaded file (user), or structured data items (AI response).
- */
 interface Message {
     id: string;
     role: 'ai' | 'user';
     text?: string;
-    items?: BoQItem[]; // Optional: Structured cost items returned by the AI
+    items?: CostItem[]; // Optional: Structured cost items returned by the AI
     file?: File;       // Optional: File uploaded by the user
     timestamp: Date;
 }
@@ -111,8 +105,8 @@ export default function AIChatPage() {
 
                 if (!response.ok) throw new Error('Analysis failed');
 
-                // Parse the JSON result (List of BoQItems)
-                const data: BoQItem[] = await response.json();
+                // Parse the JSON result (List of CostItems)
+                const data: CostItem[] = await response.json();
 
                 // Add AI Response containing the structured data
                 const aiMsg: Message = {
