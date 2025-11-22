@@ -20,12 +20,9 @@ export default function Home() {
 
   const handleCreate = () => {
     if (!newProjectName) return;
-    createProject(newProjectName, newProjectLocation);
+    const id = createProject(newProjectName, newProjectLocation);
     setIsModalOpen(false);
-    // TODO: Add dynamic routing /qto/[id]. For now, we just use the default view but the data is created.
-    // Since the SplitLayout is currently hardcoded to the mock ID, we just redirect to /qto.
-    // In the future, this will be `router.push(/qto/${id})`
-    router.push('/qto'); 
+    router.push(`/qto?project=${id}`); 
   };
 
   return (
@@ -63,7 +60,7 @@ export default function Home() {
 
             {/* Project Cards */}
             {projects.map((project) => (
-                <Link key={project.id} href="/qto" className="block group">
+                <Link key={project.id} href={`/qto?project=${project.id}`} className="block group">
                     <div className="h-64 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden">
                         <div className="h-32 bg-gradient-to-br from-slate-100 to-slate-200 relative flex items-center justify-center">
                             <FolderOpen className="h-12 w-12 text-slate-300" />

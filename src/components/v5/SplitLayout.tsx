@@ -21,21 +21,25 @@ import { cn } from '../../lib/utils';
 import { Plus } from 'lucide-react';
 import { useTranslation } from '../../contexts/LanguageContext';
 import { useProjectData } from '@/hooks/useProjectData';
+import { logger } from '@/lib/logger';
 
-export function SplitLayout() {
+interface SplitLayoutProps {
+    projectId?: string;
+}
+
+export function SplitLayout({ projectId }: SplitLayoutProps) {
     const { t } = useTranslation();
     
     // --- Business Logic (Hook) ---
-    const { 
-        items, 
-        totalCost, 
-        updateItem, 
-        addItem, 
-        getItemsByPhase, 
-        getItemsByRoom, 
+    const {
+        items,
+        totalCost,
+        updateItem,
+        addItem,
+        getItemsByPhase,
+        getItemsByRoom,
         getUnassignedItems 
-    } = useProjectData();
-    
+    } = useProjectData(projectId);    
     // --- UI State ---
     const [highlightedItem, setHighlightedItem] = useState<CostItem | null>(null);
     const [viewMode, setViewMode] = useState<'phases' | 'rooms'>('phases');

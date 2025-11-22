@@ -1,15 +1,28 @@
 'use client';
 
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { SplitLayout } from '@/components/v5/SplitLayout';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { BottomNav } from '@/components/v3/BottomNav';
 
-export default function QTOPage() {
+function QTOContent() {
+    const searchParams = useSearchParams();
+    const projectId = searchParams.get('project') || undefined;
+
     return (
         <>
-            <SplitLayout />
+            <SplitLayout projectId={projectId} />
             <LanguageToggle />
             <BottomNav />
         </>
+    );
+}
+
+export default function QTOPage() {
+    return (
+        <Suspense fallback={<div className="h-screen flex items-center justify-center">Loading Project...</div>}>
+            <QTOContent />
+        </Suspense>
     );
 }
