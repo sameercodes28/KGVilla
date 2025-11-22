@@ -69,6 +69,70 @@ const dictionary: Record<string, DictionaryEntry> = {
     'cost.forsakring': { en: 'Construction Insurance', sv: 'Byggförsäkring' },
     'cost.forsakring_desc': { en: 'During construction period', sv: 'Under byggtiden' },
 
+    // Cost Items (BoQ)
+    'item.item-mark-01': { en: 'Site Setup & Excavation', sv: 'Etablering & Schaktning' },
+    'item.item-mark-01_desc': { en: 'Setup, rough excavation for slab on grade, removal of masses.', sv: 'Etablering, grovschaktning för platta på mark, bortforsling av massor.' },
+    
+    'item.item-mark-02': { en: 'Foundation (Slab on Grade)', sv: 'Grundläggning (Platta på mark)' },
+    'item.item-mark-02_desc': { en: 'Insulated concrete slab incl. reinforcement, edge elements and casting.', sv: 'Isolerad betongplatta inkl. armering, kantelement och gjutning.' },
+    
+    'item.item-mark-03': { en: 'Water/Sewage & Drainage (External)', sv: 'VA & Dränering (Utvändigt)' },
+    'item.item-mark-03_desc': { en: 'Connection to municipal grid, stormwater cassettes, foundation drainage.', sv: 'Anslutning till kommunalt VA, dagvattenkassetter och dränering runt grund.' },
+
+    'item.item-stom-01': { en: 'Exterior Walls (Prefab)', sv: 'Ytterväggar (Prefab)' },
+    'item.item-stom-01_desc': { en: 'Prefabricated wall blocks, 195mm wood frame, insulation, wind barrier.', sv: 'Färdiga väggblock, trästomme 195mm, isolering, vindduk.' },
+
+    'item.item-stom-02': { en: 'Trusses & Roof', sv: 'Takstolar & Yttertak' },
+    'item.item-stom-02_desc': { en: 'Trusses, tongue & groove, felt, battens and concrete tiles.', sv: 'Takstolar, råspont, papp, läkt och betongpannor (Benders).' },
+
+    'item.item-stom-03': { en: 'Windows & External Doors', sv: 'Fönster & Ytterdörrar' },
+    'item.item-stom-03_desc': { en: 'Triple-glazed windows, Diplomat entrance door.', sv: 'Elitfönster 3-glas isoler, Entrédörr Diplomat.' },
+
+    'item.item-el-k-01': { en: 'Power Outlets (Kitchen)', sv: 'Eluttag (Kök)' },
+    'item.item-el-k-01_desc': { en: '2-way grounded wall sockets.', sv: 'Vägguttag 2-vägs jordat (Schneider Exxact).' },
+
+    'item.item-el-k-02': { en: 'Spotlights (Kitchen)', sv: 'Belysning Spotlights (Kök)' },
+    'item.item-el-k-02_desc': { en: 'Recessed LED spotlights incl. driver.', sv: 'Infällda LED-spotlights inkl. drivdon.' },
+
+    'item.item-el-v-01': { en: 'Power Outlets (Living Room)', sv: 'Eluttag (Vardagsrum)' },
+    'item.item-el-v-01_desc': { en: '2-way grounded wall sockets.', sv: 'Vägguttag 2-vägs jordat.' },
+
+    'item.item-el-s-01': { en: 'Power Outlets (Bedrooms)', sv: 'Eluttag (Sovrum)' },
+    'item.item-el-s-01_desc': { en: '2-way grounded wall sockets (4 per room).', sv: 'Vägguttag 2-vägs jordat (4 per rum).' },
+
+    'item.item-el-01': { en: 'Distribution Board & Meter', sv: 'Elcentral & Mätarskåp' },
+    'item.item-el-01_desc': { en: 'Meter cabinet + Media enclosure + Fuse box with RCD.', sv: 'Fasadmätarskåp + Mediacentral + Normcentral med JFB.' },
+
+    'item.item-vvs-01': { en: 'Underfloor Heating (Water)', sv: 'Vattenburen Golvvärme' },
+    'item.item-vvs-01_desc': { en: 'Complete system incl. manifold, pipes and thermostats.', sv: 'Komplett system inkl. fördelare, rör och termostater (Thermotech).' },
+
+    'item.item-vvs-02': { en: 'Heat Pump (Exhaust Air)', sv: 'Värmepump (Frånluft)' },
+    'item.item-vvs-02_desc': { en: 'NIBE F730 Exhaust Air Heat Pump incl. installation.', sv: 'NIBE F730 Frånluftsvärmepump inkl. installation.' },
+
+    'item.item-vvs-b1-01': { en: 'WC (Bathroom 1)', sv: 'WC-stol (Badrum 1)' },
+    'item.item-vvs-b1-01_desc': { en: 'Wall-hung toilet incl. fixture.', sv: 'Gustavsberg Nautic vägghängd inkl. fixtur.' },
+
+    'item.item-vvs-b1-02': { en: 'Washbasin Mixer (Bathroom 1)', sv: 'Tvättställsblandare (Badrum 1)' },
+    'item.item-vvs-b1-02_desc': { en: 'Mora MMIX mixer.', sv: 'Mora MMIX.' },
+
+    'item.item-vvs-b1-03': { en: 'Shower Walls & Mixer', sv: 'Duschväggar & Blandare' },
+    'item.item-vvs-b1-03_desc': { en: 'INR Linc walls + Mora MMIX overhead shower.', sv: 'INR Linc + Mora MMIX takdusch.' },
+
+    'item.item-int-01': { en: 'Parquet Flooring', sv: 'Parkettgolv (Kährs)' },
+    'item.item-int-01_desc': { en: 'Oak 3-strip, 15mm.', sv: 'Kährs Ek 3-stav, 15mm.' },
+
+    'item.item-int-02': { en: 'Tiles (Bath/Hall)', sv: 'Klinker & Kakel (Badrum/Hall)' },
+    'item.item-int-02_desc': { en: 'Labor cost + material average.', sv: 'Arbetskostnad + material (snittpris).' },
+
+    'item.item-int-03': { en: 'Interior Doors', sv: 'Innerdörrar' },
+    'item.item-int-03_desc': { en: 'Smooth white door incl. frame and handle.', sv: 'Swedoor slät vit inkl. karm och trycke.' },
+
+    'item.item-int-04': { en: 'Kitchen Fittings', sv: 'Köksinredning' },
+    'item.item-int-04_desc': { en: 'Standard kitchen cabinets incl. assembly.', sv: 'Ballingslöv eller Marbodal standardkök inkl. montering.' },
+
+    'item.item-int-05': { en: 'Appliances', sv: 'Vitvaror' },
+    'item.item-int-05_desc': { en: 'Siemens package (Fridge, Freezer, Oven, Hob, DW).', sv: 'Siemens paket (Kyl, Frys, Ugn, Häll, DM).' },
+
     // Phases
     'phase.ground': { en: 'Ground Works', sv: 'Markarbeten' },
     'phase.structure': { en: 'Structure & Roof', sv: 'Stomme & Tak' },

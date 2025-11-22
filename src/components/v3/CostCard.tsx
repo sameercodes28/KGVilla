@@ -54,6 +54,13 @@ export function CostCard({ item, onUpdate }: CostCardProps) {
 
     const currentOption = item.options?.find(opt => opt.id === selectedOptionId);
 
+    // Translation logic for item name and description
+    const nameKey = `item.${item.id}`;
+    const descKey = `item.${item.id}_desc`;
+    
+    const translatedName = t(nameKey) !== nameKey ? t(nameKey) : item.elementName;
+    const translatedDesc = t(descKey) !== descKey ? t(descKey) : item.description;
+
     return (
         <div
             className={cn(
@@ -69,7 +76,7 @@ export function CostCard({ item, onUpdate }: CostCardProps) {
                 <div className="flex justify-between items-start">
                     <div className="flex-1">
                         <div className="flex items-center space-x-2">
-                            <h4 className="font-semibold text-slate-900">{item.elementName}</h4>
+                            <h4 className="font-semibold text-slate-900">{translatedName}</h4>
                             {item.isUserAdded && (
                                 <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold uppercase rounded">{t('card.custom')}</span>
                             )}
@@ -78,7 +85,7 @@ export function CostCard({ item, onUpdate }: CostCardProps) {
                             )}
                         </div>
                         <div className="flex items-center space-x-2 mt-1">
-                            <p className="text-sm text-slate-500">{item.description}</p>
+                            <p className="text-sm text-slate-500">{translatedDesc}</p>
                             {currentOption && (
                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
                                     {currentOption.name}
