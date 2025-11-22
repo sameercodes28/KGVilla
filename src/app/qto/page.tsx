@@ -2,12 +2,14 @@
 
 import { SplitLayout } from '@/components/v5/SplitLayout';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { BottomNav } from '@/components/v3/BottomNav';
 
 export default function QTOPage() {
     return (
         <>
             <SplitLayout />
             <LanguageToggle />
+            <BottomNav />
         </>
     );
 }

@@ -8,30 +8,30 @@ export function LanguageToggle() {
     const { language, setLanguage } = useTranslation();
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 animate-pulse-slow">
-            <div className="bg-white rounded-full shadow-xl border-2 border-slate-300 p-1 flex items-center space-x-1">
+        <div className="fixed top-4 right-4 z-50">
+            <div className="bg-white/90 backdrop-blur rounded-full shadow-md border border-slate-200 p-1 flex items-center space-x-1">
                 <button
                     onClick={() => setLanguage('en')}
                     className={cn(
-                        "px-5 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center space-x-2",
+                        "px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center space-x-1.5",
                         language === 'en'
-                            ? "bg-blue-600 text-white shadow-md scale-105"
-                            : "text-slate-600 hover:bg-slate-100"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                     )}
                 >
-                    <Globe className="h-4 w-4" />
+                    <Globe className="h-3.5 w-3.5" />
                     <span>EN</span>
                 </button>
                 <button
                     onClick={() => setLanguage('sv')}
                     className={cn(
-                        "px-5 py-2.5 rounded-full text-sm font-semibold transition-all flex items-center space-x-2",
+                        "px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center space-x-1.5",
                         language === 'sv'
-                            ? "bg-blue-600 text-white shadow-md scale-105"
-                            : "text-slate-600 hover:bg-slate-100"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                     )}
                 >
-                    <Globe className="h-4 w-4" />
+                    <Globe className="h-3.5 w-3.5" />
                     <span>SV</span>
                 </button>
             </div>
