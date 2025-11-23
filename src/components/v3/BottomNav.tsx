@@ -1,6 +1,6 @@
 'use client';
 
-import { Home, FileText, MessageSquare, Sparkles } from 'lucide-react';
+import { Home, FileText, MessageSquare, Sparkles, Presentation } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from '@/contexts/LanguageContext';
@@ -17,7 +17,7 @@ export function BottomNav() {
 
     return (
         <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-200 px-6 py-2 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-            <div className="max-w-md mx-auto flex justify-around items-center">
+            <div className="max-w-lg mx-auto flex justify-around items-center">
                 <Link 
                     href="/" 
                     className={cn(
@@ -33,11 +33,22 @@ export function BottomNav() {
                     href="/qto" 
                     className={cn(
                         "flex flex-col items-center p-2 rounded-xl transition-all duration-300",
-                        isActive('/qto') && !pathname.includes('/chat') ? "text-blue-600 scale-105" : "text-slate-400 hover:text-slate-600"
+                        isActive('/qto') && !pathname.includes('/chat') && !pathname.includes('/customer') ? "text-blue-600 scale-105" : "text-slate-400 hover:text-slate-600"
                     )}
                 >
-                    <FileText className={cn("h-6 w-6 mb-1", isActive('/qto') && !pathname.includes('/chat') && "fill-blue-600/10")} />
+                    <FileText className={cn("h-6 w-6 mb-1", isActive('/qto') && !pathname.includes('/chat') && !pathname.includes('/customer') && "fill-blue-600/10")} />
                     <span className="text-[10px] font-medium tracking-wide">{t('nav.project_view')}</span>
+                </Link>
+
+                <Link 
+                    href="/qto/customer" 
+                    className={cn(
+                        "flex flex-col items-center p-2 rounded-xl transition-all duration-300",
+                        isActive('/qto/customer') ? "text-green-600 scale-105" : "text-slate-400 hover:text-slate-600"
+                    )}
+                >
+                    <Presentation className={cn("h-6 w-6 mb-1", isActive('/qto/customer') && "fill-green-600/10")} />
+                    <span className="text-[10px] font-medium tracking-wide">Proposal</span>
                 </Link>
 
                 <Link 
