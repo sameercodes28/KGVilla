@@ -2,7 +2,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { CostItem, ConstructionPhase } from '@/types';
 import { initialCostItems, clientCosts, projectDetails } from '@/data/projectData';
 import { API_URL } from '@/lib/api';
+import { logger } from '@/lib/logger';
 
+/**
+ * useProjectData Hook
+ * 
+ * Manages the Cost Items (Bill of Quantities) for a specific project.
+ * Syncs changes to the Backend API (Firestore).
+ */
 export function useProjectData(projectId: string = projectDetails.id) {
     // --- State ---
     const [items, setItems] = useState<CostItem[]>([]);
@@ -30,7 +37,7 @@ export function useProjectData(projectId: string = projectDetails.id) {
                 }
                 setIsLoaded(true);
             })
-            .catch(err => console.error("Failed to load items", err));
+            .catch(err => logger.error('useProjectData', 'Failed to load items', err));
     }, [projectId]);
 
     // Save to API on Change (Debounced 1s ideally, but here direct)
@@ -42,7 +49,7 @@ export function useProjectData(projectId: string = projectDetails.id) {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(items)
-                }).catch(err => console.error("Failed to save items", err));
+                }).catch(err => logger.error('useProjectData', 'Failed to save items', err));
             }, 1000);
             return () => clearTimeout(timer);
         }

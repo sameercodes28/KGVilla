@@ -85,11 +85,17 @@ graph TD
 
 ---
 
-## 5. Optimization & Performance
+## 5. Data & Storage
 
-We implemented several tricks to ensure the app is performant and cost-efficient:
+### **Database: Google Cloud Firestore (Active)**
+*   **What it is:** A NoSQL document database.
+*   **Why we use it:**
+    *   **Persistence:** All project metadata (`projects` collection) and cost breakdowns (`cost_data` collection) are stored here. This allows users to refresh the page or share links without losing data.
+    *   **Structure:** We store items as a JSON blob within a document to minimize read costs while maintaining flexibility.
 
-1.  **Lazy Loading AI:** The backend server doesn't connect to the expensive AI services until the *exact moment* a user uploads a file. This makes the server start up in milliseconds.
-2.  **Static Frontend:** The entire website is pre-built. There is no database query needed just to load the home page.
-3.  **Defensive Coding:** The backend is designed to never crash even if the AI service is temporarily unreachable. It will gracefully tell the user "Service unavailable" rather than breaking the whole app.
-4.  **Serverless Process Manager:** We use `gunicorn` with `uvicorn` workers. This allows the single container to handle multiple requests at once without getting blocked, maximizing the usage of the free tier CPU.
+### **Local Storage (Client-Side Cache)**
+*   **Chat History:** Conversational history with the AI is stored locally (`kgvilla-chat-[ID]`) to ensure privacy and instant load times.
+*   **Session State:** Active project ID and view preferences.
+
+### **File Storage: Google Cloud Storage (GCS) (Upcoming)**
+

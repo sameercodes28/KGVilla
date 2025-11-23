@@ -19,6 +19,7 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 import os
+import logging
 from google.cloud import firestore
 from ai_service import analyze_image_with_gemini, chat_with_gemini
 from models import CostItem, Project, ChatResponse
@@ -59,6 +60,12 @@ app.add_middleware(
 from google.cloud import firestore
 from google.api_core.exceptions import NotFound
 
+import logging
+
+# Configure Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # ... (existing imports)
 
 # Initialize Firestore
@@ -66,9 +73,28 @@ from google.api_core.exceptions import NotFound
 try:
     db = firestore.Client(project=os.environ.get("GOOGLE_CLOUD_PROJECT", "kgvilla"))
     _firestore_available = True
+    logger.info("Firestore client initialized successfully.")
 except Exception as e:
-    print(f"WARNING: Firestore client failed to initialize: {e}")
+    logger.error(f"Firestore client failed to initialize: {e}")
     _firestore_available = False
+
+# ...
+
+@app.delete("/projects/{project_id}")
+def delete_project(project_id: str):
+    """Delete a project and its associated data."""
+    if not _firestore_available:
+        return {"status": "mock_deleted"}
+    
+    # Delete metadata
+    db.collection("projects").document(project_id).delete()
+    # Delete cost data
+    db.collection("cost_data").document(project_id).delete()
+    
+    logger.info(f"Deleted project: {project_id}")
+    return {"status": "success", "id": project_id}
+
+# ... (update other print calls)
 
 # ... (existing CORS and Models)
 

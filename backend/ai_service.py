@@ -11,45 +11,28 @@ Key Features:
 """
 
 import os
-
 import json
-
+import logging
 from typing import List, Dict, Optional
-
 from models import CostItem, ChatResponse, Scenario
 
-
-
-
+# Configure Logging
+logger = logging.getLogger(__name__)
 
 # --- Defensive Import Strategy ---
-
 # The Vertex AI libraries require Google Cloud credentials to load.
-
 # During the Docker build process or local testing, these credentials might be missing.
-
 # We wrap imports in a try-except block so the server doesn't crash immediately on startup.
-
 # This allows the "Health Check" endpoint to pass even if AI isn't configured yet.
-
 try:
-
     import vertexai
-
     from vertexai.generative_models import GenerativeModel, Part, FinishReason
-
     _vertex_available = True
-
 except ImportError as e:
-
-    print(f"WARNING: Vertex AI libraries not found or failed to load: {e}")
-
+    logger.warning(f"Vertex AI libraries not found or failed to load: {e}")
     _vertex_available = False
-
 except Exception as e:
-
-    print(f"WARNING: Error initializing Vertex AI context: {e}")
-
+    logger.warning(f"Error initializing Vertex AI context: {e}")
     _vertex_available = False
 
 
@@ -96,25 +79,47 @@ def get_model():
 
         
 
-    if _model is None:
+        if _model is None:
 
-        print(f"Initializing Vertex AI for project {PROJECT_ID}...")
+        
 
-        vertexai.init(project=PROJECT_ID, location=LOCATION)
+            logger.info(f"Initializing Vertex AI for project {PROJECT_ID}...")
 
-        # We use 'gemini-1.5-flash' because it is:
+        
 
-        # 1. Fast (Low latency for the user)
+            vertexai.init(project=PROJECT_ID, location=LOCATION)
 
-        # 2. Cheap (Optimized for high-volume tasks)
+        
 
-        # 3. Multimodal (Can natively read PDF/Images)
+            # We use 'gemini-1.5-flash' because it is:
 
-        _model = GenerativeModel("gemini-1.5-flash-001")
+        
 
-        print("Vertex AI Model initialized successfully.")
+            # 1. Fast (Low latency for the user)
 
-    return _model
+        
+
+            # 2. Cheap (Optimized for high-volume tasks)
+
+        
+
+            # 3. Multimodal (Can natively read PDF/Images)
+
+        
+
+            _model = GenerativeModel("gemini-1.5-flash-001")
+
+        
+
+            logger.info("Vertex AI Model initialized successfully.")
+
+        
+
+        return _model
+
+        
+
+    
 
 
 
