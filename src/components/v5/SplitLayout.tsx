@@ -72,9 +72,9 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
             </div>
 
             {/* Right Pane: Data Feed (Static 50%) */}
-            <div className="w-1/2 h-full overflow-hidden flex flex-col bg-white relative">
+            <div className="w-1/2 h-full overflow-hidden flex flex-col bg-white">
                 {/* Header Bar */}
-                <div className="p-8 pb-0 mb-4">
+                <div className="p-8 pb-0 mb-4 w-full">
                     <div className="flex items-center justify-between mb-4">
                         <Link href="/qto" className="flex items-center text-slate-400 hover:text-slate-700 transition-colors text-sm font-medium group">
                             <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />

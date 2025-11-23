@@ -49,8 +49,8 @@ export function ProjectDataFeed({
     const otherItems = items.filter(i => !phases.some(p => p.id === i.phase));
 
     return (
-        <div className="w-1/2 h-full overflow-y-auto bg-white">
-            <div className="max-w-2xl mx-auto p-8 pb-32">
+        <div className="w-full h-full overflow-y-auto bg-white">
+            <div className="w-full p-8 pb-32">
                 {/* Header */}
                 <header className="mb-8">
                     <div className="flex items-center space-x-2 text-sm text-slate-500 mb-4">
