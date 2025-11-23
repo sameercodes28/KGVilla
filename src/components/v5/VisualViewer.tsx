@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Maximize2, ZoomIn, ZoomOut, UploadCloud } from 'lucide-react';
+import { Maximize2, Minimize2, ZoomIn, ZoomOut, UploadCloud } from 'lucide-react';
 import { electricalPoints, plumbingPoints } from '@/data/floorPlanOverlays';
 import { cn } from '@/lib/utils';
 
@@ -21,7 +21,8 @@ interface VisualViewerProps {
 
 export function VisualViewer({ floorPlanUrl, onUpload, highlightedItem }: VisualViewerProps) {
     const [zoom, setZoom] = useState(1);
-    const [activeLayers, setActiveLayers] = useState({ el: true, vvs: true, structure: true });
+    const [activeLayers, setActiveLayers] = useState({ el: false, vvs: false, structure: true });
+    const [isFullScreen, setIsFullScreen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,7 +34,10 @@ export function VisualViewer({ floorPlanUrl, onUpload, highlightedItem }: Visual
     const hasPlan = !!floorPlanUrl;
 
     return (
-        <div className="h-full w-full bg-slate-900 relative overflow-hidden flex items-center justify-center">
+        <div className={cn(
+            "bg-slate-900 overflow-hidden flex items-center justify-center transition-all duration-300",
+            isFullScreen ? "fixed inset-0 z-[70]" : "h-full w-full relative"
+        )}>
             {/* Toolbar (Only show if plan exists) */}
             {hasPlan && (
                 <div className="absolute top-4 right-4 flex flex-col space-y-2 z-10">
@@ -54,8 +58,11 @@ export function VisualViewer({ floorPlanUrl, onUpload, highlightedItem }: Visual
                         <button onClick={() => setZoom(z => Math.max(z - 0.2, 0.5))} className="p-2 bg-black/50 backdrop-blur text-white rounded-lg hover:bg-black/70 transition-colors">
                             <ZoomOut className="h-5 w-5" />
                         </button>
-                        <button className="p-2 bg-black/50 backdrop-blur text-white rounded-lg hover:bg-black/70 transition-colors">
-                            <Maximize2 className="h-5 w-5" />
+                        <button 
+                            onClick={() => setIsFullScreen(!isFullScreen)}
+                            className="p-2 bg-black/50 backdrop-blur text-white rounded-lg hover:bg-black/70 transition-colors"
+                        >
+                            {isFullScreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
                         </button>
                     </div>
                 </div>
