@@ -5,7 +5,7 @@ import { Send, Bot, Sparkles, Paperclip, X, FileText, ChevronDown, Building } fr
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { useChat } from '@/hooks/useChat';
+import { useChat, Scenario } from '@/hooks/useChat';
 import { useProjects } from '@/hooks/useProjects';
 import { useProjectData } from '@/hooks/useProjectData';
 
@@ -37,7 +37,7 @@ export default function AIChatPage() {
     const selectedProject = projects.find(p => p.id === selectedProjectId);
     
     // Fetch data for context card
-    const { totalCost, floorPlanUrl } = useProjectData(selectedProjectId);
+    const { totalCost, floorPlanUrl, items, addItem } = useProjectData(selectedProjectId);
 
     const { 
         messages, 
@@ -47,7 +47,7 @@ export default function AIChatPage() {
         setSelectedFile, 
         isTyping, 
         sendMessage 
-    } = useChat(selectedProjectId);
+    } = useChat(selectedProjectId, items);
     
     // Refs for auto-scrolling and hidden file input
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -61,6 +61,20 @@ export default function AIChatPage() {
     useEffect(() => {
         scrollToBottom();
     }, [messages, isTyping]);
+
+    // Handle Scenario Application
+    const handleApplyScenario = (scenario: Scenario) => {
+        if (!scenario || !scenario.items) return;
+        
+        // Add new items or update existing ones logic
+        // For simplicity, we just add them as new items or replace logic
+        // In a real app, we'd match IDs or have a diff engine.
+        // Here, we treat them as "Custom Items" from the scenario.
+        scenario.items.forEach((item) => {
+            addItem(item);
+        });
+        alert(`Applied scenario: ${scenario.title}`);
+    };
 
     // Handle file selection from the hidden input
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -180,6 +194,36 @@ export default function AIChatPage() {
                                 <div className="mt-3 flex items-center bg-white/20 p-3 rounded-lg border border-white/30">
                                     <FileText className="h-5 w-5 mr-2" />
                                     <span className="text-sm font-medium truncate max-w-[200px]">{msg.file.name}</span>
+                                </div>
+                            )}
+
+                            {/* Scenario Proposal Card */}
+                            {msg.scenario && (
+                                <div className="mt-4 bg-white rounded-xl border-2 border-blue-100 overflow-hidden shadow-sm">
+                                    <div className="bg-blue-50 p-4 border-b border-blue-100">
+                                        <h4 className="font-bold text-blue-900 text-sm uppercase tracking-wide mb-1">Scenario Proposal</h4>
+                                        <h3 className="text-lg font-bold text-slate-900">{msg.scenario.title}</h3>
+                                    </div>
+                                    <div className="p-4">
+                                        <p className="text-sm text-slate-600 mb-4">{msg.scenario.description}</p>
+                                        
+                                        <div className="flex items-center justify-between bg-slate-50 p-3 rounded-lg mb-4">
+                                            <span className="text-sm font-medium text-slate-600">Cost Impact:</span>
+                                            <span className={cn(
+                                                "font-bold font-mono",
+                                                msg.scenario.costDelta < 0 ? "text-green-600" : "text-red-600"
+                                            )}>
+                                                {msg.scenario.costDelta > 0 ? '+' : ''}{msg.scenario.costDelta.toLocaleString('sv-SE')} kr
+                                            </span>
+                                        </div>
+
+                                        <button 
+                                            onClick={() => handleApplyScenario(msg.scenario!)}
+                                            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm"
+                                        >
+                                            Apply Scenario to Project
+                                        </button>
+                                    </div>
                                 </div>
                             )}
 

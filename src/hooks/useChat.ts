@@ -3,16 +3,24 @@ import { CostItem } from '@/types';
 import { API_URL } from '@/lib/api';
 import { useTranslation } from '@/contexts/LanguageContext';
 
+export interface Scenario {
+    title: string;
+    description: string;
+    costDelta: number;
+    items: CostItem[];
+}
+
 export interface Message {
     id: string;
     role: 'ai' | 'user';
     text?: string;
     items?: CostItem[];
+    scenario?: Scenario;
     file?: File;
     timestamp: Date;
 }
 
-export function useChat(projectId?: string) {
+export function useChat(projectId?: string, currentItems: CostItem[] = []) {
     const { t } = useTranslation();
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
@@ -39,15 +47,15 @@ export function useChat(projectId?: string) {
                 } catch (e) {
                     console.error("Failed to load chat history", e);
                 }
-            } else {
-                // Default welcome if no history
-                setMessages([{
-                    id: 'welcome',
-                    role: 'ai',
-                    text: t('chat.welcome'),
-                    timestamp: new Date()
-                }]);
             }
+        } else {
+            // Default welcome if no history
+            setMessages([{
+                id: 'welcome',
+                role: 'ai',
+                text: t('chat.welcome'),
+                timestamp: new Date()
+            }]);
         }
     }, [storageKey, t]);
 
@@ -72,15 +80,17 @@ export function useChat(projectId?: string) {
         setMessages(prev => [...prev, userMsg]);
         
         const currentFile = selectedFile;
+        const currentInput = input;
         
         // Reset Inputs
         setInput('');
         setSelectedFile(null);
         setIsTyping(true);
 
-        // 2. API Call
-        if (currentFile) {
-            try {
+        try {
+            // 2. Determine Endpoint
+            if (currentFile) {
+                // FILE MODE: /analyze
                 const formData = new FormData();
                 formData.append('file', currentFile);
 
@@ -96,36 +106,48 @@ export function useChat(projectId?: string) {
                 const aiMsg: Message = {
                     id: (Date.now() + 1).toString(),
                     role: 'ai',
-                    text: `I've analyzed **${currentFile.name}**. Here is the preliminary Bill of Quantities based on BBR 2025 standards:`,
+                    text: `I've analyzed **${currentFile.name}**. Here is the preliminary Bill of Quantities based on BBR 2025 standards:`, 
                     items: data,
                     timestamp: new Date()
                 };
                 setMessages(prev => [...prev, aiMsg]);
 
-            } catch (error) {
-                console.error(error);
-                setMessages(prev => [...prev, {
-                    id: Date.now().toString(),
-                    role: 'ai',
-                    text: "Sorry, I encountered an error analyzing that file. Please try again.",
-                    timestamp: new Date()
-                }]);
-            }
-        } else {
-            // Mock Text Response
-            setTimeout(() => {
+            } else {
+                // TEXT MODE: /chat
+                const response = await fetch(`${API_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: currentInput,
+                        currentItems: currentItems
+                    })
+                });
+
+                if (!response.ok) throw new Error('Chat failed');
+
+                const data = await response.json();
+
                 const aiMsg: Message = {
                     id: (Date.now() + 1).toString(),
                     role: 'ai',
-                    text: "I am currently optimized for analyzing floor plans. Please upload a PDF or Image for me to calculate costs!",
+                    text: data.text,
+                    scenario: data.scenario, // Optional scenario
                     timestamp: new Date()
                 };
                 setMessages(prev => [...prev, aiMsg]);
-                setIsTyping(false);
-            }, 1000);
+            }
+
+        } catch (error) {
+            console.error(error);
+            setMessages(prev => [...prev, {
+                id: Date.now().toString(),
+                role: 'ai',
+                text: "Sorry, I encountered an error connecting to the AI Architect. Please try again.",
+                timestamp: new Date()
+            }]);
+        } finally {
+            setIsTyping(false);
         }
-        
-        setIsTyping(false);
     };
 
     return {

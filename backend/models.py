@@ -64,6 +64,16 @@ class CostItem(BaseModel):
     isUserAdded: Optional[bool] = False
     userNotes: Optional[str] = None
 
+class Scenario(BaseModel):
+    title: str
+    description: str
+    costDelta: float # e.g. -50000
+    items: List[CostItem] # The proposed items to add/replace
+
+class ChatResponse(BaseModel):
+    text: str
+    scenario: Optional[Scenario] = None
+
 class Project(BaseModel):
     id: str
     name: str

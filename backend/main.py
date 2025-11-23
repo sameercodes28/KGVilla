@@ -19,10 +19,28 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 import os
-from ai_service import analyze_image_with_gemini
-from models import CostItem, Project
+from models import CostItem, Project, ChatResponse
+from ai_service import analyze_image_with_gemini, chat_with_gemini
 
-# Initialize the FastAPI app
+# ... (existing imports)
+
+class ChatRequest(BaseModel):
+    message: str
+    currentItems: List[CostItem]
+
+# ... (existing routes)
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat_endpoint(request: ChatRequest):
+    """
+    Conversational AI Endpoint.
+    Allows the user to ask "What if" questions about the current estimate.
+    Returns text answer + optional 'Scenario' proposal (data change).
+    """
+    try:
+        return await chat_with_gemini(request.message, request.currentItems)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 app = FastAPI(title="KGVilla API", version="0.1.0")
 
 # --- CORS Configuration ---
@@ -61,27 +79,83 @@ def get_project(project_id: str):
     }
 
 @app.post("/analyze")
+
 async def analyze_drawing(file: UploadFile = File(...)):
+
     """
+
     AI Analysis Endpoint.
+
     
+
     Process:
+
     1.  Receives a floor plan file (PDF or Image) from the frontend.
+
     2.  Reads the file into memory.
+
     3.  Passes it to `ai_service.analyze_image_with_gemini` for processing.
+
     4.  Returns a structured JSON list of `CostItem` objects.
+
     
+
     Error Handling:
+
     Catches any errors from the AI service and returns a 500 Internal Server Error.
+
     """
+
     try:
+
         # Read the raw bytes of the uploaded file
+
         contents = await file.read()
+
         
+
         # Call the AI service to process the image
+
         result = await analyze_image_with_gemini(contents, file.content_type)
+
         
+
         return result
+
     except Exception as e:
+
         # If anything goes wrong, return a clear error message to the client
+
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+class ChatRequest(BaseModel):
+
+    message: str
+
+    currentItems: List[CostItem]
+
+
+
+@app.post("/chat", response_model=ChatResponse)
+
+async def chat_endpoint(request: ChatRequest):
+
+    """
+
+    Conversational AI Endpoint.
+
+    Allows the user to ask "What if" questions about the current estimate.
+
+    Returns text answer + optional 'Scenario' proposal (data change).
+
+    """
+
+    try:
+
+        return await chat_with_gemini(request.message, request.currentItems)
+
+    except Exception as e:
+
         raise HTTPException(status_code=500, detail=str(e))

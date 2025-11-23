@@ -14,9 +14,11 @@ import os
 
 import json
 
-from typing import List, Dict
+from typing import List, Dict, Optional
 
-from models import CostItem
+from models import CostItem, ChatResponse, Scenario
+
+
 
 
 
@@ -726,8 +728,260 @@ def load_standards_context() -> str:
 
         
 
-    except Exception as e:
+        except Exception as e:
 
-        print(f"Error calling Gemini: {e}")
+        
 
-        return []
+            print(f"Error calling Gemini: {e}")
+
+        
+
+            return []
+
+        
+
+    
+
+        
+
+    async def chat_with_gemini(message: str, current_items: List[CostItem]) -> ChatResponse:
+
+        
+
+        """
+
+        
+
+        Handles conversational queries about the project.
+
+        
+
+        Can propose 'Scenarios' (modifications to the cost list).
+
+        
+
+        """
+
+        
+
+        if not _vertex_available:
+
+        
+
+            return ChatResponse(text="AI Service Unavailable (Vertex AI libraries missing).")
+
+        
+
+    
+
+        
+
+        # Format current items for context
+
+        
+
+        items_context = "\n".join([f"- {item.elementName}: {item.quantity} {item.unit} @ {item.unitPrice} kr = {item.totalCost} kr" for item in current_items])
+
+        
+
+        
+
+        
+
+        prompt = f"""
+
+        
+
+        USER QUESTION: "{message}"
+
+        
+
+    
+
+        
+
+        CURRENT PROJECT COST ITEMS:
+
+        
+
+        {items_context}
+
+        
+
+    
+
+        
+
+        TASK:
+
+        
+
+        1. Answer the user's question based on the Swedish Construction Knowledge Base (attached below).
+
+        
+
+        2. If the user suggests a change (e.g. "remove fireplace", "change flooring to pine"), propose a SCENARIO.
+
+        
+
+        
+
+        
+
+        OUTPUT FORMAT (JSON):
+
+        
+
+        {{
+
+        
+
+            "text": "Your conversational answer...",
+
+        
+
+            "scenario": {{
+
+        
+
+                "title": "Short Title of Change",
+
+        
+
+                "description": "What changes and why.",
+
+        
+
+                "costDelta": -50000,  // Negative for savings, Positive for cost increase
+
+        
+
+                "items": [ ... list of NEW or REPLACEMENT CostItems ... ]
+
+        
+
+            }} 
+
+        
+
+        }}
+
+        
+
+        *Only include 'scenario' if a change is logical.*
+
+        
+
+        """
+
+        
+
+    
+
+        
+
+        generation_config = {
+
+        
+
+            "max_output_tokens": 2048,
+
+        
+
+            "temperature": 0.4,
+
+        
+
+            "response_mime_type": "application/json"
+
+        
+
+        }
+
+        
+
+    
+
+        
+
+        try:
+
+        
+
+            model = get_model()
+
+        
+
+            responses = model.generate_content(
+
+        
+
+                [prompt, SYSTEM_INSTRUCTION],
+
+        
+
+                generation_config=generation_config,
+
+        
+
+                stream=False,
+
+        
+
+            )
+
+        
+
+    
+
+        
+
+            text_response = responses.text.strip()
+
+        
+
+            if text_response.startswith("```json"):
+
+        
+
+                text_response = text_response[7:]
+
+        
+
+            if text_response.endswith("```"):
+
+        
+
+                text_response = text_response[:-3]
+
+        
+
+                
+
+        
+
+            data = json.loads(text_response)
+
+        
+
+            return ChatResponse(**data)
+
+        
+
+    
+
+        
+
+        except Exception as e:
+
+        
+
+            print(f"Error in chat: {e}")
+
+        
+
+            return ChatResponse(text="I encountered an error processing your request.")
+
+        
+
+    
