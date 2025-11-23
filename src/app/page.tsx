@@ -3,7 +3,6 @@
 import { useState, useRef } from 'react';
 import { Plus, FolderOpen, ArrowRight, MapPin, X, UploadCloud, Trash2, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import { mockProject } from '@/data/projectData';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { useProjects } from '@/hooks/useProjects';
@@ -16,6 +15,9 @@ export default function Home() {
   const { projects, createProject, deleteProject } = useProjects();
   const router = useRouter();
   
+  // Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
@@ -23,6 +25,14 @@ export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const filteredProjects = projects.filter(p => 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.location.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Top 3 for the Grid (Recent)
+  const recentProjects = projects.slice(0, 3);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -115,8 +125,22 @@ export default function Home() {
             </div>
         </div>
 
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Action Bar */}
+        <div className="flex justify-between items-center mb-8">
+            <h2 className="text-xl font-bold text-slate-900">Recent Activity</h2>
+            <div className="relative">
+                <input 
+                    type="text" 
+                    placeholder="Search projects..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-4 pr-10 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white/80 backdrop-blur"
+                />
+            </div>
+        </div>
+
+        {/* Projects Grid (Recent) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             
             {/* Create New Card */}
             <button 
@@ -131,8 +155,8 @@ export default function Home() {
                 <p className="text-blue-100 text-sm mt-2 font-medium">Start from a blueprint</p>
             </button>
 
-            {/* Project Cards */}
-            {projects.map((project) => (
+            {/* Recent Project Cards */}
+            {recentProjects.map((project) => (
                 <Link key={project.id} href={`/qto?project=${project.id}`} className="block group relative">
                     <div className="h-72 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden">
                         <div className="h-36 bg-slate-50 relative flex items-center justify-center border-b border-slate-100 group-hover:bg-blue-50/50 transition-colors">
@@ -168,6 +192,56 @@ export default function Home() {
                     </button>
                 </Link>
             ))}
+        </div>
+
+        {/* All Projects List */}
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+                <h3 className="font-bold text-slate-900">All Projects ({filteredProjects.length})</h3>
+            </div>
+            <table className="w-full text-sm text-left">
+                <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
+                    <tr>
+                        <th className="px-6 py-4 font-medium">Project Name</th>
+                        <th className="px-6 py-4 font-medium">Location</th>
+                        <th className="px-6 py-4 font-medium">Status</th>
+                        <th className="px-6 py-4 font-medium">Last Updated</th>
+                        <th className="px-6 py-4 font-medium text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                    {filteredProjects.map((project) => (
+                        <tr key={project.id} className="hover:bg-slate-50 transition-colors group cursor-pointer" onClick={() => router.push(`/qto?project=${project.id}`)}>
+                            <td className="px-6 py-4 font-medium text-slate-900 flex items-center">
+                                <FolderOpen className="h-4 w-4 mr-3 text-slate-400" />
+                                {project.name}
+                            </td>
+                            <td className="px-6 py-4 text-slate-500">{project.location}</td>
+                            <td className="px-6 py-4">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                    {project.status || 'Draft'}
+                                </span>
+                            </td>
+                            <td className="px-6 py-4 text-slate-500">{project.lastModified}</td>
+                            <td className="px-6 py-4 text-right">
+                                <button 
+                                    onClick={(e) => handleDelete(e, project.id)}
+                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                    {filteredProjects.length === 0 && (
+                        <tr>
+                            <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                                No projects found matching &quot;{searchQuery}&quot;
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
         </div>
       </main>
 
