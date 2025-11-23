@@ -72,7 +72,7 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
             </div>
 
             {/* Right Pane: Data Feed (Static 50%) */}
-            <div className="w-1/2 h-full overflow-hidden flex flex-col bg-white">
+            <div className="w-1/2 h-full overflow-hidden flex flex-col bg-white relative">
                 {/* Header Bar */}
                 <div className="p-8 pb-0 mb-4">
                     <div className="flex items-center justify-between mb-4">
@@ -102,12 +102,12 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
                         getUnassignedItems={getUnassignedItems}
                     />
                 </div>
-            </div>
 
-            <CostInspector 
-                item={inspectingItem} 
-                onClose={() => setInspectingItem(null)} 
-            />
+                <CostInspector 
+                    item={inspectingItem} 
+                    onClose={() => setInspectingItem(null)} 
+                />
+            </div>
         </div>
     );
 }
