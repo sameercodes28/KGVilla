@@ -98,30 +98,6 @@ export function VisualViewer({ floorPlanUrl, onUpload, highlightedItem }: Visual
                                 ))}
                             </svg>
                         )}
-                        {highlightedItem && highlightedItem.validationData && (
-                            <div className="absolute inset-0 pointer-events-none">
-                                {highlightedItem.validationData.type === 'point' ? (
-                                    highlightedItem.validationData.coordinates.map((coord, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="absolute w-6 h-6 -ml-3 -mt-3 bg-blue-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center animate-bounce"
-                                            style={{ left: `${coord[0]}%`, top: `${coord[1]}%` }}
-                                        >
-                                            <div className="w-2 h-2 bg-white rounded-full" />
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                        <div className="relative">
-                                            <div className="absolute -inset-8 bg-blue-500/20 rounded-full animate-ping"></div>
-                                            <div className="relative bg-blue-600 text-white px-4 py-2 rounded-full shadow-xl border-2 border-white font-bold text-sm whitespace-nowrap flex items-center">
-                                                {highlightedItem.name}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </>
                 ) : (
                     /* Empty State / Upload */
