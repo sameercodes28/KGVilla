@@ -22,8 +22,9 @@ When the user uploads a floor plan in the "AI Analysis" tab, the file is sent to
 The AI looks at the drawing and performs a "Chain of Thought" analysis:
 1.  **Scale & Segment:** Measures pixels to real-world meters.
 2.  **Infer Systems:** "See a kitchen? Add stove wiring and leakage trays." (Things not drawn but required).
-3.  **Price Assemblies:** Applies 2025 unit rates for specific wall/floor recipes (e.g., Wet Room Wall vs Standard Wall).
-4.  **Return Data:** Returns a structured JSON with a detailed cost breakdown.
+3.  **Regional Context:** Adjusts connection fees (VA/El) based on the project location (e.g., Stockholm vs Västra Götaland).
+4.  **Price Assemblies:** Applies 2025 unit rates for specific wall/floor recipes (e.g., Wet Room Wall vs Standard Wall).
+5.  **Return Data:** Returns a structured JSON with a detailed cost breakdown.
 
 ---
 
