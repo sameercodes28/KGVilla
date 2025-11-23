@@ -49,6 +49,10 @@ We chose specific technologies to make this **fast, cheap, and scalable**.
 *   **Assembly Inference:** We don't just OCR text; we use Gemini's reasoning to "infer" construction assemblies (layers of material) that aren't explicitly drawn, ensuring the price is realistic.
 *   **Context Awareness:** The Chat system is project-aware. It loads the chat history specific to the active project ID from `localStorage` (`kgvilla-chat-[ID]`), allowing users to switch contexts seamlessly.
 
+### **UX Architecture**
+*   **Scenario Mode:** Visualizes "What If" changes (e.g., "Downgrade Kitchen") with instant budget impact.
+*   **Cost Inspector:** A fixed flyout overlay (`w-96`) that slides in from the right to show detailed cost breakdowns without navigating away from the main list.
+
 ---
 
 ## 4. Architecture Diagram
