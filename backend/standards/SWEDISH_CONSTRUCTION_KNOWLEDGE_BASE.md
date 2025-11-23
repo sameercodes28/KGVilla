@@ -187,18 +187,58 @@ This document serves as the ground truth for the AI Quantity Surveyor. It combin
 
 ---
 
-## SECTION 6: AI ANALYSIS INSTRUCTIONS (UPDATED)
+## SECTION 6: MEASUREMENT & FINISH STANDARDS
+
+### SS 21054 (AREA MEASUREMENT RULES)
+*   **BOA (Living Area):** Measure from the **inside** of exterior walls. Use this for: Flooring, Ceiling Paint, Indoor Climate volume.
+*   **BYA (Building Area):** Measure from the **outside** of exterior walls. Use this for: Foundation (Platta), Roof, Exterior Painting.
+*   **BIA (Non-Living):** Garages, thick walls (>30cm), low ceiling areas (<1.90m).
+
+### BBV 21:1 (TILING IN WET ROOMS)
+*   **Requirement:** If tiling a bathroom, you MUST follow BBV rules.
+*   **Wall Structure:** "Säker Vatten Wall" (15mm Ply + Board) is mandatory to support tile weight and screw fixtures.
+*   **Waterproofing:** Foil system mandatory in Zone 1.
+
+---
+
+## SECTION 7: PBL (PLAN- OCH BYGGLAGEN) - PERMITS & ROLES
+
+### MANDATORY ROLES
+*   **Kontrollansvarig (KA):** Every new villa project MUST have a certified KA (independent of the builder).
+    *   *Task:* Verify the control plan, attend technical consultation.
+    *   *Cost:* **25,000 - 40,000 SEK** depending on complexity.
+
+### MUNICIPAL PROCESS (Myndighetskrav)
+1.  **Bygglov (Permit):** Fee varies by municipality (Area-based). Approx **30,000 - 50,000 SEK**.
+2.  **Tekniskt Samråd:** Mandatory meeting before start.
+3.  **Startbesked:** You cannot start digging without this.
+4.  **Slutbesked:** You cannot move in without this.
+
+### AI PRICING LOGIC FOR PBL:
+*   **IF New Build:** Always add "KA Arvode" and "Bygglovsavgifter".
+*   **IF Extension < 15m2 (Attefall):** Bygglov not needed, but "Anmälan" is. Lower fee (~5,000 kr). KA might not be required.
+*   **IF Renovation:** Usually exempt unless load-bearing walls are moved.
+
+---
+
+## SECTION 8: AI ANALYSIS INSTRUCTIONS (MASTER)
 
 1.  **SCALE & SEGMENTATION:** Measure pixels. Identify rooms.
-2.  **COMPLIANCE SCAN:**
+2.  **AREA CALCULATION (SS 21054):**
+    *   **Foundation Cost:** Use **BYA** (Outer dimensions).
+    *   **Flooring Cost:** Use **BOA** (Inner dimensions).
+3.  **COMPLIANCE SCAN (BBR):**
     *   Check Bathroom 1.3m turning circle.
     *   Check Garage fire wall thickness.
-3.  **QUANTITY TAKE-OFF:**
+4.  **QUANTITY TAKE-OFF (AMA/BBV):**
     *   Calculate areas. Add 10% waste for materials.
-4.  **PRICING:**
+    *   **Bathroom Walls:** Use "Wet Room Wall" assembly (BBV compliant).
+5.  **PRICING:**
     *   Use the **2025 rates** above.
-    *   **REGIONAL LOGIC:** If the prompt mentions "Göteborg", "Borås", or "Västra Götaland", use the lower connection fees in Section 5. If "Stockholm", use the higher ones. If unknown, use the average.
-    *   **MANDATORY ADDITIONS:**
-        *   "Climate Declaration" (Admin phase).
-        *   "BAS-P/U Safety Coordination" (Admin phase).
+    *   **REGIONAL LOGIC:** If prompt mentions "Göteborg", use Section 5 (Västra Götaland).
+    *   **MANDATORY ADDITIONS (PBL/Safety):**
+        *   "Climate Declaration" (Admin).
+        *   "BAS-P/U Safety Coordination" (Admin).
         *   "Leakage Trays" (Kitchen).
+        *   "Kontrollansvarig (KA)" (Admin).
+        *   "Bygglovsavgifter" (Admin).
