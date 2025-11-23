@@ -8,11 +8,12 @@ import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { useProjects } from '@/hooks/useProjects';
 import { useRouter } from 'next/navigation';
 import { API_URL } from '@/lib/api';
-import { CostItem } from '@/types';
+import { CostItem, Project } from '@/types';
+import { cn } from '@/lib/utils';
 
 export default function Home() {
   const { t } = useTranslation();
-  const { projects, createProject, deleteProject } = useProjects();
+  const { projects, createProject, deleteProject, updateProjectStatus } = useProjects();
   const router = useRouter();
   
   // Search State
@@ -81,6 +82,13 @@ export default function Home() {
       if (confirm('Are you sure you want to delete this project?')) {
           deleteProject(id);
       }
+  };
+
+  const handleStatusToggle = (e: React.MouseEvent, project: Project) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const newStatus = project.status === 'final' ? 'draft' : 'final';
+      updateProjectStatus(project.id, newStatus);
   };
 
   return (
@@ -162,9 +170,17 @@ export default function Home() {
                         <div className="h-36 bg-slate-50 relative flex items-center justify-center border-b border-slate-100 group-hover:bg-blue-50/50 transition-colors">
                             <FolderOpen className="h-16 w-16 text-slate-300 group-hover:text-blue-400 transition-colors" />
                             <div className="absolute top-4 right-4 flex space-x-2">
-                                <div className="bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase text-slate-500 border border-slate-200 shadow-sm">
+                                <button
+                                    onClick={(e) => handleStatusToggle(e, project)}
+                                    className={cn(
+                                        "backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase shadow-sm transition-all border z-20",
+                                        project.status === 'final' 
+                                            ? "bg-green-100/90 text-green-700 border-green-200 hover:bg-green-200"
+                                            : "bg-white/90 text-slate-500 border-slate-200 hover:bg-slate-100"
+                                    )}
+                                >
                                     {project.status || 'DRAFT'}
-                                </div>
+                                </button>
                             </div>
                         </div>
                         <div className="p-6 flex-1 flex flex-col justify-between bg-white relative z-10">
@@ -218,9 +234,17 @@ export default function Home() {
                             </td>
                             <td className="px-6 py-4 text-slate-500">{project.location}</td>
                             <td className="px-6 py-4">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                <button
+                                    onClick={(e) => handleStatusToggle(e, project)}
+                                    className={cn(
+                                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border transition-colors uppercase",
+                                        project.status === 'final'
+                                            ? "bg-green-50 text-green-700 border-green-100 hover:bg-green-100"
+                                            : "bg-blue-50 text-blue-700 border-blue-100 hover:bg-blue-100"
+                                    )}
+                                >
                                     {project.status || 'Draft'}
-                                </span>
+                                </button>
                             </td>
                             <td className="px-6 py-4 text-slate-500">{project.lastModified}</td>
                             <td className="px-6 py-4 text-right">
@@ -243,6 +267,7 @@ export default function Home() {
                 </tbody>
             </table>
         </div>
+
       </main>
 
       {/* Create Project Modal */}

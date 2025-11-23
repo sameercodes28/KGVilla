@@ -66,5 +66,9 @@ export function useProjects() {
         }
     };
 
-    return { projects, createProject, deleteProject };
+    const updateProjectStatus = (id: string, status: string) => {
+        setProjects(prev => prev.map(p => p.id === id ? { ...p, status } : p));
+    };
+
+    return { projects, createProject, deleteProject, updateProjectStatus };
 }
