@@ -81,13 +81,12 @@ export function ProjectDataFeed({
                         </div>
                     </div>
                     <p className="text-slate-500 text-lg">{projectDetails.address} • {projectDetails.totalArea} m²</p>
-                </header>
-
-                <ClientCostSection />
+                                    </header>
                 
-                <ContractScope totalCost={totalCost} />
-
-                {/* Content List */}
+                                    <ClientCostSection onInspectItem={onInspectItem} />
+                                
+                                    <ContractScope totalCost={totalCost} />
+                                {/* Content List */}
                 {viewMode === 'phases' ? (
                     <div className="space-y-6">
                         {phases.map(phase => {
