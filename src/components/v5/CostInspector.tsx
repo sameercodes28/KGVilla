@@ -24,10 +24,14 @@ export function CostInspector({ item, onClose }: CostInspectorProps) {
     const matPercent = total > 0 ? ((breakdown.material || 0) / total) * 100 : 0;
 
     return (
-        <div className="absolute inset-0 w-full h-full bg-white z-50 p-6 overflow-y-auto animate-in slide-in-from-right duration-300 border-l border-slate-200 shadow-2xl">
+        <div className="fixed top-0 right-0 h-full w-96 bg-white z-[60] p-6 overflow-y-auto shadow-2xl border-l border-slate-200 animate-in slide-in-from-right duration-300">
             <div className="flex items-center justify-between mb-8">
                 <h2 className="text-xl font-bold text-slate-900">Cost Analysis</h2>
-                <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600">
+                <button 
+                    onClick={onClose} 
+                    className="p-2 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+                    aria-label="Close Inspector"
+                >
                     <X className="h-5 w-5" />
                 </button>
             </div>

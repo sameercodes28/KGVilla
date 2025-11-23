@@ -102,12 +102,12 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
                         getUnassignedItems={getUnassignedItems}
                     />
                 </div>
-
-                <CostInspector 
-                    item={inspectingItem} 
-                    onClose={() => setInspectingItem(null)} 
-                />
             </div>
+
+            <CostInspector 
+                item={inspectingItem} 
+                onClose={() => setInspectingItem(null)} 
+            />
         </div>
     );
 }
