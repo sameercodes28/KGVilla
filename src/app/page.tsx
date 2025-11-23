@@ -93,33 +93,33 @@ export default function Home() {
 
       <LanguageToggle />
       
-      <main className="max-w-6xl mx-auto pt-16 px-6 pb-20 relative z-10">
+      <main className="max-w-6xl mx-auto pt-12 px-6 pb-20 relative z-10">
         {/* Hero Section */}
-        <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-white/80 backdrop-blur border border-blue-100 text-blue-700 text-xs font-bold uppercase tracking-wide mb-6 shadow-sm">
+        <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/80 backdrop-blur border border-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-wide mb-4 shadow-sm">
                 <Sparkles className="w-3 h-3 mr-2 text-blue-500" />
                 Smart Construction Intelligence
             </div>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-6 leading-tight">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-4 leading-tight">
                 Precision Pricing for <br/>
                 <span className="text-blue-600">Swedish Villas.</span>
             </h1>
-            <p className="text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed mb-8">
+            <p className="text-base text-slate-500 max-w-2xl mx-auto leading-relaxed mb-6">
                 Instantly analyze blueprints against <strong>BBR 2025</strong> regulations and current market rates. Generate compliant, professional quotes in seconds.
             </p>
 
             {/* Feature Badges */}
-            <div className="flex flex-wrap justify-center gap-4 text-sm font-medium text-slate-600">
-                <div className="flex items-center bg-white/60 px-4 py-2 rounded-full border border-slate-200 shadow-sm">
-                    <ShieldCheck className="w-4 h-4 mr-2 text-green-600" />
+            <div className="flex flex-wrap justify-center gap-3 text-xs font-medium text-slate-600">
+                <div className="flex items-center bg-white/60 px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+                    <ShieldCheck className="w-3.5 h-3.5 mr-1.5 text-green-600" />
                     BBR 2025 Compliant
                 </div>
-                <div className="flex items-center bg-white/60 px-4 py-2 rounded-full border border-slate-200 shadow-sm">
-                    <CheckCircle2 className="w-4 h-4 mr-2 text-blue-600" />
+                <div className="flex items-center bg-white/60 px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
                     Säker Vatten Ready
                 </div>
-                <div className="flex items-center bg-white/60 px-4 py-2 rounded-full border border-slate-200 shadow-sm">
-                    <CheckCircle2 className="w-4 h-4 mr-2 text-purple-600" />
+                <div className="flex items-center bg-white/60 px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-purple-600" />
                     ABT 06 Logic
                 </div>
             </div>
