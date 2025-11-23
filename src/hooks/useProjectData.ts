@@ -14,45 +14,39 @@ export function useProjectData(projectId: string = projectDetails.id) {
     const storageKeyPlan = `kgvilla-plan-${projectId}`;
 
     // --- Persistence ---
-    // Load from LocalStorage on Mount
+    // Load from API on Mount
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const savedItems = localStorage.getItem(storageKeyItems);
-            const savedPlan = localStorage.getItem(storageKeyPlan);
-            
-            if (savedItems) {
-                try {
-                     
-                    setItems(JSON.parse(savedItems));
-                } catch (e) {
-                    console.error("Failed to load items", e);
-                }
-            } else if (projectId === projectDetails.id) {
-                // Only load mock data for the specific mock project ID
-                 
-                setItems(initialCostItems);
-            }
-
-            if (savedPlan) {
-                setFloorPlanUrl(savedPlan);
-            } else if (projectId === projectDetails.id) {
-                // Mock plan for demo project
-                setFloorPlanUrl('/hus-1405-plan.jpg');
-            }
-
+        if (projectId === projectDetails.id) {
+            setItems(initialCostItems);
             setIsLoaded(true);
+            return;
         }
-    }, [projectId, storageKeyItems, storageKeyPlan]);
 
-    // Save to LocalStorage on Change
+        fetch(`${API_URL}/projects/${projectId}/items`)
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    setItems(data);
+                }
+                setIsLoaded(true);
+            })
+            .catch(err => console.error("Failed to load items", err));
+    }, [projectId]);
+
+    // Save to API on Change (Debounced 1s ideally, but here direct)
     useEffect(() => {
-        if (typeof window !== 'undefined' && isLoaded) {
-            localStorage.setItem(storageKeyItems, JSON.stringify(items));
-            if (floorPlanUrl) {
-                localStorage.setItem(storageKeyPlan, floorPlanUrl);
-            }
+        if (isLoaded && items.length > 0 && projectId !== projectDetails.id) {
+            // Simple debounce using timeout
+            const timer = setTimeout(() => {
+                fetch(`${API_URL}/projects/${projectId}/items`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(items)
+                }).catch(err => console.error("Failed to save items", err));
+            }, 1000);
+            return () => clearTimeout(timer);
         }
-    }, [items, floorPlanUrl, storageKeyItems, storageKeyPlan, isLoaded]);
+    }, [items, projectId, isLoaded]);
 
     // --- Calculations ---
     const totalClientCosts = useMemo(() => clientCosts.reduce((sum, item) => sum + item.cost, 0), []);

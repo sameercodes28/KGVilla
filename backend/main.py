@@ -19,8 +19,9 @@ from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
 import os
-from models import CostItem, Project, ChatResponse
+from google.cloud import firestore
 from ai_service import analyze_image_with_gemini, chat_with_gemini
+from models import CostItem, Project, ChatResponse
 
 # ... (existing imports)
 
@@ -55,28 +56,80 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers (Authentication, etc.)
 )
 
+from google.cloud import firestore
+from google.api_core.exceptions import NotFound
+
+# ... (existing imports)
+
+# Initialize Firestore
+# Defensive init for build environment
+try:
+    db = firestore.Client(project=os.environ.get("GOOGLE_CLOUD_PROJECT", "kgvilla"))
+    _firestore_available = True
+except Exception as e:
+    print(f"WARNING: Firestore client failed to initialize: {e}")
+    _firestore_available = False
+
+# ... (existing CORS and Models)
+
 # --- API Routes ---
 
-@app.get("/")
-def read_root():
-    """
-    Health Check Endpoint.
-    Used by Cloud Run to verify the container is alive and ready to serve traffic.
-    """
-    return {"status": "active", "service": "KGVilla Backend"}
+@app.get("/projects", response_model=List[Project])
+def list_projects():
+    """List all projects from Firestore."""
+    if not _firestore_available:
+        return []
+    
+    docs = db.collection("projects").stream()
+    return [Project(**doc.to_dict()) for doc in docs]
+
+@app.post("/projects")
+def create_update_project(project: Project):
+    """Create or Update project metadata."""
+    if not _firestore_available:
+        return {"status": "error", "message": "Firestore unavailable"}
+    
+    db.collection("projects").document(project.id).set(project.model_dump())
+    return {"status": "success", "id": project.id}
 
 @app.get("/projects/{project_id}", response_model=Project)
 def get_project(project_id: str):
-    """
-    Fetch project details by ID.
-    (Currently a mock stub, will connect to Firestore in the future)
-    """
-    # TODO: Fetch real data from Google Cloud Firestore
-    return {
-        "id": project_id, 
-        "name": "Mock Project from Backend", 
-        "location": "Stockholm"
-    }
+    """Fetch project metadata."""
+    if not _firestore_available:
+        # Fallback for testing
+        return Project(id=project_id, name="Mock Project", location="Stockholm")
+
+    doc = db.collection("projects").document(project_id).get()
+    if not doc.exists:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return Project(**doc.to_dict())
+
+@app.post("/projects/{project_id}/items")
+def save_project_items(project_id: str, items: List[CostItem]):
+    """Save the full list of cost items for a project."""
+    if not _firestore_available:
+        return {"status": "mock_saved"}
+        
+    # Store items as a JSON blob in a separate collection 'cost_data' to keep 'projects' light
+    # Or just a field. Let's use a separate doc in 'cost_data' collection keyed by project_id
+    data = {"items": [item.model_dump() for item in items]}
+    db.collection("cost_data").document(project_id).set(data)
+    return {"status": "success", "count": len(items)}
+
+@app.get("/projects/{project_id}/items", response_model=List[CostItem])
+def get_project_items(project_id: str):
+    """Load cost items."""
+    if not _firestore_available:
+        return []
+        
+    doc = db.collection("cost_data").document(project_id).get()
+    if not doc.exists:
+        return []
+    
+    data = doc.to_dict()
+    return [CostItem(**item) for item in data.get("items", [])]
+
+# ... (analyze endpoint)
 
 @app.post("/analyze")
 
