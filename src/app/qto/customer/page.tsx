@@ -4,9 +4,10 @@ import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useProjectData } from '@/hooks/useProjectData';
 import { useTranslation } from '@/contexts/LanguageContext';
-import { MapPin, CheckCircle, ShieldCheck, FileText, ArrowRight } from 'lucide-react';
+import { MapPin, CheckCircle, ShieldCheck, FileText, ArrowRight, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import Link from 'next/link';
 
 function CustomerViewContent() {
     const searchParams = useSearchParams();
@@ -25,6 +26,14 @@ function CustomerViewContent() {
     return (
         <div className="min-h-screen bg-white font-sans text-slate-900">
             <LanguageToggle />
+            
+            <Link 
+                href={`/qto?project=${projectId || ''}`}
+                className="fixed top-6 left-6 z-50 flex items-center text-white/80 hover:text-white bg-black/30 hover:bg-black/50 backdrop-blur px-4 py-2 rounded-full transition-all"
+            >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                <span className="text-sm font-medium">Back to Editor</span>
+            </Link>
             
             {/* Hero Section */}
             <div className="relative h-[60vh] bg-slate-900 flex items-center justify-center overflow-hidden">

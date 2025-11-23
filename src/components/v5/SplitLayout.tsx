@@ -7,8 +7,9 @@ import { CostItem } from '../../types';
 import { useTranslation } from '../../contexts/LanguageContext';
 import { useProjectData } from '@/hooks/useProjectData';
 import { logger } from '@/lib/logger';
+import { cn } from '../../lib/utils';
+import { Plus, ArrowLeft, Presentation } from 'lucide-react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
 
 interface SplitLayoutProps {
     projectId?: string;
@@ -80,11 +81,20 @@ export function SplitLayout({ projectId }: SplitLayoutProps) {
                             <ArrowLeft className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform" />
                             Back to Projects
                         </Link>
-                        <div className="flex items-center space-x-2 text-sm text-slate-500">
-                            <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">{t('qto.beta')}</span>
-                            <span>•</span>
-                            <span>{projectId || projectDetails.id}</span>
-                        </div>
+                        
+                        <Link 
+                            href={`/qto/customer?project=${projectId || projectDetails.id}`}
+                            className="flex items-center text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors text-xs font-bold"
+                        >
+                            <Presentation className="h-3.5 w-3.5 mr-1.5" />
+                            View Proposal
+                        </Link>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2 text-sm text-slate-500 mb-4">
+                        <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">{t('qto.beta')}</span>
+                        <span>•</span>
+                        <span>{projectId || projectDetails.id}</span>
                     </div>
                 </div>
 
