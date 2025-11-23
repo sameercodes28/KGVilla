@@ -9,7 +9,7 @@ KGVilla is an intelligent Quantity Take-Off (QTO) tool designed for the Swedish 
 *   **Scenario Mode:** Visualizes "What If" changes (e.g., "Downgrade Kitchen") with instant budget impact.
 *   **Regional Intelligence:** Prices adjusted for 2025 fees in Stockholm vs Västra Götaland.
 *   **Assembly-Based Pricing:** Uses advanced logic to infer hidden costs (e.g., waterproofing in bathrooms, electrical feeds in kitchens).
-*   **Interactive Split View:** A CAD-like interface connecting the visual plan with the data feed.
+*   **Interactive Split View:** A CAD-like interface connecting the visual plan with the data feed. Hover over a cost item to see it on the plan. Includes **fullscreen mode** and toggleable system overlays (Electrical/Plumbing).
 *   **Real-Time Chat:** Discuss the project with an AI consultant.
 *   **Bilingual:** Instant toggling between English and Swedish.
 
