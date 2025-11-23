@@ -470,7 +470,7 @@ def load_standards_context() -> str:
 
     
 
-    Each item MUST include a `breakdown` object with:
+    Each item MUST have a `calculationLogic` field. This field is shown to the user to explain the cost.
 
     
 
@@ -486,7 +486,7 @@ def load_standards_context() -> str:
 
     
 
-    - `material`: Estimated material cost portion.
+    **CRITICAL:** In `calculationLogic`, explicitly mention the assumption or standard used.
 
     
 
@@ -502,7 +502,7 @@ def load_standards_context() -> str:
 
     
 
-    - `labor`: Estimated labor cost portion.
+    *   *Good:* "Area 15m² x 850kr. Includes 10% waste. Priced using ABT 06 Risk Premium (+12%)."
 
     
 
@@ -518,7 +518,7 @@ def load_standards_context() -> str:
 
     
 
-    - `formula`: E.g. "Area * Unit Price".
+    *   *Good:* "Mandatory addition per Säker Vatten: Leakage trays for kitchen appliances."
 
     
 
@@ -534,23 +534,7 @@ def load_standards_context() -> str:
 
     
 
-    - `components`: List of ingredients (e.g. ["Gypsum", "Studs", "Insulation"]).
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    - `source`: "Generic Market Rate 2025" or specific standard.
+    *   *Bad:* "Calculated based on area."
 
     
 

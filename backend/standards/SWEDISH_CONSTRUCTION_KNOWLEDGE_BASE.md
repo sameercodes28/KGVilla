@@ -221,7 +221,21 @@ This document serves as the ground truth for the AI Quantity Surveyor. It combin
 
 ---
 
-## SECTION 8: AI ANALYSIS INSTRUCTIONS (MASTER)
+## SECTION 8: CONTRACT & LEGAL IMPACT ON PRICING
+
+**1. CONTRACT TYPE (Standard for Villas)**
+*   **ABT 06 (Totalentreprenad):** The builder is responsible for both design and execution.
+    *   *Impact:* Contractors add a **10-15% Risk Premium** to cover design errors and unforeseen issues.
+    *   *AI Instruction:* Assume ABT 06 pricing (Higher unit rates) unless specified otherwise.
+
+**2. CONSUMER LAW (Konsumenttjänstlagen)**
+*   **The 15% Rule:** The final price cannot exceed the estimate by more than 15%.
+*   **10-Year Liability:** Builders are liable for defects for 10 years.
+*   *Impact:* "Warranty Buffer" of **2-3%** is added to all labor/material costs.
+
+---
+
+## SECTION 9: AI ANALYSIS INSTRUCTIONS (MASTER)
 
 1.  **SCALE & SEGMENTATION:** Measure pixels. Identify rooms.
 2.  **AREA CALCULATION (SS 21054):**
@@ -233,8 +247,9 @@ This document serves as the ground truth for the AI Quantity Surveyor. It combin
 4.  **QUANTITY TAKE-OFF (AMA/BBV):**
     *   Calculate areas. Add 10% waste for materials.
     *   **Bathroom Walls:** Use "Wet Room Wall" assembly (BBV compliant).
-5.  **PRICING:**
+5.  **PRICING (ABT 06):**
     *   Use the **2025 rates** above.
+    *   **RISK PREMIUM:** Apply a **12% markup** to all construction items (Ground, Structure, Interior) to account for ABT 06 Design Risk + Warranty.
     *   **REGIONAL LOGIC:** If prompt mentions "Göteborg", use Section 5 (Västra Götaland).
     *   **MANDATORY ADDITIONS (PBL/Safety):**
         *   "Climate Declaration" (Admin).

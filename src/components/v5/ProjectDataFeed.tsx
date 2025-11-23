@@ -6,6 +6,7 @@ import { projectDetails, rooms } from '@/data/projectData';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { ClientCostSection } from './ClientCostSection';
+import { ContractScope } from './ContractScope';
 import { PhaseSection } from './PhaseSection';
 import { TotalSummary } from '../v3/TotalSummary';
 import { AddItemForm } from './AddItemForm';
@@ -83,6 +84,8 @@ export function ProjectDataFeed({
                 </header>
 
                 <ClientCostSection />
+                
+                <ContractScope totalCost={totalCost} />
 
                 {/* Content List */}
                 {viewMode === 'phases' ? (
