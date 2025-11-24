@@ -4,7 +4,10 @@
 # Allow these specific files
 !main.py
 !models.py
+!ai_service.py
+!standards/**
 !requirements.txt
 !Dockerfile
 !utils.py
 !.gcloudignore
+!__init__.py
