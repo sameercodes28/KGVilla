@@ -129,6 +129,24 @@ wet_room_cost = area * 4200 kr/m²       # Säker Vatten compliant
 
 If Document AI is unavailable, the system falls back to Gemini AI analysis (non-deterministic).
 
+### 5.6 Setup Requirements
+
+**Environment Variables (Cloud Run):**
+```bash
+GOOGLE_CLOUD_PROJECT=kgvilla
+DOCUMENTAI_PROCESSOR_ID=<your-processor-id>
+API_KEY=<your-api-key>
+```
+
+**Document AI Setup:**
+1. Enable Document AI API: `gcloud services enable documentai.googleapis.com`
+2. Create OCR processor in Google Cloud Console (US region)
+3. Note the Processor ID and add to environment variables
+
+**Files:**
+- `backend/ocr_service.py` - OCR extraction and pricing logic
+- `backend/standards/SWEDISH_CONSTRUCTION_KNOWLEDGE_BASE.md` - Pricing rates
+
 ---
 
 ## 6. Legacy: AI Analysis (Fallback)
