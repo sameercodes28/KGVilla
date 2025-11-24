@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { CostItem, Project } from '@/types';
-import { initialCostItems as mockItems } from '@/data/projectData';
 import { apiClient } from '@/lib/apiClient';
 import { logger } from '@/lib/logger';
 import { generateUUID } from '@/lib/uuid';
@@ -74,9 +73,10 @@ export function useProjectData(projectId?: string) {
                         logger.info('useProjectData', 'Loaded items from LocalStorage', { projectId });
                     }
                 } else {
-                    // Default items if new project or empty
+                    // Start with empty items for new project
+                    // Items will be populated by floor plan analysis
                     if (isCancelled) return;
-                    setItems(mockItems);
+                    setItems([]);
                 }
             } catch (e) {
                 logger.error('useProjectData', 'LocalStorage error', e);
@@ -219,13 +219,15 @@ export function useProjectData(projectId?: string) {
                 return;
             }
 
-            // Merge with existing items (or replace?)
-            // For now, we append and rely on ID uniqueness logic if needed
-            setItems(prev => {
-                const updated = [...prev, ...newItems];
-                persistItems(updated);
-                return updated;
-            });
+            // Replace existing items with analyzed items (not append)
+            // This ensures accurate pricing without duplicates
+            const itemsWithProjectId = newItems.map(item => ({
+                ...item,
+                projectId
+            }));
+
+            setItems(itemsWithProjectId);
+            persistItems(itemsWithProjectId);
 
             logger.info('useProjectData', 'Analysis complete', { count: newItems.length, totalArea: response.totalArea });
 
