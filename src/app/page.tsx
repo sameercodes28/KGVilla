@@ -64,11 +64,18 @@ export default function Home() {
         try {
             const formData = new FormData();
             formData.append('file', selectedFile);
+            logger.info('Home', 'Starting analysis', { fileName: selectedFile.name });
             const result = await apiClient.upload<{ items: CostItem[], totalArea: number }>('/analyze', formData);
             initialItems = result.items || [];
             totalArea = result.totalArea || 0;
+            logger.info('Home', 'Analysis complete', { itemCount: initialItems.length, totalArea });
+
+            if (initialItems.length === 0) {
+                logger.warn('Home', 'Analysis returned no items');
+            }
         } catch (e) {
             logger.error('Home', 'Analysis failed', e);
+            // Continue with empty project - user can retry from QTO view
         }
     }
 

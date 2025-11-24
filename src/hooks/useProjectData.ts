@@ -210,8 +210,15 @@ export function useProjectData(projectId?: string) {
             const formData = new FormData();
             formData.append('file', file);
 
-            const newItems = await apiClient.upload<CostItem[]>('/analyze', formData);
-            
+            const response = await apiClient.upload<{items: CostItem[], totalArea?: number, rooms?: unknown[]}>('/analyze', formData);
+            const newItems = response.items || [];
+
+            if (newItems.length === 0) {
+                logger.warn('useProjectData', 'Analysis returned no items', { response });
+                setError('Analysis completed but no items were extracted. Please try a different image.');
+                return;
+            }
+
             // Merge with existing items (or replace?)
             // For now, we append and rely on ID uniqueness logic if needed
             setItems(prev => {
@@ -219,8 +226,8 @@ export function useProjectData(projectId?: string) {
                 persistItems(updated);
                 return updated;
             });
-            
-            logger.info('useProjectData', 'Analysis complete', { count: newItems.length });
+
+            logger.info('useProjectData', 'Analysis complete', { count: newItems.length, totalArea: response.totalArea });
 
         } catch (e) {
             logger.error('useProjectData', 'Analysis failed', e);
