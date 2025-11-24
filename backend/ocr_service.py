@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 # Environment
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "kgvilla")
-LOCATION = os.environ.get("DOCUMENTAI_LOCATION", "us")  # Document AI location
+LOCATION = os.environ.get("DOCUMENTAI_LOCATION", "eu")  # Document AI location (EU for GDPR)
 
 # --- Document AI Setup ---
 _documentai_available = False
