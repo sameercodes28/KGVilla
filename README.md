@@ -32,12 +32,30 @@ KGVilla is an AI-powered Quantity Take-Off (QTO) and cost estimation platform ta
 ## 🚦 Getting Started
 
 1.  **Prerequisites:** Node.js 18+ and Python 3.11+.
-2.  **Install Dependencies:**
+2.  **Google Cloud Setup (One-time):**
+    ```bash
+    # Enable required APIs
+    gcloud services enable firestore.googleapis.com aiplatform.googleapis.com
+
+    # Create Firestore Database (Native Mode)
+    gcloud firestore databases create --location=europe-north1
+
+    # Grant permissions to Cloud Run Service Account
+    # Replace [PROJECT_NUMBER] with your GCP Project Number
+    gcloud projects add-iam-policy-binding kgvilla \
+        --member="serviceAccount:[PROJECT_NUMBER]-compute@developer.gserviceaccount.com" \
+        --role="roles/datastore.user"
+    
+    gcloud projects add-iam-policy-binding kgvilla \
+        --member="serviceAccount:[PROJECT_NUMBER]-compute@developer.gserviceaccount.com" \
+        --role="roles/aiplatform.user"
+    ```
+3.  **Install Dependencies:**
     ```bash
     npm install
     cd backend && pip install -r requirements.txt
     ```
-3.  **Verify Environment:**
+4.  **Verify Environment:**
     Run the automated health check to ensure everything is set up correctly.
     ```bash
     ./scripts/verify-deployment.sh
