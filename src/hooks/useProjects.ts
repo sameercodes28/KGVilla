@@ -57,7 +57,7 @@ export function useProjects() {
         logger.info('useProjects', 'Creating project', { name });
         
         const newProject: Project = {
-            id: `p-${Date.now()}`,
+            id: crypto.randomUUID(),
             name,
             location,
             description: 'New Project',
@@ -111,21 +111,26 @@ export function useProjects() {
     };
 
     const updateProjectStatus = async (id: string, status: string) => {
+        // Find project before update to avoid stale closure
+        const project = projects.find(p => p.id === id);
+        if (!project) {
+            logger.error('useProjects', 'Project not found for status update', { id });
+            return;
+        }
+
+        const updatedProject = { ...project, status };
+
         // Optimistic Update
         setProjects(prev => {
-            const updated = prev.map(p => p.id === id ? { ...p, status } : p);
+            const updated = prev.map(p => p.id === id ? updatedProject : p);
             saveToLocal(updated);
             return updated;
         });
-        
+
         try {
-            // Find project and sync to backend
-            const project = projects.find(p => p.id === id);
-            if (project) {
-                await apiClient.post('/projects', { ...project, status });
-            }
+            await apiClient.post('/projects', updatedProject);
         } catch (e) {
-             logger.error('useProjects', 'Failed to update status API', e);
+            logger.error('useProjects', 'Failed to update status API', e);
         }
     };
 

@@ -74,7 +74,8 @@ function ChatContent() {
         scenario.items.forEach((item) => {
             addItem(item);
         });
-        alert(`Applied scenario: ${scenario.title}`);
+        // TODO: Replace with Toast notification
+        console.log(`Applied scenario: ${scenario.title}`);
     };
 
     // Handle file selection from the hidden input

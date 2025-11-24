@@ -16,6 +16,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
     const { t } = useTranslation();
     const [isAddingItem, setIsAddingItem] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [newItemData, setNewItemData] = useState<Partial<CostItem>>({
         elementName: '',
         unitPrice: 0,
@@ -29,6 +30,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
         const value = e.target.value;
         setNewItemData({ ...newItemData, elementName: value });
         setShowSuggestions(value.length > 0);
+        if (error) setError(null);
     };
 
     const selectSuggestion = (item: typeof CATALOG_ITEMS[0]) => {
@@ -41,6 +43,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
             description: item.description || ''
         });
         setShowSuggestions(false);
+        if (error) setError(null);
     };
 
     const filteredSuggestions = CATALOG_ITEMS.filter(item => 
@@ -52,11 +55,11 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
         
         // Basic Validation
         if (newItemData.quantity <= 0) {
-            alert("Quantity must be greater than 0");
+            setError("Quantity must be greater than 0");
             return;
         }
         if (newItemData.unitPrice < 0) {
-            alert("Price cannot be negative");
+            setError("Price cannot be negative");
             return;
         }
 
@@ -64,6 +67,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
         
         setIsAddingItem(false);
         setNewItemData({ elementName: '', unitPrice: 0, quantity: 1, unit: 'st', phase: 'structure', description: '' });
+        setError(null);
     };
 
     if (!isAddingItem) {
@@ -144,6 +148,13 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
                     </select>
                 </div>
             </div>
+            
+            {error && (
+                <div className="text-red-500 text-xs font-medium mt-2">
+                    {error}
+                </div>
+            )}
+
             <div className="flex space-x-3 pt-2">
                 <button
                     onClick={handleSubmit}

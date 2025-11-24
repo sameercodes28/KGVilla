@@ -22,6 +22,7 @@ export default function Home() {
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [newProjectName, setNewProjectName] = useState('');
   const [newProjectLocation, setNewProjectLocation] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -79,8 +80,13 @@ export default function Home() {
   const handleDelete = (e: React.MouseEvent, id: string) => {
       e.preventDefault();
       e.stopPropagation();
-      if (confirm('Are you sure you want to delete this project?')) {
-          deleteProject(id);
+      setProjectToDelete(id);
+  };
+
+  const confirmDelete = () => {
+      if (projectToDelete) {
+          deleteProject(projectToDelete);
+          setProjectToDelete(null);
       }
   };
 
@@ -269,6 +275,30 @@ export default function Home() {
         </div>
 
       </main>
+
+      {/* Delete Confirmation Modal */}
+      {projectToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden p-6 space-y-4">
+                <h3 className="text-lg font-bold text-slate-900">Delete Project?</h3>
+                <p className="text-sm text-slate-500">This action cannot be undone. The project will be permanently removed.</p>
+                <div className="flex space-x-3 justify-end pt-2">
+                    <button 
+                        onClick={() => setProjectToDelete(null)}
+                        className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={confirmDelete}
+                        className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg font-medium transition-colors"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
 
       {/* Create Project Modal */}
       {isModalOpen && (

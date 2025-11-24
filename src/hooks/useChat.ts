@@ -114,7 +114,7 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
 
         // 1. Optimistic UI
         const userMsg: Message = {
-            id: Date.now().toString(),
+            id: crypto.randomUUID(),
             role: 'user',
             text: input,
             file: selectedFile || undefined,
@@ -140,9 +140,9 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
                 const data = await apiClient.upload<CostItem[]>('/analyze', formData);
 
                 const aiMsg: Message = {
-                    id: (Date.now() + 1).toString(),
+                    id: crypto.randomUUID(),
                     role: 'ai',
-                    text: `I've analyzed **${currentFile.name}**. Here is the preliminary Cost Breakdown based on BBR 2025 standards:`, 
+                    text: `I've analyzed **${currentFile.name}**. Here is the preliminary Cost Breakdown based on BBR 2025 standards:`,
                     items: data,
                     timestamp: new Date()
                 };
@@ -156,10 +156,10 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
                 });
 
                 const aiMsg: Message = {
-                    id: (Date.now() + 1).toString(),
+                    id: crypto.randomUUID(),
                     role: 'ai',
                     text: data.text,
-                    scenario: data.scenario, // Optional scenario
+                    scenario: data.scenario,
                     timestamp: new Date()
                 };
                 setMessages(prev => [...prev, aiMsg]);
@@ -168,7 +168,7 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
         } catch (error) {
             logger.error('useChat', 'Failed to send message', error);
             setMessages(prev => [...prev, {
-                id: Date.now().toString(),
+                id: crypto.randomUUID(),
                 role: 'ai',
                 text: "Sorry, I encountered an error connecting to the AI Architect. Please try again.",
                 timestamp: new Date()

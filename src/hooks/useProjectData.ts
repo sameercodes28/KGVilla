@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { CostItem, Project } from '@/types';
 import { initialCostItems as mockItems } from '@/data/projectData';
 import { apiClient } from '@/lib/apiClient';
@@ -125,34 +125,49 @@ export function useProjectData(projectId?: string) {
     }, [projectId, storageKey]);
 
     // Helper to save to both Local and API
-    const persistItems = async (newItems: CostItem[]) => {
+    const persistItems = useCallback(async (newItems: CostItem[]) => {
         if (!storageKey || !projectId) return;
 
         // 1. Local Save (Optimistic)
-        localStorage.setItem(storageKey, JSON.stringify(newItems));
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(newItems));
+        } catch (e) {
+            logger.error('useProjectData', 'LocalStorage save failed', e);
+        }
         setSyncState(prev => ({ ...prev, status: 'pending' }));
-        
-        // 2. API Save (Fire & Forget)
+
+        // 2. API Save
         try {
             await apiClient.post(`/projects/${projectId}/items`, newItems);
             setSyncState({ status: 'synced', lastSyncedAt: new Date(), errorMessage: null });
         } catch (e) {
             logger.error('useProjectData', 'API Save Failed', e);
-            setSyncState(prev => ({ 
-                ...prev, 
-                status: 'error', 
-                errorMessage: 'Sync failed' 
+            setSyncState(prev => ({
+                ...prev,
+                status: 'error',
+                errorMessage: 'Sync failed'
             }));
         }
-    };
+    }, [storageKey, projectId]);
+
+    // Track if items have been modified by user actions (not initial load)
+    const isUserModified = useRef(false);
+
+    // Persist items when they change due to user actions
+    useEffect(() => {
+        if (isUserModified.current && items.length > 0) {
+            persistItems(items);
+            isUserModified.current = false;
+        }
+    }, [items, persistItems]);
 
     const addItem = (partialItem: Partial<CostItem>) => {
         if (!projectId) return;
-        
+
         const newItem: CostItem = {
             id: crypto.randomUUID(),
             projectId,
-            phase: 'structure', // Default
+            phase: 'structure',
             elementName: 'New Item',
             description: '',
             quantity: 1,
@@ -164,29 +179,22 @@ export function useProjectData(projectId?: string) {
             totalQuantity: partialItem.quantity || 1
         };
 
-        setItems(prev => {
-            const updated = [...prev, newItem];
-            persistItems(updated);
-            return updated;
-        });
+        isUserModified.current = true;
+        setItems(prev => [...prev, newItem]);
     };
 
     const updateItem = (id: string, updates: Partial<CostItem>) => {
-        setItems(prev => {
-            const updated = prev.map(item => {
-                if (item.id === id) {
-                    const updatedItem = { ...item, ...updates };
-                    // Recalculate total if quantity or price changes
-                    if (updates.quantity !== undefined || updates.unitPrice !== undefined) {
-                        updatedItem.totalCost = updatedItem.quantity * updatedItem.unitPrice;
-                    }
-                    return updatedItem;
+        isUserModified.current = true;
+        setItems(prev => prev.map(item => {
+            if (item.id === id) {
+                const updatedItem = { ...item, ...updates };
+                if (updates.quantity !== undefined || updates.unitPrice !== undefined) {
+                    updatedItem.totalCost = updatedItem.quantity * updatedItem.unitPrice;
                 }
-                return item;
-            });
-            persistItems(updated);
-            return updated;
-        });
+                return updatedItem;
+            }
+            return item;
+        }));
     };
 
     // Analyze Plan (Upload & AI Scan)
