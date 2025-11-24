@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { CostItem, ConstructionPhase, Room } from '@/types';
+import { CostItem } from '@/types';
 import { initialCostItems as mockItems } from '@/data/projectData';
 import { apiClient } from '@/lib/apiClient';
 import { logger } from '@/lib/logger';
@@ -27,6 +27,23 @@ export function useProjectData(projectId?: string) {
     // Helper to get storage key
     const storageKey = projectId ? `kgvilla_items_${projectId}` : null;
 
+    // Migration Helper
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const migrateItems = (rawItems: any[]): CostItem[] => {
+        const migrated = rawItems.map(item => {
+            // Migrate legacy 'installations' phase
+            if (item.phase === 'installations') {
+                if (item.system === 'vvs') {
+                    return { ...item, phase: 'plumbing' };
+                }
+                // Default to electrical for other installations or 'el' system
+                return { ...item, phase: 'electrical' };
+            }
+            return item;
+        });
+        return migrated;
+    };
+
     // 1. Load Data (LocalStorage First, then API)
     useEffect(() => {
         if (!projectId) return;
@@ -38,11 +55,21 @@ export function useProjectData(projectId?: string) {
             try {
                 const localData = localStorage.getItem(storageKey || '');
                 if (localData) {
-                    setItems(JSON.parse(localData));
-                    logger.info('useProjectData', 'Loaded items from LocalStorage', { projectId });
+                    const parsed = JSON.parse(localData);
+                    const migrated = migrateItems(parsed);
+                    setItems(migrated);
+                    
+                    // If migration happened, save back
+                    if (JSON.stringify(parsed) !== JSON.stringify(migrated)) {
+                        localStorage.setItem(storageKey || '', JSON.stringify(migrated));
+                        logger.info('useProjectData', 'Migrated legacy items', { count: migrated.length });
+                    } else {
+                        logger.info('useProjectData', 'Loaded items from LocalStorage', { projectId });
+                    }
                 } else {
                     // Default items if new project or empty
-                    setItems(mockItems); // Fallback
+                    // Ensure mock items are also clean (they should be, but good to be safe)
+                    setItems(mockItems); 
                 }
             } catch (e) {
                 logger.error('useProjectData', 'LocalStorage error', e);
@@ -53,10 +80,11 @@ export function useProjectData(projectId?: string) {
                 const apiData = await apiClient.get<CostItem[]>(`/projects/${projectId}/items`);
                 
                 if (Array.isArray(apiData) && apiData.length > 0) {
-                    setItems(apiData);
-                    localStorage.setItem(storageKey || '', JSON.stringify(apiData));
+                    const migratedApi = migrateItems(apiData);
+                    setItems(migratedApi);
+                    localStorage.setItem(storageKey || '', JSON.stringify(migratedApi));
                     setSyncState({ status: 'synced', lastSyncedAt: new Date(), errorMessage: null });
-                    logger.info('useProjectData', 'Synced items with API', { count: apiData.length });
+                    logger.info('useProjectData', 'Synced items with API', { count: migratedApi.length });
                 }
             } catch (err) {
                 logger.warn('useProjectData', 'API unavailable, using local data', err);
