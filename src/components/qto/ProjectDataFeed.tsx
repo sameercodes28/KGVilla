@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { ClientCostSection } from './ClientCostSection';
 import { ContractScope } from './ContractScope';
 import { PhaseSection } from './PhaseSection';
-import { TotalSummary } from '../v3/TotalSummary';
+import { TotalSummary } from './TotalSummary';
 import { AddItemForm } from './AddItemForm';
 import { useProjectContext } from '@/contexts/ProjectDataContext';
 

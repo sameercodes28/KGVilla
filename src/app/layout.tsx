@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/LanguageContext";
-import { BottomNav } from "@/components/v3/BottomNav";
+import { BottomNav } from "@/components/layout/BottomNav";
 
 // Premium font configuration
 const inter = Inter({

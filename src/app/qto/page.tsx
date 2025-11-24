@@ -2,10 +2,10 @@
 
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { SplitLayout } from '@/components/v5/SplitLayout';
-import { ProjectList } from '@/components/v5/ProjectList';
+import { SplitLayout } from '@/components/qto/SplitLayout';
+import { ProjectList } from '@/components/qto/ProjectList';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
-import { BottomNav } from '@/components/v3/BottomNav';
+import { BottomNav } from '@/components/layout/BottomNav';
 
 function QTOContent() {
     const searchParams = useSearchParams();

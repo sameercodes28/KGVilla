@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CostItem } from '@/types';
-import { CostCard } from '../v3/CostCard';
+import { CostCard } from './CostCard';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 
 interface PhaseSectionProps {
