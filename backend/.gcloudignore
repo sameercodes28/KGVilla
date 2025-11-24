@@ -5,6 +5,8 @@
 !main.py
 !models.py
 !ai_service.py
+!security.py
+!middleware.py
 !standards/**
 !requirements.txt
 !Dockerfile
