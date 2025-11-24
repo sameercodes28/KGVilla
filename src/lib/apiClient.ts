@@ -13,7 +13,7 @@ class ApiClient {
         const url = `${API_URL}${endpoint}`;
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
-            'X-API-Key': process.env.NEXT_PUBLIC_API_KEY || 'dev-key-123', // Fallback matching backend
+            'X-API-Key': process.env.NEXT_PUBLIC_API_KEY || '',
             ...customHeaders,
         };
 

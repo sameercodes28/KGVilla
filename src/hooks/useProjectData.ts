@@ -16,7 +16,7 @@ export function useProjectData(projectId?: string) {
     const [items, setItems] = useState<CostItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [floorPlanUrl, setFloorPlanUrl] = useState<string | null>(null);
+    const [project, setProject] = useState<Project | null>(null);
     
     // Sync State
     const [syncState, setSyncState] = useState<SyncState>({
@@ -98,7 +98,7 @@ export function useProjectData(projectId?: string) {
             // C. Fetch Project Details (for Floor Plan)
             try {
                 const projectData = await apiClient.get<Project>(`/projects/${projectId}`);
-                setFloorPlanUrl(projectData.floorPlanUrl || null);
+                setProject(projectData);
             } catch (e) {
                 // Silent fail for metadata
                 logger.warn('useProjectData', 'Failed to fetch project metadata', e);
@@ -226,6 +226,7 @@ export function useProjectData(projectId?: string) {
         getItemsByPhase,
         getItemsByRoom,
         getUnassignedItems,
-        floorPlanUrl
+        project,
+        floorPlanUrl: project?.floorPlanUrl || null
     };
 }

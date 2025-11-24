@@ -77,6 +77,29 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
         setEditValues(prev => ({ ...prev, quantity: num }));
     };
 
+    // Price Validation
+    const MIN_PRICE = 0;
+    const MAX_PRICE = 10000000;
+
+    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        if (val === '') {
+            setEditValues(prev => ({ ...prev, unitPrice: 0 }));
+            return;
+        }
+        const num = parseFloat(val);
+        if (!isNaN(num)) {
+            setEditValues(prev => ({ ...prev, unitPrice: num }));
+        }
+    };
+
+    const handlePriceBlur = () => {
+        let num = editValues.unitPrice;
+        if (num < MIN_PRICE) num = MIN_PRICE;
+        if (num > MAX_PRICE) num = MAX_PRICE;
+        setEditValues(prev => ({ ...prev, unitPrice: num }));
+    };
+
     const currentOption = item.options?.find(opt => opt.id === selectedOptionId);
 
     // Translation logic for item name and description
@@ -148,8 +171,11 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                                     <label className="text-xs text-slate-500">{t('card.price')}</label>
                                     <input
                                         type="number"
+                                        min={MIN_PRICE}
+                                        max={MAX_PRICE}
                                         value={editValues.unitPrice}
-                                        onChange={(e) => setEditValues({ ...editValues, unitPrice: Number(e.target.value) })}
+                                        onChange={handlePriceChange}
+                                        onBlur={handlePriceBlur}
                                         className="w-24 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-blue-500 outline-none"
                                     />
                                 </div>

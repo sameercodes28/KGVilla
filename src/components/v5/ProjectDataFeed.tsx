@@ -1,8 +1,6 @@
-'use client';
-
 import React, { useState } from 'react';
-import { CostItem, Room } from '@/types';
-import { projectDetails, rooms } from '@/data/projectData';
+import { Room } from '@/types';
+import { rooms } from '@/data/projectData';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { ClientCostSection } from './ClientCostSection';
@@ -10,33 +8,24 @@ import { ContractScope } from './ContractScope';
 import { PhaseSection } from './PhaseSection';
 import { TotalSummary } from '../v3/TotalSummary';
 import { AddItemForm } from './AddItemForm';
+import { useProjectContext } from '@/contexts/ProjectDataContext';
 
-interface ProjectDataFeedProps {
-    items: CostItem[];
-    totalCost: number;
-    onUpdateItem: (id: string, updates: Partial<CostItem>) => void;
-    onAddItem: (item: Partial<CostItem>) => void;
-    onHoverItem: (item: CostItem | null) => void;
-    onInspectItem: (item: CostItem) => void;
-    // Helpers from hook
-    getItemsByPhase: (phase: string) => CostItem[];
-    getItemsByRoom: (roomId: string) => CostItem[];
-    getUnassignedItems: () => CostItem[];
-}
-
-export function ProjectDataFeed({ 
-    items, 
-    totalCost, 
-    onUpdateItem, 
-    onAddItem, 
-    onHoverItem,
-    onInspectItem,
-    getItemsByPhase, 
-    getItemsByRoom, 
-    getUnassignedItems 
-}: ProjectDataFeedProps) {
+export function ProjectDataFeed() {
     const { t } = useTranslation();
     const [viewMode, setViewMode] = useState<'phases' | 'rooms'>('phases');
+    
+    const { 
+        project, 
+        items, 
+        totalCost, 
+        updateItem, 
+        addItem, 
+        setHighlightedItem, 
+        setInspectingItem,
+        getItemsByPhase,
+        getItemsByRoom,
+        getUnassignedItems
+    } = useProjectContext();
 
     const phases = [
         { id: 'ground', label: t('phase.ground') },
@@ -44,9 +33,14 @@ export function ProjectDataFeed({
         { id: 'electrical', label: t('phase.electrical') },
         { id: 'plumbing', label: t('phase.plumbing') },
         { id: 'interior', label: t('phase.interior') },
+        { id: 'completion', label: t('phase.completion') },
     ];
 
     const otherItems = items.filter(i => !phases.some(p => p.id === i.phase));
+
+    if (!project) {
+        return <div className="p-8 text-center text-slate-500">Loading project...</div>;
+    }
 
     return (
         <div className="w-full h-full overflow-y-auto bg-white">
@@ -56,13 +50,13 @@ export function ProjectDataFeed({
                     <div className="flex items-center space-x-2 text-sm text-slate-500 mb-4">
                         <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">{t('qto.beta')}</span>
                         <span>•</span>
-                        <span>{projectDetails.id}</span>
+                        <span>{project.id}</span>
                         <span>•</span>
-                        <span>{projectDetails.lastModified}</span>
+                        <span>{project.lastModified || 'Just now'}</span>
                     </div>
 
                     <div className="flex justify-between items-end mb-2">
-                        <h1 className="text-4xl font-serif font-bold text-slate-900 tracking-tight">{projectDetails.name}</h1>
+                        <h1 className="text-4xl font-serif font-bold text-slate-900 tracking-tight">{project.name}</h1>
 
                         {/* View Mode Toggle */}
                         <div className="bg-slate-100 p-1 rounded-lg flex space-x-1">
@@ -80,10 +74,10 @@ export function ProjectDataFeed({
                             </button>
                         </div>
                     </div>
-                    <p className="text-slate-500 text-lg">{projectDetails.address} • {projectDetails.totalArea} m²</p>
+                    <p className="text-slate-500 text-lg">{project.location} • {project.totalArea || 0} m²</p>
                                     </header>
                 
-                                    <ClientCostSection onInspectItem={onInspectItem} />
+                                    <ClientCostSection onInspectItem={setInspectingItem} />
                                 
                                     <ContractScope totalCost={totalCost} />
                                 {/* Content List */}
@@ -100,9 +94,9 @@ export function ProjectDataFeed({
                                     title={phase.label}
                                     totalCost={phaseTotal}
                                     items={phaseItems}
-                                    onUpdateItem={onUpdateItem}
-                                    onHoverItem={onHoverItem}
-                                    onInspectItem={onInspectItem}
+                                    onUpdateItem={updateItem}
+                                    onHoverItem={setHighlightedItem}
+                                    onInspectItem={setInspectingItem}
                                 />
                             );
                         })}
@@ -112,9 +106,9 @@ export function ProjectDataFeed({
                                 title={t('qto.other_custom')}
                                 totalCost={otherItems.reduce((sum, i) => sum + i.totalCost, 0)}
                                 items={otherItems}
-                                onUpdateItem={onUpdateItem}
-                                onHoverItem={onHoverItem}
-                                onInspectItem={onInspectItem}
+                                onUpdateItem={updateItem}
+                                onHoverItem={setHighlightedItem}
+                                onInspectItem={setInspectingItem}
                             />
                         )}
                     </div>
@@ -131,9 +125,9 @@ export function ProjectDataFeed({
                                     title={room.name}
                                     totalCost={roomTotal}
                                     items={roomItems}
-                                    onUpdateItem={onUpdateItem}
-                                    onHoverItem={onHoverItem}
-                                    onInspectItem={onInspectItem}
+                                    onUpdateItem={updateItem}
+                                    onHoverItem={setHighlightedItem}
+                                    onInspectItem={setInspectingItem}
                                 />
                             );
                         })}
@@ -143,9 +137,9 @@ export function ProjectDataFeed({
                                 title={t('qto.general_unassigned')}
                                 totalCost={getUnassignedItems().reduce((sum, i) => sum + i.totalCost, 0)}
                                 items={getUnassignedItems()}
-                                onUpdateItem={onUpdateItem}
-                                onHoverItem={onHoverItem}
-                                onInspectItem={onInspectItem}
+                                onUpdateItem={updateItem}
+                                onHoverItem={setHighlightedItem}
+                                onInspectItem={setInspectingItem}
                             />
                         )}
                     </div>
@@ -153,11 +147,11 @@ export function ProjectDataFeed({
 
                 {/* Add Item Form */}
                 <div className="mt-12 border-t border-slate-200 pt-8">
-                    <AddItemForm onAdd={onAddItem} phases={phases} />
+                    <AddItemForm onAdd={addItem} phases={phases} />
                 </div>
 
                 <div className="mt-12">
-                    <TotalSummary totalCost={totalCost} area={projectDetails.totalArea || 0} />
+                    <TotalSummary totalCost={totalCost} area={project.totalArea || 0} />
                 </div>
             </div>
         </div>

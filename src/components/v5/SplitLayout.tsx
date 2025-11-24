@@ -81,17 +81,7 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
                 <div className="w-1/2 h-full overflow-hidden flex flex-col bg-white">
                     {/* Scrollable Feed */}
                     <div className="flex-1 overflow-y-auto">
-                        <ProjectDataFeed 
-                            items={items}
-                            totalCost={totalCost}
-                            onUpdateItem={updateItem}
-                            onAddItem={onAddItem}
-                            onHoverItem={setHighlightedItem}
-                            onInspectItem={setInspectingItem}
-                            getItemsByPhase={getItemsByPhase}
-                            getItemsByRoom={getItemsByRoom}
-                            getUnassignedItems={getUnassignedItems}
-                        />
+                        <ProjectDataFeed />
                     </div>
                 </div>
 

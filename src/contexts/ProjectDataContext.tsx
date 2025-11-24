@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { CostItem } from '@/types';
+import { CostItem, Project } from '@/types';
 import { useProjectData, SyncState } from '@/hooks/useProjectData';
 
 interface ProjectDataContextType {
@@ -9,6 +9,7 @@ interface ProjectDataContextType {
     items: CostItem[];
     totalCost: number;
     floorPlanUrl: string | null;
+    project: Project | null;
     isLoading: boolean;
     error: string | null;
     isAnalyzing: boolean;

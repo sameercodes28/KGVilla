@@ -48,8 +48,18 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
     );
 
     const handleSubmit = () => {
-        if (!newItemData.elementName || newItemData.unitPrice === undefined) return;
+        if (!newItemData.elementName || newItemData.unitPrice === undefined || newItemData.quantity === undefined) return;
         
+        // Basic Validation
+        if (newItemData.quantity <= 0) {
+            alert("Quantity must be greater than 0");
+            return;
+        }
+        if (newItemData.unitPrice < 0) {
+            alert("Price cannot be negative");
+            return;
+        }
+
         onAdd(newItemData);
         
         setIsAddingItem(false);
@@ -106,6 +116,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
                     <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.price')}</label>
                     <input
                         type="number"
+                        min="0"
                         className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
                         value={newItemData.unitPrice}
                         onChange={e => setNewItemData({ ...newItemData, unitPrice: Number(e.target.value) })}
@@ -115,6 +126,8 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
                     <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.quantity')}</label>
                     <input
                         type="number"
+                        min="0.01"
+                        step="0.01"
                         className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
                         value={newItemData.quantity}
                         onChange={e => setNewItemData({ ...newItemData, quantity: Number(e.target.value) })}

@@ -6,6 +6,7 @@ import sys
 import logging
 import traceback
 import uuid
+from datetime import datetime, timedelta
 
 # Add current directory to path to ensure local imports work in all environments
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -96,30 +97,6 @@ class ChatRequest(BaseModel):
     message: str
     currentItems: List[CostItem]
 
-import os
-import sys
-import logging
-import traceback
-import uuid
-from datetime import datetime, timedelta
-
-# Add current directory to path to ensure local imports work in all environments
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
-from typing import List, Optional
-from fastapi import FastAPI, HTTPException, UploadFile, File, Request, Depends
-from fastapi.responses import JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from google.cloud import firestore
-from ai_service import analyze_image_with_gemini, chat_with_gemini, _vertex_available
-from models import CostItem, Project, ChatResponse, Scenario
-from security import get_api_key
-from pydantic import BaseModel
-
-# ... (rest of imports)
-
-# ... (app setup) ...
-
 # --- Routes ---
 @app.get("/")
 def read_root():
@@ -185,7 +162,7 @@ async def health_check():
     return response
 
 @app.get("/projects", response_model=List[Project])
-def list_projects():
+def list_projects(api_key: str = Depends(get_api_key)):
     if not _firestore_available or not db:
         return []
     try:
@@ -206,7 +183,7 @@ def create_update_project(project: Project, api_key: str = Depends(get_api_key))
     return {"status": "success", "id": project.id}
 
 @app.get("/projects/{project_id}", response_model=Project)
-def get_project(project_id: str):
+def get_project(project_id: str, api_key: str = Depends(get_api_key)):
     if not _firestore_available or not db:
         # Mock fallback for resilience
         return Project(id=project_id, name="Offline Project", location="Local")
@@ -236,19 +213,23 @@ def save_project_items(project_id: str, items: List[CostItem], api_key: str = De
     return {"status": "success", "count": len(items)}
 
 @app.get("/projects/{project_id}/items", response_model=List[CostItem])
-def get_project_items(project_id: str):
+def get_project_items(project_id: str, api_key: str = Depends(get_api_key)):
     if not _firestore_available or not db:
         return []
     
-    doc = db.collection("cost_data").document(project_id).get()
-    if not doc.exists:
+    try:
+        doc = db.collection("cost_data").document(project_id).get()
+        if not doc.exists:
+            return []
+        data = doc.to_dict()
+        return [CostItem(**item) for item in data.get("items", [])]
+    except Exception as e:
+        logger.error(f"Get items failed: {e}")
         return []
-    data = doc.to_dict()
-    return [CostItem(**item) for item in data.get("items", [])]
 
 @app.post("/analyze")
 @limiter.limit("10/minute")
-async def analyze_drawing(request: Request, file: UploadFile = File(...)):
+async def analyze_drawing(request: Request, file: UploadFile = File(...), api_key: str = Depends(get_api_key)):
     # 1. Validate Content Type
     if file.content_type not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(
@@ -273,5 +254,6 @@ async def analyze_drawing(request: Request, file: UploadFile = File(...)):
     return result
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(request: ChatRequest):
+@limiter.limit("20/minute")
+async def chat_endpoint(request: ChatRequest, req: Request, api_key: str = Depends(get_api_key)):
     return await chat_with_gemini(request.message, request.currentItems)

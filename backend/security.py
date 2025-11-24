@@ -11,15 +11,11 @@ def get_api_key(api_key_header: str = Security(api_key_header)):
     configured_key = os.environ.get("API_KEY")
     
     if not configured_key:
-        # If no key configured on server, fail open (dev) or closed (prod)?
-        # Choosing fail open for dev convenience if env var missing, 
-        # BUT logging a warning would be good. For now, strictly enforce if var is set.
-        # If variable is NOT set, we assume no auth required (backward compat for dev).
-        # However, for security, we should enforce it.
-        # Let's enforcing it: if no API_KEY env var, deny all (fail secure).
-        # EXCEPT: The user might not have set it yet.
-        # Let's use a default dev key if not set, but warn.
-        return "dev-key-123" # Fallback for now to prevent immediate lockout during rollout
+        # Security: Fail securely if API_KEY is not configured in environment
+        raise HTTPException(
+            status_code=500,
+            detail="Server misconfiguration: API_KEY not set"
+        )
 
     if api_key_header == configured_key:
         return api_key_header
