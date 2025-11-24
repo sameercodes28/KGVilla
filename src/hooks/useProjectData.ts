@@ -3,6 +3,7 @@ import { CostItem, Project } from '@/types';
 import { initialCostItems as mockItems } from '@/data/projectData';
 import { apiClient } from '@/lib/apiClient';
 import { logger } from '@/lib/logger';
+import { generateUUID } from '@/lib/uuid';
 
 export type SyncStatus = 'synced' | 'pending' | 'error';
 
@@ -165,7 +166,7 @@ export function useProjectData(projectId?: string) {
         if (!projectId) return;
 
         const newItem: CostItem = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             projectId,
             phase: 'structure',
             elementName: 'New Item',

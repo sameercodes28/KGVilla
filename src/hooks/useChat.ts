@@ -3,6 +3,7 @@ import { CostItem } from '@/types';
 import { apiClient } from '@/lib/apiClient';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { logger } from '@/lib/logger';
+import { generateUUID } from '@/lib/uuid';
 
 export interface Scenario {
     title: string;
@@ -114,7 +115,7 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
 
         // 1. Optimistic UI
         const userMsg: Message = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             role: 'user',
             text: input,
             file: selectedFile || undefined,
@@ -140,7 +141,7 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
                 const data = await apiClient.upload<CostItem[]>('/analyze', formData);
 
                 const aiMsg: Message = {
-                    id: crypto.randomUUID(),
+                    id: generateUUID(),
                     role: 'ai',
                     text: `I've analyzed **${currentFile.name}**. Here is the preliminary Cost Breakdown based on BBR 2025 standards:`,
                     items: data,
@@ -156,7 +157,7 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
                 });
 
                 const aiMsg: Message = {
-                    id: crypto.randomUUID(),
+                    id: generateUUID(),
                     role: 'ai',
                     text: data.text,
                     scenario: data.scenario,
@@ -168,7 +169,7 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
         } catch (error) {
             logger.error('useChat', 'Failed to send message', error);
             setMessages(prev => [...prev, {
-                id: crypto.randomUUID(),
+                id: generateUUID(),
                 role: 'ai',
                 text: "Sorry, I encountered an error connecting to the AI Architect. Please try again.",
                 timestamp: new Date()

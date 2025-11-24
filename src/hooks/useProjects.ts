@@ -3,6 +3,7 @@ import { Project, CostItem } from '@/types';
 import { projectDetails } from '@/data/projectData';
 import { apiClient } from '@/lib/apiClient';
 import { logger } from '@/lib/logger';
+import { generateUUID } from '@/lib/uuid';
 
 const STORAGE_KEY = 'kgvilla_projects';
 
@@ -57,7 +58,7 @@ export function useProjects() {
         logger.info('useProjects', 'Creating project', { name });
         
         const newProject: Project = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             name,
             location,
             description: 'New Project',
