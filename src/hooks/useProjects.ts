@@ -14,24 +14,29 @@ const STORAGE_KEY = 'kgvilla_projects';
  * Implements LocalStorage-First strategy for offline resilience.
  */
 export function useProjects() {
-    // 1. Load from LocalStorage on Mount (Lazy Init)
-    const [projects, setProjects] = useState<Project[]>(() => {
+    // 1. Initialize with default (SSR-safe)
+    const [projects, setProjects] = useState<Project[]>([projectDetails]);
+    const [isHydrated, setIsHydrated] = useState(false);
+
+    // 2. Load from LocalStorage after hydration
+    useEffect(() => {
         try {
-            if (typeof window !== 'undefined') {
-                const stored = localStorage.getItem(STORAGE_KEY);
-                if (stored) {
-                    const parsed = JSON.parse(stored);
-                    return parsed;
-                }
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: syncing with localStorage on mount
+                setProjects(parsed);
             }
         } catch (e) {
             logger.error('useProjects', 'LocalStorage read failed', e);
         }
-        return [projectDetails]; // Default
-    });
+        setIsHydrated(true);
+    }, []);
 
-    // 2. Sync with API (Background)
+    // 3. Sync with API (Background) - only after hydration
     useEffect(() => {
+        if (!isHydrated) return;
+
         const fetchFromApi = async () => {
             try {
                 const data = await apiClient.get<Project[]>('/projects');
@@ -48,7 +53,7 @@ export function useProjects() {
         };
 
         fetchFromApi();
-    }, []);
+    }, [isHydrated]);
 
     const saveToLocal = (newProjects: Project[]) => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newProjects));
