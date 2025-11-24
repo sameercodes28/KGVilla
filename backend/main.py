@@ -2,7 +2,12 @@
 KGVilla Backend API
 """
 import os
+import sys
 import logging
+
+# Add current directory to path to ensure local imports work in all environments
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
