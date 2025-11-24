@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
 import { CostItem, Project } from '@/types';
 import { useProjectData, SyncState } from '@/hooks/useProjectData';
 
@@ -47,14 +47,17 @@ export function ProjectDataProvider({
     const [highlightedItem, setHighlightedItem] = useState<CostItem | null>(null);
     const [inspectingItem, setInspectingItem] = useState<CostItem | null>(null);
 
+    // Memoize context value to prevent unnecessary re-renders
+    const value = useMemo(() => ({
+        ...projectData,
+        highlightedItem,
+        setHighlightedItem,
+        inspectingItem,
+        setInspectingItem
+    }), [projectData, highlightedItem, inspectingItem]);
+
     return (
-        <ProjectDataContext.Provider value={{
-            ...projectData,
-            highlightedItem,
-            setHighlightedItem,
-            inspectingItem,
-            setInspectingItem
-        }}>
+        <ProjectDataContext.Provider value={value}>
             {children}
         </ProjectDataContext.Provider>
     );

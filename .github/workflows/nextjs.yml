@@ -81,9 +81,12 @@ jobs:
         run: npm run lint
 
       - name: Test
-        run: npm test -- --passWithNoTests
+        run: npm test -- --bail
 
       - name: Build with Next.js
+        env:
+          NEXT_PUBLIC_API_URL: https://kgvilla-api-30314481610.europe-north1.run.app
+          NEXT_PUBLIC_API_KEY: ${{ secrets.NEXT_PUBLIC_API_KEY || 'dev-key-123' }}
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

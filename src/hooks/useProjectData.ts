@@ -49,17 +49,22 @@ export function useProjectData(projectId?: string) {
     useEffect(() => {
         if (!projectId) return;
 
+        // Cleanup flag to prevent state updates after unmount or project change
+        let isCancelled = false;
+
         const loadData = async () => {
             setIsLoading(true);
-            
+
             // A. Try LocalStorage
             try {
                 const localData = localStorage.getItem(storageKey || '');
                 if (localData) {
                     const parsed = JSON.parse(localData);
                     const migrated = migrateItems(parsed);
+
+                    if (isCancelled) return;
                     setItems(migrated);
-                    
+
                     // If migration happened, save back
                     if (JSON.stringify(parsed) !== JSON.stringify(migrated)) {
                         localStorage.setItem(storageKey || '', JSON.stringify(migrated));
@@ -69,8 +74,8 @@ export function useProjectData(projectId?: string) {
                     }
                 } else {
                     // Default items if new project or empty
-                    // Ensure mock items are also clean (they should be, but good to be safe)
-                    setItems(mockItems); 
+                    if (isCancelled) return;
+                    setItems(mockItems);
                 }
             } catch (e) {
                 logger.error('useProjectData', 'LocalStorage error', e);
@@ -79,7 +84,9 @@ export function useProjectData(projectId?: string) {
             // B. Try API (Background Sync)
             try {
                 const apiData = await apiClient.get<CostItem[]>(`/projects/${projectId}/items`);
-                
+
+                if (isCancelled) return;
+
                 if (Array.isArray(apiData) && apiData.length > 0) {
                     const migratedApi = migrateItems(apiData);
                     setItems(migratedApi);
@@ -88,16 +95,20 @@ export function useProjectData(projectId?: string) {
                     logger.info('useProjectData', 'Synced items with API', { count: migratedApi.length });
                 }
             } catch (err) {
+                if (isCancelled) return;
                 logger.warn('useProjectData', 'API unavailable, using local data', err);
                 setError('Offline Mode: Changes saved locally.');
                 setSyncState(prev => ({ ...prev, status: 'error', errorMessage: 'Offline' }));
             } finally {
-                setIsLoading(false);
+                if (!isCancelled) {
+                    setIsLoading(false);
+                }
             }
 
             // C. Fetch Project Details (for Floor Plan)
             try {
                 const projectData = await apiClient.get<Project>(`/projects/${projectId}`);
+                if (isCancelled) return;
                 setProject(projectData);
             } catch (e) {
                 // Silent fail for metadata
@@ -106,6 +117,11 @@ export function useProjectData(projectId?: string) {
         };
 
         loadData();
+
+        // Cleanup function to cancel pending updates
+        return () => {
+            isCancelled = true;
+        };
     }, [projectId, storageKey]);
 
     // Helper to save to both Local and API

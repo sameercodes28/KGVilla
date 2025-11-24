@@ -37,14 +37,20 @@ class ApiClient {
 
         let attempt = 0;
         const maxRetries = 3;
-        
+        const timeoutMs = 30000; // 30 second timeout
+
         while (attempt <= maxRetries) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
             try {
-                const response = await fetch(url, config);
+                const response = await fetch(url, { ...config, signal: controller.signal });
 
                 // If successful, or client error (4xx), return immediately
                 // We typically don't retry 4xx unless it's 429, but let's keep it simple:
                 // Retry only on 5xx
+                clearTimeout(timeoutId);
+
                 if (response.ok) {
                     if (response.status === 204) return {} as T;
                     return await response.json() as T;
@@ -58,6 +64,14 @@ class ApiClient {
                 throw new Error(`Server Error: ${response.status}`);
 
             } catch (error) {
+                clearTimeout(timeoutId);
+
+                // Handle timeout specifically
+                if (error instanceof Error && error.name === 'AbortError') {
+                    logger.error('ApiClient', `Request timeout after ${timeoutMs}ms: ${method} ${url}`);
+                    throw new Error(`Request timeout: ${method} ${url}`);
+                }
+
                 attempt++;
                 if (attempt > maxRetries) {
                     logger.error('ApiClient', `Failed after ${attempt} attempts: ${method} ${url}`, error);

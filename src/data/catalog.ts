@@ -100,7 +100,7 @@ export const CATALOG_ITEMS: CatalogItem[] = [
     },
     {
         id: 'el-media',
-        label: 'Mediasbksåp',
+        label: 'Mediaskåp',
         unit: 'st',
         price: PRICING_CONFIG.COSTS.EL_CABINET_MEDIA,
         phase: 'electrical',
