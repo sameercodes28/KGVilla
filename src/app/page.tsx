@@ -7,9 +7,10 @@ import { useTranslation } from '@/contexts/LanguageContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { useProjects } from '@/hooks/useProjects';
 import { useRouter } from 'next/navigation';
-import { API_URL } from '@/lib/api';
 import { CostItem, Project } from '@/types';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
+import { apiClient } from '@/lib/apiClient';
 
 export default function Home() {
   const { t } = useTranslation();
@@ -61,10 +62,9 @@ export default function Home() {
         try {
             const formData = new FormData();
             formData.append('file', selectedFile);
-            const res = await fetch(`${API_URL}/analyze`, { method: 'POST', body: formData });
-            if (res.ok) initialItems = await res.json();
+            initialItems = await apiClient.upload<CostItem[]>('/analyze', formData);
         } catch (e) {
-            console.error("Analysis failed", e);
+            logger.error('Home', 'Analysis failed', e);
         }
     }
 
