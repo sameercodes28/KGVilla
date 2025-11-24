@@ -4,10 +4,25 @@ import { initialCostItems as mockItems } from '@/data/projectData';
 import { apiClient } from '@/lib/apiClient';
 import { logger } from '@/lib/logger';
 
+export type SyncStatus = 'synced' | 'pending' | 'error';
+
+export interface SyncState {
+    status: SyncStatus;
+    lastSyncedAt: Date | null;
+    errorMessage: string | null;
+}
+
 export function useProjectData(projectId?: string) {
     const [items, setItems] = useState<CostItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    
+    // Sync State
+    const [syncState, setSyncState] = useState<SyncState>({
+        status: 'synced',
+        lastSyncedAt: null,
+        errorMessage: null
+    });
 
     // Helper to get storage key
     const storageKey = projectId ? `kgvilla_items_${projectId}` : null;
@@ -40,11 +55,13 @@ export function useProjectData(projectId?: string) {
                 if (Array.isArray(apiData) && apiData.length > 0) {
                     setItems(apiData);
                     localStorage.setItem(storageKey || '', JSON.stringify(apiData));
+                    setSyncState({ status: 'synced', lastSyncedAt: new Date(), errorMessage: null });
                     logger.info('useProjectData', 'Synced items with API', { count: apiData.length });
                 }
             } catch (err) {
                 logger.warn('useProjectData', 'API unavailable, using local data', err);
                 setError('Offline Mode: Changes saved locally.');
+                setSyncState(prev => ({ ...prev, status: 'error', errorMessage: 'Offline' }));
             } finally {
                 setIsLoading(false);
             }
@@ -57,14 +74,21 @@ export function useProjectData(projectId?: string) {
     const persistItems = async (newItems: CostItem[]) => {
         if (!storageKey || !projectId) return;
 
-        // 1. Local Save
+        // 1. Local Save (Optimistic)
         localStorage.setItem(storageKey, JSON.stringify(newItems));
+        setSyncState(prev => ({ ...prev, status: 'pending' }));
         
         // 2. API Save (Fire & Forget)
         try {
             await apiClient.post(`/projects/${projectId}/items`, newItems);
+            setSyncState({ status: 'synced', lastSyncedAt: new Date(), errorMessage: null });
         } catch (e) {
             logger.error('useProjectData', 'API Save Failed', e);
+            setSyncState(prev => ({ 
+                ...prev, 
+                status: 'error', 
+                errorMessage: 'Sync failed' 
+            }));
         }
     };
 
@@ -156,6 +180,7 @@ export function useProjectData(projectId?: string) {
         totalCost,
         isLoading,
         error,
+        syncState,
         isAnalyzing,
         addItem,
         updateItem,

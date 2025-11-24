@@ -29,7 +29,7 @@ class CostItem(BaseModel):
     id: str
     projectId: str
     levelId: Optional[str] = None
-    phase: Literal['ground', 'structure', 'electrical', 'plumbing', 'interior', 'installations', 'completion']
+    phase: Literal['ground', 'structure', 'electrical', 'plumbing', 'interior', 'completion']
     elementName: str
     description: str
     quantity: float

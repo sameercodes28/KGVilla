@@ -161,7 +161,7 @@ export const initialCostItems: CostItem[] = [
     {
         id: 'item-el-k-01',
         projectId: 'p-jb-1405',
-        phase: 'installations',
+        phase: 'electrical',
         elementName: 'Eluttag (Kök)',
         description: 'Vägguttag 2-vägs jordat (Schneider Exxact).',
         quantity: 8,
@@ -177,7 +177,7 @@ export const initialCostItems: CostItem[] = [
     {
         id: 'item-el-k-02',
         projectId: 'p-jb-1405',
-        phase: 'installations',
+        phase: 'electrical',
         elementName: 'Belysning Spotlights (Kök)',
         description: 'Infällda LED-spotlights inkl. drivdon.',
         quantity: 12,
@@ -194,7 +194,7 @@ export const initialCostItems: CostItem[] = [
     {
         id: 'item-el-v-01',
         projectId: 'p-jb-1405',
-        phase: 'installations',
+        phase: 'electrical',
         elementName: 'Eluttag (Vardagsrum)',
         description: 'Vägguttag 2-vägs jordat.',
         quantity: 6,
@@ -211,7 +211,7 @@ export const initialCostItems: CostItem[] = [
     {
         id: 'item-el-s-01',
         projectId: 'p-jb-1405',
-        phase: 'installations',
+        phase: 'electrical',
         elementName: 'Eluttag (Sovrum)',
         description: 'Vägguttag 2-vägs jordat (4 per rum).',
         quantity: 12,
@@ -227,7 +227,7 @@ export const initialCostItems: CostItem[] = [
     {
         id: 'item-el-01',
         projectId: 'p-jb-1405',
-        phase: 'installations',
+        phase: 'electrical',
         elementName: 'Elcentral & Mätarskåp',
         description: 'Fasadmätarskåp + Mediacentral + Normcentral med JFB.',
         quantity: 1,
@@ -246,7 +246,7 @@ export const initialCostItems: CostItem[] = [
     {
         id: 'item-vvs-01',
         projectId: 'p-jb-1405',
-        phase: 'installations',
+        phase: 'plumbing',
         elementName: 'Vattenburen Golvvärme',
         description: 'Komplett system inkl. fördelare, rör och termostater (Thermotech).',
         quantity: 140.5,
@@ -260,7 +260,7 @@ export const initialCostItems: CostItem[] = [
     {
         id: 'item-vvs-02',
         projectId: 'p-jb-1405',
-        phase: 'installations',
+        phase: 'plumbing',
         elementName: 'Värmepump (Frånluft)',
         description: 'NIBE F730 Frånluftsvärmepump inkl. installation.',
         quantity: 1,
@@ -276,7 +276,7 @@ export const initialCostItems: CostItem[] = [
     {
         id: 'item-vvs-b1-01',
         projectId: 'p-jb-1405',
-        phase: 'installations',
+        phase: 'plumbing',
         elementName: 'WC-stol (Badrum 1)',
         description: 'Gustavsberg Nautic vägghängd inkl. fixtur.',
         quantity: 1,
@@ -292,7 +292,7 @@ export const initialCostItems: CostItem[] = [
     {
         id: 'item-vvs-b1-02',
         projectId: 'p-jb-1405',
-        phase: 'installations',
+        phase: 'plumbing',
         elementName: 'Tvättställsblandare (Badrum 1)',
         description: 'Mora MMIX.',
         quantity: 1,
@@ -307,7 +307,7 @@ export const initialCostItems: CostItem[] = [
     {
         id: 'item-vvs-b1-03',
         projectId: 'p-jb-1405',
-        phase: 'installations',
+        phase: 'plumbing',
         elementName: 'Duschväggar & Blandare',
         description: 'INR Linc + Mora MMIX takdusch.',
         quantity: 1,

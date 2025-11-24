@@ -1,7 +1,7 @@
-fastapi
-uvicorn
-gunicorn
-python-multipart
-pydantic
-google-cloud-firestore
-google-cloud-aiplatform
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+gunicorn==21.2.0
+python-multipart==0.0.6
+pydantic==2.5.2
+google-cloud-firestore==2.13.1
+google-cloud-aiplatform==1.38.1

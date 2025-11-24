@@ -30,7 +30,8 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
         highlightedItem,
         setHighlightedItem,
         inspectingItem,
-        setInspectingItem
+        setInspectingItem,
+        syncState
     } = useProjectContext();
 
     useEffect(() => {
@@ -49,6 +50,7 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
                 showBackButton
                 title={projectDetails.name} 
                 subtitle={`${items.length} Items • ${(totalCost / (projectDetails.totalArea || 1)).toLocaleString('sv-SE', { maximumFractionDigits: 0 })} kr/m²`}
+                syncState={syncState}
             />
 
             <div className="flex flex-1 overflow-hidden">

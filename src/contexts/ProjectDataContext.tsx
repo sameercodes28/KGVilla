@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { CostItem } from '@/types';
-import { useProjectData } from '@/hooks/useProjectData';
+import { useProjectData, SyncState } from '@/hooks/useProjectData';
 
 interface ProjectDataContextType {
     // Data State
@@ -12,6 +12,7 @@ interface ProjectDataContextType {
     isLoading: boolean;
     error: string | null;
     isAnalyzing: boolean;
+    syncState: SyncState;
 
     // Actions
     addItem: (item: Partial<CostItem>) => void;

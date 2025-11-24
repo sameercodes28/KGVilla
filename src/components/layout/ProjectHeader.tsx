@@ -6,19 +6,23 @@ import { useProjects } from '@/hooks/useProjects';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { Sparkles, Building, ChevronDown, ArrowLeft, Presentation } from 'lucide-react';
+import { SyncState } from '@/hooks/useProjectData';
+import { SyncIndicator } from '@/components/ui/SyncIndicator';
 
 interface ProjectHeaderProps {
     currentProjectId?: string;
     showBackButton?: boolean;
     title?: string;
     subtitle?: string;
+    syncState?: SyncState;
 }
 
 export function ProjectHeader({ 
     currentProjectId, 
     showBackButton = false,
     title,
-    subtitle
+    subtitle,
+    syncState
 }: ProjectHeaderProps) {
     const { projects } = useProjects();
     const { t } = useTranslation();
@@ -63,6 +67,12 @@ export function ProjectHeader({
 
                 {/* Right Side: Project Switcher & Actions */}
                 <div className="flex items-center space-x-3">
+                    {syncState && (
+                        <div className="hidden md:block mr-2">
+                            <SyncIndicator syncState={syncState} />
+                        </div>
+                    )}
+
                      {/* Project Switcher Dropdown */}
                     <div className="relative group">
                         <button 

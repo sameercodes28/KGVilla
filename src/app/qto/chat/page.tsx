@@ -43,7 +43,7 @@ function ChatContent() {
     const selectedProject = projects.find(p => p.id === selectedProjectId);
     
     // Fetch data for context card
-    const { totalCost, floorPlanUrl, items, addItem } = useProjectData(selectedProjectId);
+    const { totalCost, floorPlanUrl, items, addItem, syncState } = useProjectData(selectedProjectId);
 
     const { 
         messages, 
@@ -97,6 +97,7 @@ function ChatContent() {
                 title={t('chat.title')} 
                 subtitle={t('chat.subtitle')}
                 showBackButton
+                syncState={syncState}
             />
 
             {/* Project Context Card */}
