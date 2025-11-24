@@ -7,7 +7,6 @@ import { useTranslation } from '../../contexts/LanguageContext';
 import { logger } from '@/lib/logger';
 import { ProjectHeader } from '@/components/layout/ProjectHeader';
 import { ProjectDataProvider, useProjectContext } from '@/contexts/ProjectDataContext';
-import { CostItem } from '@/types';
 
 interface SplitLayoutProps {
     projectId?: string;
