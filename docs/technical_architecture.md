@@ -77,7 +77,63 @@ The side panel for deep-diving into pricing logic.
 
 ---
 
-## 5. AI Analysis Pipeline
+## 5. Analysis Pipeline (Deterministic OCR)
+
+KGVilla uses a **deterministic analysis pipeline** based on Document AI OCR, not AI-generated estimates. This ensures consistent, accurate pricing.
+
+### 5.1 Pipeline Architecture
+
+```
+Floor Plan Image (PNG/PDF)
+         ↓
+[1. Document AI OCR] - Extract all text from image
+         ↓
+[2. Room Parser] - Regex: "SOVRUM 1\n11.9 m²" → {room: "SOVRUM 1", area: 11.9}
+         ↓
+[3. Room Classifier] - Swedish name → category (bedroom, bathroom, kitchen)
+         ↓
+[4. Pricing Engine] - Apply fixed rates from knowledge base
+         ↓
+Deterministic Quote (same input = same output)
+```
+
+### 5.2 Why Deterministic?
+
+- **Consistency:** Same floor plan always produces same price
+- **Accuracy:** Uses architect's own calculated areas (not AI estimates)
+- **Auditability:** Every cost traces to a specific m² rate and regulation
+
+### 5.3 Data Extraction
+
+The OCR extracts printed annotations from JB Villan drawings:
+
+| Extracted | Example | Used For |
+|-----------|---------|----------|
+| Room names | "SOVRUM 1", "KÖK" | Room classification |
+| Room areas | "11.9 m²", "18.1 m²" | Flooring, painting costs |
+| Summary areas | "BOYTA: 130.7m²" | Total living area |
+| Building footprint | "BYGGYTA: 187.3m²" | Foundation, roof costs |
+
+### 5.4 Pricing Calculation
+
+Costs are calculated using fixed rates from `SWEDISH_CONSTRUCTION_KNOWLEDGE_BASE.md`:
+
+```python
+# Example calculation
+foundation_cost = BYGGYTA * 3500 kr/m²  # 187.3 × 3500 = 655,550 kr
+flooring_cost = room_area * rate        # Based on room type
+wet_room_cost = area * 4200 kr/m²       # Säker Vatten compliant
+```
+
+### 5.5 Fallback Mode
+
+If Document AI is unavailable, the system falls back to Gemini AI analysis (non-deterministic).
+
+---
+
+## 6. Legacy: AI Analysis (Fallback)
+
+*Only used if Document AI is unavailable.*
 
 1.  **Upload:** User uploads PDF/Image to `/analyze`.
 2.  **Prompting:** Backend constructs a "Quantity Surveyor" prompt with the attached image.
@@ -88,7 +144,7 @@ The side panel for deep-diving into pricing logic.
 
 ---
 
-## 6. Security & Compliance
+## 7. Security & Compliance
 
 *   **GDPR:** No personal data is stored in the AI prompts.
 *   **CORS:** Strictly configured for the frontend domain.

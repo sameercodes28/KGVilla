@@ -17,6 +17,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import firestore
 from ai_service import analyze_image_with_gemini, chat_with_gemini, _vertex_available
+from ocr_service import analyze_floor_plan_deterministic, _documentai_available
 from models import CostItem, Project, ChatResponse
 from security import get_api_key
 from pydantic import BaseModel, Field
@@ -103,10 +104,11 @@ def read_root():
     status = {
         "status": "active",
         "service": "KGVilla Backend",
-        "version": "0.1.1",
+        "version": "0.2.0",
         "checks": {
             "firestore": "connected" if _firestore_available else "disconnected",
-            "vertex_ai": "connected" if _vertex_available else "disconnected (check credentials)"
+            "document_ai": "connected" if _documentai_available else "disconnected",
+            "vertex_ai": "connected" if _vertex_available else "disconnected (fallback)"
         }
     }
     return status
@@ -248,9 +250,15 @@ async def analyze_drawing(request: Request, file: UploadFile = File(...), api_ke
         )
 
     logger.info(f"Analyzing file: {file.filename} ({len(contents)} bytes)")
-    
-    # 4. Process
-    result = await analyze_image_with_gemini(contents, file.content_type)
+
+    # 4. Process - Use Document AI (deterministic) if available, else Gemini (fallback)
+    if _documentai_available:
+        logger.info("Using Document AI OCR for deterministic analysis")
+        result = await analyze_floor_plan_deterministic(contents, file.content_type)
+    else:
+        logger.info("Document AI not available, falling back to Gemini")
+        result = await analyze_image_with_gemini(contents, file.content_type)
+
     return result
 
 @app.post("/chat", response_model=ChatResponse)
