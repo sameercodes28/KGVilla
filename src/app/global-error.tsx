@@ -1,6 +1,7 @@
 'use client';
 
 import { ErrorFallback } from '@/components/ui/ErrorFallback';
+import '@/app/globals.css';
 
 export default function GlobalError({
   error,
@@ -10,8 +11,8 @@ export default function GlobalError({
   reset: () => void;
 }) {
   return (
-    <html>
-      <body>
+    <html lang="en">
+      <body className="antialiased">
         <ErrorFallback error={error} reset={reset} />
       </body>
     </html>
