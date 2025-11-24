@@ -7,7 +7,7 @@
 
 ### 1. Distribution Cabinets (Fördelarskåp)
 **Change:** Bottom mounting height requirements removed; focus is now on **testing** (SP method 5676).
-**Impact:** We must spec "Säker Vatten compliant" cabinets in our BoQ. Cheap imports are not allowed.
+*   **Impact:** We must spec "Säker Vatten compliant" cabinets in our Cost Breakdown. Cheap imports are not allowed.
 
 ### 2. Leakage Indication
 **Rule:** Every concealed joint (connection) must have a leak indicator that drains into a room with a floor drain.

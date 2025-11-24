@@ -164,7 +164,7 @@ const dictionary: Record<string, DictionaryEntry> = {
     'chat.typing': { en: 'AI is thinking...', sv: 'AI tänker...' },
 
     // Cost Table (Legacy View)
-    'cost.title': { en: 'Bill of Quantities', sv: 'Mängdförteckning' },
+    'cost.title': { en: 'Cost Breakdown', sv: 'Mängdförteckning' },
     'cost.export_excel': { en: 'Export Excel', sv: 'Exportera Excel' },
     'cost.save': { en: 'Save Changes', sv: 'Spara ändringar' },
     'cost.col.element': { en: 'Element / Material', sv: 'Byggdel / Material' },

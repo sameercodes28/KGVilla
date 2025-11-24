@@ -1,36 +1,59 @@
 import { useState, useEffect } from 'react';
 import { Project, CostItem } from '@/types';
 import { projectDetails } from '@/data/projectData';
-import { API_URL } from '@/lib/api';
+import { apiClient } from '@/lib/apiClient';
 import { logger } from '@/lib/logger';
+
+const STORAGE_KEY = 'kgvilla_projects';
 
 /**
  * useProjects Hook
  * 
  * Manages the list of projects (Metadata).
- * Synchronizes with the Backend API.
+ * Implements LocalStorage-First strategy for offline resilience.
  */
 export function useProjects() {
-    const [projects, setProjects] = useState<Project[]>([]);
+    // 1. Load from LocalStorage on Mount (Lazy Init)
+    const [projects, setProjects] = useState<Project[]>(() => {
+        try {
+            if (typeof window !== 'undefined') {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    return parsed;
+                }
+            }
+        } catch (e) {
+            logger.error('useProjects', 'LocalStorage read failed', e);
+        }
+        return [projectDetails]; // Default
+    });
 
-    // Load from API
+    // 2. Sync with API (Background)
     useEffect(() => {
-        fetch(`${API_URL}/projects`)
-            .then(res => res.json())
-            .then(data => {
+        const fetchFromApi = async () => {
+            try {
+                const data = await apiClient.get<Project[]>('/projects');
                 if (Array.isArray(data) && data.length > 0) {
                     setProjects(data);
-                    logger.info('useProjects', 'Loaded projects from API', { count: data.length });
-                } else {
-                    // Fallback to mock if empty DB
-                    setProjects([projectDetails]);
+                    // Update LocalStorage with fresh data
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                    logger.info('useProjects', 'Synced with API', { count: data.length });
                 }
-            })
-            .catch(err => logger.error('useProjects', 'Failed to fetch projects', err));
+            } catch (err) {
+                logger.warn('useProjects', 'API unavailable, using local data', err);
+                // Do not overwrite state if API fails, keep local data
+            }
+        };
+
+        fetchFromApi();
     }, []);
 
+    const saveToLocal = (newProjects: Project[]) => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(newProjects));
+    };
+
     const createProject = async (name: string, location: string, initialData?: { items: CostItem[], planUrl: string }) => {
-        // ... (keep existing create logic but add logger)
         logger.info('useProjects', 'Creating project', { name });
         
         const newProject: Project = {
@@ -46,50 +69,63 @@ export function useProjects() {
             currency: 'SEK',
             status: 'draft',
             lastModified: new Date().toLocaleDateString(),
-            version: '1.0.0'
+            version: '1.0.0',
+            floorPlanUrl: initialData?.planUrl
         };
         
-        setProjects(prev => [newProject, ...prev]);
-
-        await fetch(`${API_URL}/projects`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newProject)
+        // Optimistic Update
+        setProjects(prev => {
+            const updated = [newProject, ...prev];
+            saveToLocal(updated);
+            return updated;
         });
 
-        if (initialData) {
-            await fetch(`${API_URL}/projects/${newProject.id}/items`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(initialData.items)
-            });
+        try {
+            await apiClient.post('/projects', newProject);
+
+            if (initialData) {
+                await apiClient.post(`/projects/${newProject.id}/items`, initialData.items);
+                // Note: We rely on useProjectData to handle item persistence locally
+            }
+        } catch (e) {
+            logger.error('useProjects', 'API create failed (saved locally)', e);
         }
 
         return newProject.id;
     };
 
     const deleteProject = async (id: string) => {
-        setProjects(prev => prev.filter(p => p.id !== id));
+        // Optimistic Update
+        setProjects(prev => {
+            const updated = prev.filter(p => p.id !== id);
+            saveToLocal(updated);
+            return updated;
+        });
         
         try {
-            await fetch(`${API_URL}/projects/${id}`, { method: 'DELETE' });
-            logger.info('useProjects', 'Deleted project', { id });
+            await apiClient.delete(`/projects/${id}`);
+            logger.info('useProjects', 'Deleted project API', { id });
         } catch (e) {
-            logger.error('useProjects', 'Failed to delete project', e);
+            logger.error('useProjects', 'Failed to delete project API', e);
         }
     };
 
     const updateProjectStatus = async (id: string, status: string) => {
-        setProjects(prev => prev.map(p => p.id === id ? { ...p, status } : p));
+        // Optimistic Update
+        setProjects(prev => {
+            const updated = prev.map(p => p.id === id ? { ...p, status } : p);
+            saveToLocal(updated);
+            return updated;
+        });
         
-        // Find project and sync to backend
-        const project = projects.find(p => p.id === id);
-        if (project) {
-             await fetch(`${API_URL}/projects`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...project, status })
-            });
+        try {
+            // Find project and sync to backend
+            const project = projects.find(p => p.id === id);
+            if (project) {
+                await apiClient.post('/projects', { ...project, status });
+            }
+        } catch (e) {
+             logger.error('useProjects', 'Failed to update status API', e);
         }
     };
 

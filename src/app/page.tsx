@@ -155,7 +155,7 @@ export default function Home() {
                 onClick={() => setIsModalOpen(true)}
                 className="group relative flex flex-col items-center justify-center h-72 bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-white overflow-hidden"
             >
-                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
                 <div className="h-20 w-20 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform border border-white/30">
                     <Plus className="h-10 w-10" />
                 </div>

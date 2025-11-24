@@ -1,30 +1,39 @@
 #!/bin/bash
 
-# Forbidden terms list
-FORBIDDEN_TERMS=("BoQItem" "initialBoQ" "mockBoQ")
-SEARCH_DIR="src"
+# validate-docs.sh
+# Prevents forbidden terms from entering the documentation or codebase.
 
-echo "🔍 Scanning for forbidden terminology in $SEARCH_DIR..."
+FORBIDDEN_TERMS=("BoQ" "Bill of Quantities")
+ALLOWED_CONTEXT="CostItem|Bill of Quantities based on BBR" # Exceptions
 
-FOUND_ERROR=0
+echo "🔍 Scanning for forbidden terms..."
+FOUND_ERRORS=0
 
 for term in "${FORBIDDEN_TERMS[@]}"; do
-    if grep -r --exclude-dir={node_modules,.next,.git} "$term" "$SEARCH_DIR"; then
-        echo "❌ Error: Found forbidden term '$term'. Please use 'CostItem' or updated terminology."
-        FOUND_ERROR=1
+    # Search recursively, excluding .git, node_modules, and this script
+    # We use grep to find the term
+    # Added exclude for .gemini-clipboard to ignore binary/image matches
+    matches=$(grep -r "$term" . \
+        --exclude-dir=.git \
+        --exclude-dir=node_modules \
+        --exclude-dir=.next \
+        --exclude-dir=out \
+        --exclude-dir=.gemini-clipboard \
+        --exclude="validate-docs.sh" \
+        --exclude="GEMINI.md" \
+        --exclude="*.log")
+
+    if [ ! -z "$matches" ]; then
+        echo "❌ Found forbidden term '$term' in:"
+        echo "$matches"
+        FOUND_ERRORS=1
     fi
 done
 
-# Also check docs for stale "Bill of Quantities" references that imply it's the current term
-# We allow it if it's in a "History" or "Translation" context, but let's be strict for now.
-if grep -r "Bill of Quantities" docs/ | grep -v "formerly" | grep -v "previously"; then
-     echo "⚠️  Warning: Found 'Bill of Quantities' in docs. Ensure it clarifies that we now use 'Cost Items'."
-     # We won't fail on this for docs, just warn, as it might be explanatory text.
-fi
-
-if [ $FOUND_ERROR -eq 1 ]; then
+if [ $FOUND_ERRORS -eq 1 ]; then
+    echo "⚠️  Validation Failed: Forbidden terms found. Please use 'Cost Breakdown' or 'Project Estimate' instead."
     exit 1
+else
+    echo "✅ Documentation validation passed."
+    exit 0
 fi
-
-echo "✅ Terminology check passed."
-exit 0

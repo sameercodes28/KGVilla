@@ -5,6 +5,8 @@ import { Plus } from 'lucide-react';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { CostItem, ConstructionPhase } from '@/types';
 
+import { CATALOG_ITEMS } from '@/data/catalog';
+
 interface AddItemFormProps {
     onAdd: (item: Partial<CostItem>) => void;
     phases: { id: string; label: string }[];
@@ -13,13 +15,37 @@ interface AddItemFormProps {
 export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
     const { t } = useTranslation();
     const [isAddingItem, setIsAddingItem] = useState(false);
+    const [showSuggestions, setShowSuggestions] = useState(false);
     const [newItemData, setNewItemData] = useState<Partial<CostItem>>({
         elementName: '',
         unitPrice: 0,
         quantity: 1,
         unit: 'st',
-        phase: 'structure'
+        phase: 'structure',
+        description: ''
     });
+
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setNewItemData({ ...newItemData, elementName: value });
+        setShowSuggestions(value.length > 0);
+    };
+
+    const selectSuggestion = (item: typeof CATALOG_ITEMS[0]) => {
+        setNewItemData({
+            ...newItemData,
+            elementName: item.label,
+            unitPrice: item.price,
+            unit: item.unit,
+            phase: item.phase,
+            description: item.description || ''
+        });
+        setShowSuggestions(false);
+    };
+
+    const filteredSuggestions = CATALOG_ITEMS.filter(item => 
+        item.label.toLowerCase().includes(newItemData.elementName?.toLowerCase() || '')
+    );
 
     const handleSubmit = () => {
         if (!newItemData.elementName || newItemData.unitPrice === undefined) return;
@@ -27,7 +53,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
         onAdd(newItemData);
         
         setIsAddingItem(false);
-        setNewItemData({ elementName: '', unitPrice: 0, quantity: 1, unit: 'st', phase: 'structure' });
+        setNewItemData({ elementName: '', unitPrice: 0, quantity: 1, unit: 'st', phase: 'structure', description: '' });
     };
 
     if (!isAddingItem) {
@@ -46,16 +72,35 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
         <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-200">
             <h3 className="font-bold text-slate-900">{t('qto.add_new_item')}</h3>
             <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
+                <div className="col-span-2 relative">
                     <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.item_name')}</label>
                     <input
                         type="text"
                         className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
                         placeholder="e.g. Extra Insulation"
                         value={newItemData.elementName}
-                        onChange={e => setNewItemData({ ...newItemData, elementName: e.target.value })}
+                        onChange={handleNameChange}
+                        onFocus={() => setShowSuggestions(true)}
+                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Delay to allow click
                         autoFocus
                     />
+                    {showSuggestions && filteredSuggestions.length > 0 && (
+                        <ul className="absolute z-50 w-full bg-white border border-slate-200 rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto">
+                            {filteredSuggestions.map(item => (
+                                <li 
+                                    key={item.id}
+                                    className="px-4 py-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0"
+                                    onClick={() => selectSuggestion(item)}
+                                >
+                                    <div className="font-medium text-slate-900">{item.label}</div>
+                                    <div className="text-xs text-slate-500 flex justify-between">
+                                        <span>{item.price} kr/{item.unit}</span>
+                                        <span className="uppercase">{item.phase}</span>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
                 <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.price')}</label>

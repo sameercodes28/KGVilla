@@ -1,32 +1,38 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
-import { Send, Bot, Sparkles, Paperclip, X, FileText, ChevronDown, Building } from 'lucide-react';
+import React, { useRef, useEffect, useState, Suspense } from 'react';
+import { Send, Bot, Paperclip, X, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
-import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { useChat, Scenario } from '@/hooks/useChat';
 import { useProjects } from '@/hooks/useProjects';
 import { useProjectData } from '@/hooks/useProjectData';
+import { ProjectHeader } from '@/components/layout/ProjectHeader';
+import { useSearchParams } from 'next/navigation';
 
 /**
- * AIChatPage Component
- * 
- * This is the main interface for the "AI Analysis" tab.
- * It provides a chat-like experience similar to ChatGPT but specialized for construction.
- * 
- * Architecture:
- * - Uses `useChat` hook for state and API logic.
- * - Uses `useProjects` to allow switching context.
+ * ChatContent Component
+ * Contains the logic that uses useSearchParams
  */
-export default function AIChatPage() {
+function ChatContent() {
     const { t } = useTranslation();
+    const searchParams = useSearchParams();
+    const projectIdParam = searchParams.get('project');
+    
     const { projects } = useProjects();
     
-    // Project Selection State
-    const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+    // Project Selection State (Derived from URL or Default)
+    const [selectedProjectId, setSelectedProjectId] = useState<string>(projectIdParam || '');
 
-    // Select first project by default if available
+    // Sync state with URL param if it changes
+    useEffect(() => {
+        if (projectIdParam && projectIdParam !== selectedProjectId) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setSelectedProjectId(projectIdParam);
+        }
+    }, [projectIdParam, selectedProjectId]);
+
+    // Select first project by default if available and none selected
     useEffect(() => {
         if (projects.length > 0 && !selectedProjectId) {
             // eslint-disable-next-line
@@ -65,11 +71,6 @@ export default function AIChatPage() {
     // Handle Scenario Application
     const handleApplyScenario = (scenario: Scenario) => {
         if (!scenario || !scenario.items) return;
-        
-        // Add new items or update existing ones logic
-        // For simplicity, we just add them as new items or replace logic
-        // In a real app, we'd match IDs or have a diff engine.
-        // Here, we treat them as "Custom Items" from the scenario.
         scenario.items.forEach((item) => {
             addItem(item);
         });
@@ -91,46 +92,12 @@ export default function AIChatPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 pb-32 relative flex flex-col">
-            <LanguageToggle />
-            
-            {/* Sticky Header with Project Selector */}
-            <div className="bg-white border-b border-slate-200 sticky top-0 z-10 px-6 py-4 shadow-sm">
-                <div className="max-w-3xl mx-auto flex justify-between items-center">
-                    <div className="flex items-center space-x-3">
-                        <div className="bg-purple-100 p-2 rounded-xl">
-                            <Sparkles className="h-6 w-6 text-purple-600" />
-                        </div>
-                        <div>
-                            <h1 className="text-xl font-bold text-slate-900">{t('chat.title')}</h1>
-                            <p className="text-sm text-slate-500">{t('chat.subtitle')}</p>
-                        </div>
-                    </div>
-
-                    {/* Project Selector */}
-                    <div className="relative group">
-                        <button className="flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium transition-colors">
-                            <Building className="h-4 w-4 text-slate-500" />
-                            <span>{selectedProject?.name || 'Select Project'}</span>
-                            <ChevronDown className="h-4 w-4 text-slate-400" />
-                        </button>
-                        {/* Dropdown Menu */}
-                        <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden hidden group-hover:block z-50">
-                            {projects.map(p => (
-                                <button 
-                                    key={p.id}
-                                    onClick={() => setSelectedProjectId(p.id)}
-                                    className={cn(
-                                        "w-full text-left px-4 py-3 text-sm hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0",
-                                        selectedProjectId === p.id ? "bg-blue-50 text-blue-700 font-semibold" : "text-slate-700"
-                                    )}
-                                >
-                                    {p.name}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <ProjectHeader 
+                currentProjectId={selectedProjectId} 
+                title={t('chat.title')} 
+                subtitle={t('chat.subtitle')}
+                showBackButton
+            />
 
             {/* Project Context Card */}
             {selectedProject && (
@@ -325,5 +292,13 @@ export default function AIChatPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function AIChatPage() {
+    return (
+        <Suspense fallback={<div className="h-screen flex items-center justify-center">Loading...</div>}>
+            <ChatContent />
+        </Suspense>
     );
 }

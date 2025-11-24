@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CostItem } from '@/types';
-import { API_URL } from '@/lib/api';
+import { apiClient } from '@/lib/apiClient';
 import { useTranslation } from '@/contexts/LanguageContext';
 
 export interface Scenario {
@@ -18,6 +18,11 @@ export interface Message {
     scenario?: Scenario;
     file?: File;
     timestamp: Date;
+}
+
+interface ChatResponse {
+    text: string;
+    scenario?: Scenario;
 }
 
 export function useChat(projectId?: string, currentItems: CostItem[] = []) {
@@ -94,19 +99,12 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
                 const formData = new FormData();
                 formData.append('file', currentFile);
 
-                const response = await fetch(`${API_URL}/analyze`, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!response.ok) throw new Error('Analysis failed');
-
-                const data: CostItem[] = await response.json();
+                const data = await apiClient.upload<CostItem[]>('/analyze', formData);
 
                 const aiMsg: Message = {
                     id: (Date.now() + 1).toString(),
                     role: 'ai',
-                    text: `I've analyzed **${currentFile.name}**. Here is the preliminary Bill of Quantities based on BBR 2025 standards:`, 
+                    text: `I've analyzed **${currentFile.name}**. Here is the preliminary Cost Breakdown based on BBR 2025 standards:`, 
                     items: data,
                     timestamp: new Date()
                 };
@@ -114,18 +112,10 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
 
             } else {
                 // TEXT MODE: /chat
-                const response = await fetch(`${API_URL}/chat`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: currentInput,
-                        currentItems: currentItems
-                    })
+                const data = await apiClient.post<ChatResponse>('/chat', {
+                    message: currentInput,
+                    currentItems: currentItems
                 });
-
-                if (!response.ok) throw new Error('Chat failed');
-
-                const data = await response.json();
 
                 const aiMsg: Message = {
                     id: (Date.now() + 1).toString(),

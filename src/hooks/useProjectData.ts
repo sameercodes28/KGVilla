@@ -1,165 +1,168 @@
 import { useState, useEffect, useMemo } from 'react';
-import { CostItem, ConstructionPhase } from '@/types';
-import { initialCostItems, clientCosts, projectDetails } from '@/data/projectData';
-import { API_URL } from '@/lib/api';
+import { CostItem, ConstructionPhase, Room } from '@/types';
+import { initialCostItems as mockItems } from '@/data/projectData';
+import { apiClient } from '@/lib/apiClient';
 import { logger } from '@/lib/logger';
 
-/**
- * useProjectData Hook
- * 
- * Manages the Cost Items (Bill of Quantities) for a specific project.
- * Syncs changes to the Backend API (Firestore).
- */
-export function useProjectData(projectId: string = projectDetails.id) {
-    // --- State ---
+export function useProjectData(projectId?: string) {
     const [items, setItems] = useState<CostItem[]>([]);
-    const [floorPlanUrl, setFloorPlanUrl] = useState<string | null>(null);
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const storageKeyItems = `kgvilla-cost-items-${projectId}`;
-    const storageKeyPlan = `kgvilla-plan-${projectId}`;
+    // Helper to get storage key
+    const storageKey = projectId ? `kgvilla_items_${projectId}` : null;
 
-    // --- Persistence ---
-    // Load from API on Mount
+    // 1. Load Data (LocalStorage First, then API)
     useEffect(() => {
-        if (projectId === projectDetails.id) {
-            setItems(initialCostItems);
-            setIsLoaded(true);
-            return;
-        }
+        if (!projectId) return;
 
-        fetch(`${API_URL}/projects/${projectId}/items`)
-            .then(res => res.json())
-            .then(data => {
-                if (Array.isArray(data) && data.length > 0) {
-                    setItems(data);
-                }
-                setIsLoaded(true);
-            })
-            .catch(err => logger.error('useProjectData', 'Failed to load items', err));
-    }, [projectId]);
-
-    // Save to API on Change (Debounced 1s ideally, but here direct)
-    useEffect(() => {
-        if (isLoaded && items.length > 0 && projectId !== projectDetails.id) {
-            // Simple debounce using timeout
-            const timer = setTimeout(() => {
-                fetch(`${API_URL}/projects/${projectId}/items`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(items)
-                }).catch(err => logger.error('useProjectData', 'Failed to save items', err));
-            }, 1000);
-            return () => clearTimeout(timer);
-        }
-    }, [items, projectId, isLoaded]);
-
-    // --- Calculations ---
-    const totalClientCosts = useMemo(() => clientCosts.reduce((sum, item) => sum + item.cost, 0), []);
-
-    const totalConstructionCost = useMemo(() => {
-        return items.reduce((sum, item) => {
-            const price = item.customUnitPrice ?? item.unitPrice;
-            const qty = item.customQuantity ?? item.quantity;
-            return sum + (price * qty);
-        }, 0);
-    }, [items]);
-
-    const totalCost = totalConstructionCost + totalClientCosts;
-
-    // --- Actions ---
-    const updateItem = (id: string, updates: Partial<CostItem>) => {
-        setItems(prev => prev.map(item => {
-            if (item.id !== id) return item;
-
-            const updatedItem = { ...item, ...updates };
+        const loadData = async () => {
+            setIsLoading(true);
             
-            // Recalculate totals if price/qty changed
-            const price = updatedItem.customUnitPrice ?? updatedItem.unitPrice;
-            const qty = updatedItem.customQuantity ?? updatedItem.quantity;
-            updatedItem.totalCost = price * qty;
-            updatedItem.totalQuantity = qty;
+            // A. Try LocalStorage
+            try {
+                const localData = localStorage.getItem(storageKey || '');
+                if (localData) {
+                    setItems(JSON.parse(localData));
+                    logger.info('useProjectData', 'Loaded items from LocalStorage', { projectId });
+                } else {
+                    // Default items if new project or empty
+                    setItems(mockItems); // Fallback
+                }
+            } catch (e) {
+                logger.error('useProjectData', 'LocalStorage error', e);
+            }
 
-            return updatedItem;
-        }));
-    };
-
-    const addItem = (newItemData: Partial<CostItem>) => {
-        if (!newItemData.elementName || newItemData.unitPrice === undefined) return;
-
-        const newItem: CostItem = {
-            id: `custom-${Date.now()}`,
-            projectId: projectId,
-            phase: (newItemData.phase as ConstructionPhase) || 'structure',
-            elementName: newItemData.elementName,
-            description: 'Custom builder item',
-            quantity: newItemData.quantity || 1,
-            unit: newItemData.unit || 'st',
-            unitPrice: newItemData.unitPrice,
-            totalQuantity: newItemData.quantity || 1,
-            totalCost: (newItemData.unitPrice || 0) * (newItemData.quantity || 1),
-            confidenceScore: 1.0,
-            isUserAdded: true,
-            system: 'structure'
-        };
-
-        setItems(prev => [...prev, newItem]);
-    };
-
-    const analyzePlan = async (file: File) => {
-        setIsAnalyzing(true);
-        
-        // 1. Show preview immediately
-        // Note: In a real app, upload to GCS and get URL. 
-        // For prototype, we use FileReader for local preview.
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            if (e.target?.result) {
-                setFloorPlanUrl(e.target.result as string);
+            // B. Try API (Background Sync)
+            try {
+                const apiData = await apiClient.get<CostItem[]>(`/projects/${projectId}/items`);
+                
+                if (Array.isArray(apiData) && apiData.length > 0) {
+                    setItems(apiData);
+                    localStorage.setItem(storageKey || '', JSON.stringify(apiData));
+                    logger.info('useProjectData', 'Synced items with API', { count: apiData.length });
+                }
+            } catch (err) {
+                logger.warn('useProjectData', 'API unavailable, using local data', err);
+                setError('Offline Mode: Changes saved locally.');
+            } finally {
+                setIsLoading(false);
             }
         };
-        reader.readAsDataURL(file);
 
-        // 2. Send to API
+        loadData();
+    }, [projectId, storageKey]);
+
+    // Helper to save to both Local and API
+    const persistItems = async (newItems: CostItem[]) => {
+        if (!storageKey || !projectId) return;
+
+        // 1. Local Save
+        localStorage.setItem(storageKey, JSON.stringify(newItems));
+        
+        // 2. API Save (Fire & Forget)
+        try {
+            await apiClient.post(`/projects/${projectId}/items`, newItems);
+        } catch (e) {
+            logger.error('useProjectData', 'API Save Failed', e);
+        }
+    };
+
+    const addItem = (partialItem: Partial<CostItem>) => {
+        if (!projectId) return;
+        
+        const newItem: CostItem = {
+            id: crypto.randomUUID(),
+            projectId,
+            phase: 'structure', // Default
+            elementName: 'New Item',
+            description: '',
+            quantity: 1,
+            unit: 'st',
+            unitPrice: 0,
+            confidenceScore: 1.0,
+            ...partialItem,
+            totalCost: (partialItem.quantity || 1) * (partialItem.unitPrice || 0),
+            totalQuantity: partialItem.quantity || 1
+        };
+
+        setItems(prev => {
+            const updated = [...prev, newItem];
+            persistItems(updated);
+            return updated;
+        });
+    };
+
+    const updateItem = (id: string, updates: Partial<CostItem>) => {
+        setItems(prev => {
+            const updated = prev.map(item => {
+                if (item.id === id) {
+                    const updatedItem = { ...item, ...updates };
+                    // Recalculate total if quantity or price changes
+                    if (updates.quantity !== undefined || updates.unitPrice !== undefined) {
+                        updatedItem.totalCost = updatedItem.quantity * updatedItem.unitPrice;
+                    }
+                    return updatedItem;
+                }
+                return item;
+            });
+            persistItems(updated);
+            return updated;
+        });
+    };
+
+    // Analyze Plan (Upload & AI Scan)
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+    const analyzePlan = async (file: File) => {
+        if (!projectId) return;
+        setIsAnalyzing(true);
+        logger.info('useProjectData', 'Analyzing plan', { fileName: file.name });
+
         try {
             const formData = new FormData();
             formData.append('file', file);
 
-            const response = await fetch(`${API_URL}/analyze`, {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) throw new Error('Analysis failed');
-
-            const data: CostItem[] = await response.json();
+            const newItems = await apiClient.upload<CostItem[]>('/analyze', formData);
             
-            // 3. Merge results
-            setItems(prev => [...prev, ...data]);
-        } catch (error) {
-            console.error("AI Analysis failed", error);
-            // Fallback or error state could be handled here
+            // Merge with existing items (or replace?)
+            // For now, we append and rely on ID uniqueness logic if needed
+            setItems(prev => {
+                const updated = [...prev, ...newItems];
+                persistItems(updated);
+                return updated;
+            });
+            
+            logger.info('useProjectData', 'Analysis complete', { count: newItems.length });
+
+        } catch (e) {
+            logger.error('useProjectData', 'Analysis failed', e);
+            setError('Analysis failed. Please try again.');
         } finally {
             setIsAnalyzing(false);
         }
     };
 
-    // Helpers for grouping
-    const getItemsByPhase = (phase: string) => items.filter(i => i.phase === phase);
+    // Derived State
+    const totalCost = useMemo(() => items.reduce((sum, item) => sum + item.totalCost, 0), [items]);
+
+    // Selectors
+    const getItemsByPhase = (phaseId: string) => items.filter(i => i.phase === phaseId);
     const getItemsByRoom = (roomId: string) => items.filter(i => i.roomId === roomId);
     const getUnassignedItems = () => items.filter(i => !i.roomId);
 
     return {
         items,
         totalCost,
-        floorPlanUrl,
+        isLoading,
+        error,
         isAnalyzing,
-        updateItem,
         addItem,
+        updateItem,
         analyzePlan,
         getItemsByPhase,
         getItemsByRoom,
-        getUnassignedItems
+        getUnassignedItems,
+        floorPlanUrl: null // TODO: Add this to Project model
     };
 }

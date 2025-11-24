@@ -78,3 +78,4 @@ class Project(BaseModel):
     id: str
     name: str
     location: str
+    floorPlanUrl: Optional[str] = None

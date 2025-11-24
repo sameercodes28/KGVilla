@@ -24,6 +24,7 @@ export interface Project {
   status?: string;
   lastModified?: string;
   version?: string;
+  floorPlanUrl?: string;
 }
 
 export interface Drawing {
@@ -48,7 +49,7 @@ export interface Assembly {
   }[];
 }
 
-export type ConstructionPhase = 'ground' | 'structure' | 'installations' | 'interior' | 'completion';
+export type ConstructionPhase = 'ground' | 'structure' | 'electrical' | 'plumbing' | 'installations' | 'interior' | 'completion';
 
 export interface CostBreakdown {
   material: number;

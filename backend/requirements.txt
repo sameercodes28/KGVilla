@@ -3,4 +3,5 @@ uvicorn
 gunicorn
 python-multipart
 pydantic
-google-cloud-aiplatform>=1.38.0
+google-cloud-firestore
+google-cloud-aiplatform
