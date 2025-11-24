@@ -168,3 +168,33 @@ API_KEY=<your-api-key>
 *   **CORS:** Strictly configured for the frontend domain.
 *   **BBR 2025:** The AI's "Ground Truth" is updated via the `knowledge_base/` markdown files.
 
+
+
+---
+
+## 8. Future Improvements (JB Villan Integration)
+
+For near-100% pricing accuracy, the following enhancements are planned:
+
+### 8.1 Computer Vision (Wall/Window Detection)
+- Use TensorFlow or Google Vision AI to detect wall lines, windows, and doors from the drawing
+- Calculate actual wall lengths instead of estimating from room area
+- Count windows and doors accurately
+
+### 8.2 CAD/BIM Import
+- Accept DWG/IFC files directly from JB Villan
+- Extract precise geometry: wall lengths, opening sizes, fixture counts
+- Eliminate estimation entirely
+
+### 8.3 User Validation Interface
+- Present extracted values for user confirmation
+- Allow manual correction of room counts, areas, fixture quantities
+- Learn from corrections to improve future extractions
+
+### 8.4 JB Villan Partnership
+- Request structured data exports (JSON/XML) with precise measurements
+- Integrate with their quoting system for real-time pricing
+- Access their material specifications and supplier pricing
+
+---
+
