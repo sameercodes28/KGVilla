@@ -49,6 +49,7 @@ export default function Home() {
     setIsAnalyzing(true);
     let initialItems: CostItem[] = [];
     let planUrl = '';
+    let totalArea = 0;
 
     if (selectedFile) {
         // 1. Create Preview URL
@@ -63,14 +64,16 @@ export default function Home() {
         try {
             const formData = new FormData();
             formData.append('file', selectedFile);
-            initialItems = await apiClient.upload<CostItem[]>('/analyze', formData);
+            const result = await apiClient.upload<{ items: CostItem[], totalArea: number }>('/analyze', formData);
+            initialItems = result.items || [];
+            totalArea = result.totalArea || 0;
         } catch (e) {
             logger.error('Home', 'Analysis failed', e);
         }
     }
 
     // 3. Create Project with Data
-    const id = await createProject(newProjectName, newProjectLocation, selectedFile ? { items: initialItems, planUrl } : undefined);
+    const id = await createProject(newProjectName, newProjectLocation, selectedFile ? { items: initialItems, planUrl, totalArea } : undefined);
     
     setIsAnalyzing(false);
     setIsModalOpen(false);

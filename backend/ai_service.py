@@ -75,16 +75,28 @@ Return a JSON list of `CostItem` objects.
 Each item MUST have a `breakdown` object.
 """
 
-async def analyze_image_with_gemini(image_bytes: bytes, mime_type: str) -> List[Dict]:
+async def analyze_image_with_gemini(image_bytes: bytes, mime_type: str) -> Dict:
     if not _vertex_available:
         logger.error("Vertex AI unavailable")
-        return []
+        return {"items": [], "totalArea": 0}
 
     image_part = Part.from_data(data=image_bytes, mime_type=mime_type)
-    
+
     prompt = """
-    Analyze this floor plan. Identify rooms, calculate areas (BOA/BYA), and estimate costs using the 2025 Knowledge Base.
-    Return a JSON list of CostItems.
+    Analyze this floor plan carefully.
+
+    STEP 1: Read any dimension labels visible in the image (e.g., "7800", "4590", "7350" in mm).
+    STEP 2: Calculate the total living area (BOYTA/BOA) in square meters from the dimensions.
+    STEP 3: Identify all rooms and their approximate areas.
+    STEP 4: Generate cost estimates based on the actual calculated areas.
+
+    Return a JSON object with this EXACT structure:
+    {
+        "totalArea": <number in m², e.g., 130.7>,
+        "items": [<list of CostItem objects>]
+    }
+
+    IMPORTANT: The totalArea MUST be calculated from the floor plan dimensions, not estimated.
     """
 
     generation_config = {
@@ -106,15 +118,23 @@ async def analyze_image_with_gemini(image_bytes: bytes, mime_type: str) -> List[
             text_response = text_response[7:]
         if text_response.endswith("```"):
             text_response = text_response[:-3]
-            
+
         data = json.loads(text_response)
-        if isinstance(data, dict) and "items" in data:
-            return data["items"]
-        return data if isinstance(data, list) else []
-        
+
+        # Handle different response formats
+        if isinstance(data, dict):
+            items = data.get("items", [])
+            total_area = data.get("totalArea", 0)
+            return {"items": items, "totalArea": total_area}
+        elif isinstance(data, list):
+            # Legacy format - just items
+            return {"items": data, "totalArea": 0}
+        else:
+            return {"items": [], "totalArea": 0}
+
     except Exception as e:
         logger.error(f"Error calling Gemini: {e}")
-        return []
+        return {"items": [], "totalArea": 0}
 
 async def chat_with_gemini(message: str, current_items: List[CostItem]) -> ChatResponse:
     if not _vertex_available:

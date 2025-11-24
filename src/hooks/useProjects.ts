@@ -59,9 +59,9 @@ export function useProjects() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newProjects));
     };
 
-    const createProject = async (name: string, location: string, initialData?: { items: CostItem[], planUrl: string }) => {
+    const createProject = async (name: string, location: string, initialData?: { items: CostItem[], planUrl: string, totalArea?: number }) => {
         logger.info('useProjects', 'Creating project', { name });
-        
+
         const newProject: Project = {
             id: generateUUID(),
             name,
@@ -71,7 +71,7 @@ export function useProjects() {
             updatedAt: new Date(),
             bbrStandard: 'BBR 29',
             levels: [],
-            totalArea: 0,
+            totalArea: initialData?.totalArea || 0,
             currency: 'SEK',
             status: 'draft',
             lastModified: new Date().toLocaleDateString(),
