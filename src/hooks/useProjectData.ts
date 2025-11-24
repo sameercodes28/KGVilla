@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { CostItem } from '@/types';
+import { CostItem, ConstructionPhase, Room, Project } from '@/types';
 import { initialCostItems as mockItems } from '@/data/projectData';
 import { apiClient } from '@/lib/apiClient';
 import { logger } from '@/lib/logger';
@@ -16,6 +16,7 @@ export function useProjectData(projectId?: string) {
     const [items, setItems] = useState<CostItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [floorPlanUrl, setFloorPlanUrl] = useState<string | null>(null);
     
     // Sync State
     const [syncState, setSyncState] = useState<SyncState>({
@@ -92,6 +93,15 @@ export function useProjectData(projectId?: string) {
                 setSyncState(prev => ({ ...prev, status: 'error', errorMessage: 'Offline' }));
             } finally {
                 setIsLoading(false);
+            }
+
+            // C. Fetch Project Details (for Floor Plan)
+            try {
+                const projectData = await apiClient.get<Project>(`/projects/${projectId}`);
+                setFloorPlanUrl(projectData.floorPlanUrl || null);
+            } catch (e) {
+                // Silent fail for metadata
+                logger.warn('useProjectData', 'Failed to fetch project metadata', e);
             }
         };
 
@@ -216,6 +226,6 @@ export function useProjectData(projectId?: string) {
         getItemsByPhase,
         getItemsByRoom,
         getUnassignedItems,
-        floorPlanUrl: null // TODO: Add this to Project model
+        floorPlanUrl
     };
 }
