@@ -147,26 +147,58 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
     - "VARDAGSRUM\n30.7 m²"
     """
     rooms = []
+    seen_rooms = set()  # Deduplicate by (name, area) combination
 
-    # Pattern: Room name followed by area (with optional newline)
-    # Matches: "SOVRUM 1" or "KÖK" followed by "18.1 m²" or "18,1 m²"
-    pattern = r'([A-ZÅÄÖ][A-ZÅÄÖ0-9/\s]{1,20}?)\s*\n?\s*(\d{1,3}[.,]\d)\s*m[²2]'
+    # Known room name patterns (Swedish)
+    room_keywords = [
+        r'SOVRUM\s*\d*',
+        r'SOV\s*\d*',
+        r'KÖK(?:/VARDAGSRUM)?',
+        r'VARDAGSRUM',
+        r'ALLRUM',
+        r'ENTRÉ?',
+        r'HALL',
+        r'TVÄTT(?:STUGA)?',
+        r'WC/?D?\d*',
+        r'BAD(?:RUM)?',
+        r'DUSCH',
+        r'KLK',
+        r'KLÄDKAMMARE',
+        r'FÖRRÅD',
+        r'GARAGE(?:/FÖRRÅD)?',
+        r'TEKNIK',
+        r'PANNRUM',
+    ]
 
-    matches = re.findall(pattern, text, re.IGNORECASE)
+    # Build pattern: room keyword followed by area (allow up to 30 chars between)
+    room_pattern = '(' + '|'.join(room_keywords) + r')[\s\S]{0,30}?(\d{1,3}[.,]\d)\s*m[²2]'
+
+    matches = re.findall(room_pattern, text, re.IGNORECASE)
 
     for room_name, area_str in matches:
-        room_name = room_name.strip()
-        # Convert comma to dot for float parsing
+        room_name = room_name.strip().upper()
         area = float(area_str.replace(',', '.'))
 
         # Skip very small areas (likely labels, not rooms)
         if area < 1.0:
             continue
 
+        # Skip very large areas (likely summary values like BOYTA)
+        if area > 100:
+            continue
+
+        category = classify_room(room_name)
+
+        # Deduplicate by (name, area) to avoid OCR duplicates
+        room_key = (room_name, round(area, 1))
+        if room_key in seen_rooms:
+            continue
+        seen_rooms.add(room_key)
+
         rooms.append({
             "name": room_name,
             "area": area,
-            "category": classify_room(room_name)
+            "category": category
         })
 
     return rooms
