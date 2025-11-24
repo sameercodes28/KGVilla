@@ -46,9 +46,14 @@ export function ProjectHeader({
                             <Sparkles className="h-5 w-5 text-purple-600" />
                         </div>
                         <div>
-                            <h1 className="text-lg font-bold text-slate-900 leading-tight">
-                                {title || t('app.title')}
-                            </h1>
+                            <div className="flex items-center gap-2">
+                                <h1 className="text-lg font-bold text-slate-900 leading-tight">
+                                    {title || t('app.title')}
+                                </h1>
+                                <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
+                                    v{process.env.NEXT_PUBLIC_APP_VERSION}
+                                </span>
+                            </div>
                             {subtitle && (
                                 <p className="text-xs text-slate-500">{subtitle}</p>
                             )}
