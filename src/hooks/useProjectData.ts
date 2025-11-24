@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { CostItem, Project } from '@/types';
 import { initialCostItems as mockItems } from '@/data/projectData';
 import { apiClient } from '@/lib/apiClient';
@@ -224,10 +224,10 @@ export function useProjectData(projectId?: string) {
     // Derived State
     const totalCost = useMemo(() => items.reduce((sum, item) => sum + item.totalCost, 0), [items]);
 
-    // Selectors
-    const getItemsByPhase = (phaseId: string) => items.filter(i => i.phase === phaseId);
-    const getItemsByRoom = (roomId: string) => items.filter(i => i.roomId === roomId);
-    const getUnassignedItems = () => items.filter(i => !i.roomId);
+    // Selectors - memoized to prevent recreation on each render
+    const getItemsByPhase = useCallback((phaseId: string) => items.filter(i => i.phase === phaseId), [items]);
+    const getItemsByRoom = useCallback((roomId: string) => items.filter(i => i.roomId === roomId), [items]);
+    const getUnassignedItems = useCallback(() => items.filter(i => !i.roomId), [items]);
 
     return {
         items,

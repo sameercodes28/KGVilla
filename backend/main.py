@@ -11,15 +11,15 @@ from datetime import datetime, timedelta
 # Add current directory to path to ensure local imports work in all environments
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from typing import List, Optional
+from typing import List
 from fastapi import FastAPI, HTTPException, UploadFile, File, Request, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import firestore
 from ai_service import analyze_image_with_gemini, chat_with_gemini, _vertex_available
-from models import CostItem, Project, ChatResponse, Scenario
+from models import CostItem, Project, ChatResponse
 from security import get_api_key
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -49,8 +49,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "X-API-Key", "Authorization"],
 )
 
 # --- Global Exception Handler ---
@@ -94,8 +94,8 @@ except Exception as e:
 
 # --- Models ---
 class ChatRequest(BaseModel):
-    message: str
-    currentItems: List[CostItem]
+    message: str = Field(..., min_length=1, max_length=10000, description="User message")
+    currentItems: List[CostItem] = Field(..., max_length=500, description="Current project items")
 
 # --- Routes ---
 @app.get("/")

@@ -5,8 +5,8 @@ AI Service Module
 import os
 import json
 import logging
-from typing import List, Dict, Optional
-from models import CostItem, ChatResponse, Scenario
+from typing import List, Dict
+from models import CostItem, ChatResponse
 
 # Configure Logging
 logger = logging.getLogger(__name__)

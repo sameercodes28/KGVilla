@@ -166,7 +166,7 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
             }
 
         } catch (error) {
-            console.error(error);
+            logger.error('useChat', 'Failed to send message', error);
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: 'ai',
