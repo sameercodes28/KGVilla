@@ -5,3 +5,4 @@ python-multipart==0.0.6
 pydantic==2.5.2
 google-cloud-firestore==2.13.1
 google-cloud-aiplatform==1.38.1
+slowapi==0.1.9

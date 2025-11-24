@@ -19,12 +19,22 @@ from ai_service import analyze_image_with_gemini, chat_with_gemini, _vertex_avai
 from models import CostItem, Project, ChatResponse, Scenario
 from security import get_api_key
 from pydantic import BaseModel
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from middleware import StructuredLoggingMiddleware
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# --- Rate Limiter ---
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(title="KGVilla API", version="0.1.1")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(StructuredLoggingMiddleware)
 
 # --- Configuration ---
 ALLOWED_ORIGINS_STR = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000,https://sameercodes28.github.io")
@@ -237,7 +247,8 @@ def get_project_items(project_id: str):
     return [CostItem(**item) for item in data.get("items", [])]
 
 @app.post("/analyze")
-async def analyze_drawing(file: UploadFile = File(...)):
+@limiter.limit("10/minute")
+async def analyze_drawing(request: Request, file: UploadFile = File(...)):
     # 1. Validate Content Type
     if file.content_type not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(
