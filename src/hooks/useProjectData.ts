@@ -112,6 +112,10 @@ export function useProjectData(projectId?: string) {
                 const projectData = await apiClient.get<Project>(`/projects/${projectId}`);
                 if (isCancelled) return;
                 setProject(projectData);
+                // Set totalArea from project if available
+                if (projectData.totalArea) {
+                    setTotalArea(projectData.totalArea);
+                }
             } catch (e) {
                 // Silent fail for metadata
                 logger.warn('useProjectData', 'Failed to fetch project metadata', e);
