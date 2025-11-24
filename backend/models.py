@@ -27,9 +27,9 @@ class CostItem(BaseModel):
     Must strictly match src/types/index.ts interface.
     """
     id: str
-    projectId: str
+    projectId: Optional[str] = None  # Assigned when added to project
     levelId: Optional[str] = None
-    phase: Literal['ground', 'structure', 'electrical', 'plumbing', 'interior', 'completion']
+    phase: Literal['ground', 'structure', 'electrical', 'plumbing', 'interior', 'completion', 'admin']
     elementName: str
     description: str
     quantity: float

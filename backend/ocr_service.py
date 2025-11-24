@@ -109,7 +109,9 @@ def extract_text_with_documentai(image_bytes: bytes, mime_type: str) -> str:
         return ""
 
     try:
-        client = documentai.DocumentProcessorServiceClient()
+        # Set regional endpoint based on LOCATION
+        client_options = {"api_endpoint": f"{LOCATION}-documentai.googleapis.com"}
+        client = documentai.DocumentProcessorServiceClient(client_options=client_options)
 
         # Construct processor name
         name = f"projects/{PROJECT_ID}/locations/{LOCATION}/processors/{_processor_id}"
