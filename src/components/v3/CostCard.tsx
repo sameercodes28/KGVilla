@@ -53,6 +53,30 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
         setIsEditing(false);
     };
 
+    // Validation Constants
+    const MIN_QUANTITY = 0;
+    const MAX_QUANTITY = 1000000;
+
+    const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value;
+        // Allow empty string for typing, parse otherwise
+        if (val === '') {
+            setEditValues(prev => ({ ...prev, quantity: 0 })); // Or handle as empty
+            return;
+        }
+        const num = parseFloat(val);
+        if (!isNaN(num)) {
+            setEditValues(prev => ({ ...prev, quantity: num }));
+        }
+    };
+
+    const handleQuantityBlur = () => {
+        let num = editValues.quantity;
+        if (num < MIN_QUANTITY) num = MIN_QUANTITY;
+        if (num > MAX_QUANTITY) num = MAX_QUANTITY;
+        setEditValues(prev => ({ ...prev, quantity: num }));
+    };
+
     const currentOption = item.options?.find(opt => opt.id === selectedOptionId);
 
     // Translation logic for item name and description
@@ -112,8 +136,11 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                                     <label className="text-xs text-slate-500">{t('card.qty')}</label>
                                     <input
                                         type="number"
+                                        min={MIN_QUANTITY}
+                                        max={MAX_QUANTITY}
                                         value={editValues.quantity}
-                                        onChange={(e) => setEditValues({ ...editValues, quantity: Number(e.target.value) })}
+                                        onChange={handleQuantityChange}
+                                        onBlur={handleQuantityBlur}
                                         className="w-20 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-blue-500 outline-none"
                                     />
                                 </div>

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { CostItem } from '@/types';
 import { apiClient } from '@/lib/apiClient';
 import { useTranslation } from '@/contexts/LanguageContext';
+import { logger } from '@/lib/logger';
 
 export interface Scenario {
     title: string;
@@ -30,39 +31,70 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+    const currentProjectRef = useRef(projectId);
     const storageKey = projectId ? `kgvilla-chat-${projectId}` : null;
 
     // Load Chat History
     useEffect(() => {
-        if (typeof window !== 'undefined' && storageKey) {
-            const saved = localStorage.getItem(storageKey);
-            if (saved) {
-                try {
-                     
-                    const parsed = JSON.parse(saved);
-                    // Restore Date objects
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const restored = parsed.map((m: any) => ({
-                        ...m,
-                        timestamp: new Date(m.timestamp)
-                    }));
-                    setMessages(restored);
-                } catch (e) {
-                    console.error("Failed to load chat history", e);
-                }
-            }
-        } else {
-            // Default welcome if no history
+        currentProjectRef.current = projectId;
+        setIsLoading(true);
+
+        if (typeof window === 'undefined' || !storageKey) {
             setMessages([{
                 id: 'welcome',
                 role: 'ai',
                 text: t('chat.welcome'),
                 timestamp: new Date()
             }]);
+            setIsLoading(false);
+            return;
         }
-    }, [storageKey, t]);
+
+        // Clear messages immediately on project change to avoid stale data
+        setMessages([]);
+
+        try {
+            const saved = localStorage.getItem(storageKey);
+            
+            // Race condition check: Did project change while reading?
+            if (currentProjectRef.current !== projectId) {
+                return;
+            }
+
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                // Restore Date objects
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const restored = parsed.map((m: any) => ({
+                    ...m,
+                    timestamp: new Date(m.timestamp)
+                }));
+                setMessages(restored);
+            } else {
+                setMessages([{
+                    id: 'welcome',
+                    role: 'ai',
+                    text: t('chat.welcome'),
+                    timestamp: new Date()
+                }]);
+            }
+        } catch (e) {
+            logger.error('useChat', 'Failed to load chat history', e);
+            setMessages([{
+                id: 'welcome',
+                role: 'ai',
+                text: t('chat.welcome'),
+                timestamp: new Date()
+            }]);
+        } finally {
+            if (currentProjectRef.current === projectId) {
+                setIsLoading(false);
+            }
+        }
+    }, [storageKey, projectId, t]);
 
     // Save Chat History
     useEffect(() => {
@@ -71,7 +103,13 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
         }
     }, [messages, storageKey]);
 
-    const sendMessage = async () => {
+    // Use ref for items to avoid recreating sendMessage on every item change
+    const itemsRef = useRef(currentItems);
+    useEffect(() => {
+        itemsRef.current = currentItems;
+    }, [currentItems]);
+
+    const sendMessage = useCallback(async () => {
         if (!input.trim() && !selectedFile) return;
 
         // 1. Optimistic UI
@@ -114,7 +152,7 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
                 // TEXT MODE: /chat
                 const data = await apiClient.post<ChatResponse>('/chat', {
                     message: currentInput,
-                    currentItems: currentItems
+                    currentItems: itemsRef.current
                 });
 
                 const aiMsg: Message = {
@@ -138,7 +176,7 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
         } finally {
             setIsTyping(false);
         }
-    };
+    }, [input, selectedFile]);
 
     return {
         messages,
@@ -147,6 +185,7 @@ export function useChat(projectId?: string, currentItems: CostItem[] = []) {
         selectedFile,
         setSelectedFile,
         isTyping,
+        isLoading,
         sendMessage
     };
 }
