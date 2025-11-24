@@ -5,6 +5,7 @@
 !main.py
 !models.py
 !ai_service.py
+!ocr_service.py
 !security.py
 !middleware.py
 !standards/**
