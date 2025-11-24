@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_API_URL: https://kgvilla-api-30314481610.europe-north1.run.app
-      NEXT_PUBLIC_API_KEY: ${{ secrets.NEXT_PUBLIC_API_KEY || 'dev-key-123' }}
+      NEXT_PUBLIC_API_KEY: dev-key-123
     steps:
       - name: Checkout
         uses: actions/checkout@v4
