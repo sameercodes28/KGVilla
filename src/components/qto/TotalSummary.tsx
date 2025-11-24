@@ -20,7 +20,7 @@ export function TotalSummary({ totalCost, area }: TotalSummaryProps) {
                 </div>
                 <div className="text-right">
                     <div className="text-4xl font-bold font-mono mb-1">
-                        {totalCost.toLocaleString('sv-SE')} kr
+                        {Math.round(totalCost).toLocaleString('sv-SE')} kr
                     </div>
                     <div className="text-slate-400 font-mono">
                         {costPerSqm.toLocaleString('sv-SE', { maximumFractionDigits: 0 })} kr/m²

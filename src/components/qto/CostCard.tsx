@@ -190,10 +190,10 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                                     {quantity.toFixed(1)} <span className="text-slate-500 text-sm">{item.unit}</span>
                                 </div>
                                 <div className="text-sm font-semibold text-slate-700 mt-0.5">
-                                    {totalCost.toLocaleString('sv-SE')} kr
+                                    {Math.round(totalCost).toLocaleString('sv-SE')} kr
                                 </div>
                                 <div className="flex items-center justify-end text-[10px] text-slate-400 mt-1">
-                                    {unitPrice.toLocaleString('sv-SE')} kr/{item.unit}
+                                    {Math.round(unitPrice).toLocaleString('sv-SE')} kr/{item.unit}
                                     {!isEditing && onUpdate && (
                                         <button
                                             onClick={(e) => {
@@ -253,7 +253,7 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                             <div className="flex-1">
                                 <div className="flex justify-between mb-1">
                                     <span className="text-slate-600">{t('card.materials')}</span>
-                                    <span className="font-medium text-slate-900">{(totalCost * 0.6).toLocaleString('sv-SE')} kr</span>
+                                    <span className="font-medium text-slate-900">{Math.round(totalCost * 0.6).toLocaleString('sv-SE')} kr</span>
                                 </div>
                                 <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
                                     <div className="h-full bg-blue-500 w-[60%]"></div>
@@ -262,7 +262,7 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                             <div className="flex-1">
                                 <div className="flex justify-between mb-1">
                                     <span className="text-slate-600">{t('card.labor')}</span>
-                                    <span className="font-medium text-slate-900">{(totalCost * 0.4).toLocaleString('sv-SE')} kr</span>
+                                    <span className="font-medium text-slate-900">{Math.round(totalCost * 0.4).toLocaleString('sv-SE')} kr</span>
                                 </div>
                                 <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
                                     <div className="h-full bg-amber-500 w-[40%]"></div>

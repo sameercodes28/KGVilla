@@ -18,6 +18,7 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
     const {
         items,
         totalCost,
+        totalArea,
         analyzePlan,
         floorPlanUrl,
         isAnalyzing,
@@ -70,11 +71,11 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
 
     return (
         <div className="flex h-screen bg-slate-50 relative select-none flex-col">
-             <ProjectHeader 
+             <ProjectHeader
                 currentProjectId={projectId}
                 showBackButton
-                title={projectDetails.name} 
-                subtitle={`${items.length} Items • ${(totalCost / (projectDetails.totalArea || 1)).toLocaleString('sv-SE', { maximumFractionDigits: 0 })} kr/m²`}
+                title={projectDetails.name}
+                subtitle={`${items.length} Items • ${Math.round(totalCost / (totalArea || 1)).toLocaleString('sv-SE')} kr/m²`}
                 syncState={syncState}
             />
 
@@ -98,7 +99,10 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
                     {/* Floating Cost Overlay */}
                     <div className="absolute top-8 left-8 bg-white/90 backdrop-blur p-4 rounded-xl shadow-lg border border-slate-200 pointer-events-none">
                         <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">{t('qto.total_estimate')}</p>
-                        <p className="text-3xl font-bold text-slate-900">{totalCost.toLocaleString('sv-SE')} kr</p>
+                        <p className="text-3xl font-bold text-slate-900">{Math.round(totalCost).toLocaleString('sv-SE')} kr</p>
+                        {totalArea > 0 && (
+                            <p className="text-xs text-slate-500 mt-1">• {totalArea} m²</p>
+                        )}
                     </div>
                 </div>
 

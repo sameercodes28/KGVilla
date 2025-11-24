@@ -17,6 +17,7 @@ export function useProjectData(projectId?: string) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [project, setProject] = useState<Project | null>(null);
+    const [totalArea, setTotalArea] = useState<number>(0);
     
     // Sync State
     const [syncState, setSyncState] = useState<SyncState>({
@@ -229,6 +230,11 @@ export function useProjectData(projectId?: string) {
             setItems(itemsWithProjectId);
             persistItems(itemsWithProjectId);
 
+            // Store totalArea from analysis
+            if (response.totalArea) {
+                setTotalArea(response.totalArea);
+            }
+
             logger.info('useProjectData', 'Analysis complete', { count: newItems.length, totalArea: response.totalArea });
 
         } catch (e) {
@@ -250,6 +256,7 @@ export function useProjectData(projectId?: string) {
     return {
         items,
         totalCost,
+        totalArea,
         isLoading,
         error,
         syncState,

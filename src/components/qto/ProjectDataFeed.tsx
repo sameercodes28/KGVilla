@@ -14,13 +14,14 @@ export function ProjectDataFeed() {
     const { t } = useTranslation();
     const [viewMode, setViewMode] = useState<'phases' | 'rooms'>('phases');
     
-    const { 
-        project, 
-        items, 
-        totalCost, 
-        updateItem, 
-        addItem, 
-        setHighlightedItem, 
+    const {
+        project,
+        items,
+        totalCost,
+        totalArea,
+        updateItem,
+        addItem,
+        setHighlightedItem,
         setInspectingItem,
         getItemsByPhase,
         getItemsByRoom,
@@ -74,7 +75,7 @@ export function ProjectDataFeed() {
                             </button>
                         </div>
                     </div>
-                    <p className="text-slate-500 text-lg">{project.location} • {project.totalArea || 0} m²</p>
+                    <p className="text-slate-500 text-lg">{project.location} • {totalArea || 0} m²</p>
                                     </header>
                 
                                     <ClientCostSection onInspectItem={setInspectingItem} />
@@ -151,7 +152,7 @@ export function ProjectDataFeed() {
                 </div>
 
                 <div className="mt-12">
-                    <TotalSummary totalCost={totalCost} area={project.totalArea || 0} />
+                    <TotalSummary totalCost={totalCost} area={totalArea || 0} />
                 </div>
             </div>
         </div>

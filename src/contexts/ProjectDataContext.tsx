@@ -8,6 +8,7 @@ interface ProjectDataContextType {
     // Data State
     items: CostItem[];
     totalCost: number;
+    totalArea: number;
     floorPlanUrl: string | null;
     project: Project | null;
     isLoading: boolean;

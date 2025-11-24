@@ -41,7 +41,7 @@ export function CostInspector({ item, onClose }: CostInspectorProps) {
                 <h3 className="text-lg font-bold text-slate-900 mb-1">{item.elementName}</h3>
                 <p className="text-slate-500 text-sm mb-4">{item.description}</p>
                 <div className="text-3xl font-mono font-bold text-slate-900">
-                    {item.totalCost.toLocaleString('sv-SE')} kr
+                    {Math.round(item.totalCost).toLocaleString('sv-SE')} kr
                 </div>
             </div>
 

@@ -58,7 +58,7 @@ export function ClientCostSection({ onInspectItem }: ClientCostSectionProps) {
 
     const TotalDisplay = (
         <div className="text-right">
-            <div className="text-lg font-bold text-slate-900 font-mono">{totalClientCost.toLocaleString('sv-SE')} kr</div>
+            <div className="text-lg font-bold text-slate-900 font-mono">{Math.round(totalClientCost).toLocaleString('sv-SE')} kr</div>
             <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">{t('client.est_total')}</div>
         </div>
     );
@@ -91,7 +91,7 @@ export function ClientCostSection({ onInspectItem }: ClientCostSectionProps) {
                                 </div>
                             </div>
                             <div className="font-mono font-medium text-slate-700">
-                                {item.cost.toLocaleString('sv-SE')} kr
+                                {Math.round(item.cost).toLocaleString('sv-SE')} kr
                             </div>
                         </div>
                     );

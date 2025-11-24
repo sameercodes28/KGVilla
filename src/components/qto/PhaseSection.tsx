@@ -18,7 +18,7 @@ export function PhaseSection({ title, totalCost, items, onUpdateItem, onHoverIte
     const TotalDisplay = (
         <div className="text-right">
             <div className="text-lg font-bold text-slate-900 font-mono">
-                {totalCost.toLocaleString('sv-SE')} kr
+                {Math.round(totalCost).toLocaleString('sv-SE')} kr
             </div>
             <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">
                 Est. Total
