@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { CostItem, ConstructionPhase, Room, Project } from '@/types';
+import { CostItem, Project } from '@/types';
 import { initialCostItems as mockItems } from '@/data/projectData';
 import { apiClient } from '@/lib/apiClient';
 import { logger } from '@/lib/logger';

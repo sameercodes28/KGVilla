@@ -1,4 +1,4 @@
-import { CostItem, ConstructionPhase, Unit } from '@/types';
+import { ConstructionPhase, Unit } from '@/types';
 import { PRICING_CONFIG } from './pricingConfig';
 
 interface CatalogItem {

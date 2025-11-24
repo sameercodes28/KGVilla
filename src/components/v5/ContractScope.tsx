@@ -3,15 +3,12 @@
 import React from 'react';
 import { ShieldCheck, FileText, Clock, AlertTriangle } from 'lucide-react';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
-import { useTranslation } from '@/contexts/LanguageContext';
 
 interface ContractScopeProps {
     totalCost: number;
 }
 
 export function ContractScope({ totalCost }: ContractScopeProps) {
-    const { t } = useTranslation();
-
     const paymentSteps = [
         { label: "Signing & Permits", percent: 10, amount: totalCost * 0.10 },
         { label: "Foundation Complete", percent: 25, amount: totalCost * 0.25 },

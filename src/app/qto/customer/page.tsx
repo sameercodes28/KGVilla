@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation';
 import { useProjectData } from '@/hooks/useProjectData';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { MapPin, CheckCircle, ShieldCheck, FileText, ArrowRight, ArrowLeft } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import Link from 'next/link';
 

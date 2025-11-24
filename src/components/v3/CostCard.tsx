@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { CostItem } from '@/types';
-import { ChevronDown, ChevronUp, Info, AlertCircle, CheckCircle2, Edit2, Save, X, Calculator, BookOpen } from 'lucide-react';
+import { ChevronDown, Info, Edit2, Save, X, Calculator, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
 

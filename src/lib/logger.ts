@@ -8,14 +8,14 @@ export interface LogEntry {
     level: LogLevel;
     component: string;
     message: string;
-    data?: any;
+    data?: unknown;
 }
 
 class Logger {
     private logs: LogEntry[] = [];
     private maxLogs: number = 100;
 
-    private log(level: LogLevel, component: string, message: string, data?: any) {
+    log(level: LogLevel, component: string, message: string, data?: unknown) {
         const entry: LogEntry = {
             timestamp: new Date().toISOString(),
             level,
@@ -53,19 +53,19 @@ class Logger {
         }
     }
 
-    debug(component: string, message: string, data?: any) {
+    debug(component: string, message: string, data?: unknown) {
         if (LOG_LEVEL === 'debug') this.log('debug', component, message, data);
     }
 
-    info(component: string, message: string, data?: any) {
+    info(component: string, message: string, data?: unknown) {
         if (['debug', 'info'].includes(LOG_LEVEL)) this.log('info', component, message, data);
     }
 
-    warn(component: string, message: string, data?: any) {
+    warn(component: string, message: string, data?: unknown) {
         if (['debug', 'info', 'warn'].includes(LOG_LEVEL)) this.log('warn', component, message, data);
     }
 
-    error(component: string, message: string, data?: any) {
+    error(component: string, message: string, data?: unknown) {
         this.log('error', component, message, data);
     }
 

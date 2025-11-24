@@ -1,13 +1,11 @@
 'use client';
 
-import { ArrowLeft, FolderOpen, MapPin, ArrowRight } from 'lucide-react';
+import { MapPin, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useProjects } from '@/hooks/useProjects';
-import { useTranslation } from '@/contexts/LanguageContext';
 
 export function ProjectList() {
     const { projects } = useProjects();
-    const { t } = useTranslation();
 
     return (
         <div className="max-w-5xl mx-auto pt-24 px-6 pb-20">

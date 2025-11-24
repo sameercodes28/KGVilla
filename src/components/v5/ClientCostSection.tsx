@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { clientCosts } from '@/data/projectData';
-import { Info, ChevronDown } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useTranslation } from '@/contexts/LanguageContext';
-import { cn } from '@/lib/utils';
 import { CostItem } from '@/types';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
 
