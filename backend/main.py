@@ -11,12 +11,13 @@ import uuid
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from typing import List, Optional
-from fastapi import FastAPI, HTTPException, UploadFile, File, Request
+from fastapi import FastAPI, HTTPException, UploadFile, File, Request, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import firestore
 from ai_service import analyze_image_with_gemini, chat_with_gemini, _vertex_available
 from models import CostItem, Project, ChatResponse, Scenario
+from security import get_api_key
 from pydantic import BaseModel
 
 # Configure Logging
@@ -85,6 +86,30 @@ class ChatRequest(BaseModel):
     message: str
     currentItems: List[CostItem]
 
+import os
+import sys
+import logging
+import traceback
+import uuid
+from datetime import datetime, timedelta
+
+# Add current directory to path to ensure local imports work in all environments
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from typing import List, Optional
+from fastapi import FastAPI, HTTPException, UploadFile, File, Request, Depends
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from google.cloud import firestore
+from ai_service import analyze_image_with_gemini, chat_with_gemini, _vertex_available
+from models import CostItem, Project, ChatResponse, Scenario
+from security import get_api_key
+from pydantic import BaseModel
+
+# ... (rest of imports)
+
+# ... (app setup) ...
+
 # --- Routes ---
 @app.get("/")
 def read_root():
@@ -99,15 +124,55 @@ def read_root():
     }
     return status
 
+# --- Health Check Cache ---
+_last_health_check = None
+_cached_health_response = None
+HEALTH_CHECK_TTL = timedelta(seconds=30)
+
 @app.get("/health")
-def health_check():
-    # Simple health check for load balancers
-    if _firestore_available and _vertex_available:
-        return {"status": "healthy"}
-    return JSONResponse(
-        status_code=503, 
-        content={"status": "degraded", "details": "One or more services unavailable"}
-    )
+async def health_check():
+    global _last_health_check, _cached_health_response
+    
+    now = datetime.utcnow()
+    if _cached_health_response and _last_health_check and (now - _last_health_check) < HEALTH_CHECK_TTL:
+        return _cached_health_response
+
+    health = {
+        "status": "healthy",
+        "checks": {
+            "firestore": "unknown",
+            "vertex_ai": "unknown"
+        }
+    }
+    
+    # Check Firestore
+    try:
+        if _firestore_available and db:
+            # Perform actual read
+            list(db.collection("projects").limit(1).stream())
+            health["checks"]["firestore"] = "ok"
+        else:
+            health["checks"]["firestore"] = "not_configured"
+    except Exception as e:
+        health["status"] = "degraded"
+        health["checks"]["firestore"] = f"error: {type(e).__name__}"
+        logger.error(f"Health check failed (Firestore): {e}")
+
+    # Check Vertex AI
+    if _vertex_available:
+        health["checks"]["vertex_ai"] = "ok"
+    else:
+        health["checks"]["vertex_ai"] = "not_configured"
+
+    status_code = 200 if health["status"] == "healthy" else 503
+    
+    response = JSONResponse(content=health, status_code=status_code)
+    
+    # Update cache
+    _last_health_check = now
+    _cached_health_response = response
+    
+    return response
 
 @app.get("/projects", response_model=List[Project])
 def list_projects():
@@ -121,7 +186,7 @@ def list_projects():
         raise e
 
 @app.post("/projects")
-def create_update_project(project: Project):
+def create_update_project(project: Project, api_key: str = Depends(get_api_key)):
     if not _firestore_available or not db:
         # In dev/offline mode, we might want to return success to let frontend proceed?
         # But frontend handles offline. Let's return 503 to indicate backend storage failed.
@@ -142,7 +207,7 @@ def get_project(project_id: str):
     return Project(**doc.to_dict())
 
 @app.delete("/projects/{project_id}")
-def delete_project(project_id: str):
+def delete_project(project_id: str, api_key: str = Depends(get_api_key)):
     if not _firestore_available or not db:
         return {"status": "mock_deleted"}
     
@@ -152,7 +217,7 @@ def delete_project(project_id: str):
     return {"status": "success", "id": project_id}
 
 @app.post("/projects/{project_id}/items")
-def save_project_items(project_id: str, items: List[CostItem]):
+def save_project_items(project_id: str, items: List[CostItem], api_key: str = Depends(get_api_key)):
     if not _firestore_available or not db:
         return {"status": "mock_saved"}
     

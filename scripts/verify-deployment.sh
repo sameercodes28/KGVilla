@@ -28,6 +28,9 @@ fi
 if [ -z "$NEXT_PUBLIC_API_URL" ]; then
     echo "⚠️  Warning: NEXT_PUBLIC_API_URL is not set. Frontend might default to hardcoded fallback."
 fi
+if [ -z "$NEXT_PUBLIC_API_KEY" ]; then
+    echo "⚠️  Warning: NEXT_PUBLIC_API_KEY is not set. Backend writes might fail."
+fi
 if [ -z "$GOOGLE_CLOUD_PROJECT" ]; then
     echo "⚠️  Warning: GOOGLE_CLOUD_PROJECT is not set. Backend features might be limited."
 fi
