@@ -4,7 +4,7 @@
  * This file contains the base rates and multipliers used across the application.
  * Edit this file to update prices globally.
  * 
- * TODO: In the future, fetch these from the Backend API (/config/pricing).
+ * Note: Future iteration could fetch these from the Backend API (/config/pricing).
  */
 
 export const PRICING_CONFIG = {
