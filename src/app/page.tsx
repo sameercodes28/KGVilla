@@ -70,7 +70,7 @@ export default function Home() {
     }
 
     // 3. Create Project with Data
-    const id = createProject(newProjectName, newProjectLocation, selectedFile ? { items: initialItems, planUrl } : undefined);
+    const id = await createProject(newProjectName, newProjectLocation, selectedFile ? { items: initialItems, planUrl } : undefined);
     
     setIsAnalyzing(false);
     setIsModalOpen(false);

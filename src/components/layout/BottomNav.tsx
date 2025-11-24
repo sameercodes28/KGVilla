@@ -16,7 +16,7 @@ export function BottomNav() {
     };
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-200 px-6 py-2 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <nav aria-label="Main navigation" className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-slate-200 px-6 py-2 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
             <div className="max-w-md mx-auto flex justify-around items-center">
                 <Link 
                     href="/" 
@@ -54,6 +54,6 @@ export function BottomNav() {
                     <span className="text-[10px] font-medium tracking-wide">{t('nav.ai_analysis')}</span>
                 </Link>
             </div>
-        </div>
+        </nav>
     );
 }

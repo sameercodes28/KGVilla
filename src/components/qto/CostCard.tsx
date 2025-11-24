@@ -180,8 +180,8 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                                     />
                                 </div>
                                 <div className="flex space-x-2 mt-1">
-                                    <button onClick={handleSave} className="p-1 text-green-600 hover:bg-green-50 rounded"><Save className="h-4 w-4" /></button>
-                                    <button onClick={handleCancel} className="p-1 text-red-600 hover:bg-red-50 rounded"><X className="h-4 w-4" /></button>
+                                    <button onClick={handleSave} aria-label="Save changes" className="p-1 text-green-600 hover:bg-green-50 rounded"><Save className="h-4 w-4" /></button>
+                                    <button onClick={handleCancel} aria-label="Cancel editing" className="p-1 text-red-600 hover:bg-red-50 rounded"><X className="h-4 w-4" /></button>
                                 </div>
                             </div>
                         ) : (
