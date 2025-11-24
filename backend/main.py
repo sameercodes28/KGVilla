@@ -4,12 +4,15 @@ KGVilla Backend API
 import os
 import sys
 import logging
+import traceback
+import uuid
 
 # Add current directory to path to ensure local imports work in all environments
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from typing import List, Optional
-from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi import FastAPI, HTTPException, UploadFile, File, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import firestore
 from ai_service import analyze_image_with_gemini, chat_with_gemini, _vertex_available
@@ -20,21 +23,51 @@ from pydantic import BaseModel
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="KGVilla API", version="0.1.0")
+app = FastAPI(title="KGVilla API", version="0.1.1")
 
-# CORS
+# --- Configuration ---
+ALLOWED_ORIGINS_STR = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000,https://sameercodes28.github.io")
+ALLOWED_ORIGINS = [origin.strip() for origin in ALLOWED_ORIGINS_STR.split(",")]
+
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+ALLOWED_CONTENT_TYPES = {"application/pdf", "image/png", "image/jpeg", "image/webp"}
+
+# --- CORS ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://sameercodes28.github.io"
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Firestore Init
+# --- Global Exception Handler ---
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    # Pass through HTTPExceptions (they are intentional)
+    if isinstance(exc, HTTPException):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"detail": exc.detail},
+        )
+
+    error_id = str(uuid.uuid4())[:8]
+    logger.error(
+        f"Error {error_id}: {type(exc).__name__}: {exc}\n"
+        f"Path: {request.url.path}\n"
+        f"Traceback:\n{traceback.format_exc()}"
+    )
+    
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": "Internal server error",
+            "error_id": error_id,
+            "message": "An unexpected error occurred. Please contact support."
+        }
+    )
+
+# --- Firestore Init ---
 _firestore_available = False
 db = None
 try:
@@ -47,17 +80,18 @@ except Exception as e:
     logger.error(f"Firestore failed: {e}")
     _firestore_available = False
 
-# Models for Request Body
+# --- Models ---
 class ChatRequest(BaseModel):
     message: str
     currentItems: List[CostItem]
 
-# Routes
+# --- Routes ---
 @app.get("/")
 def read_root():
     status = {
         "status": "active",
         "service": "KGVilla Backend",
+        "version": "0.1.1",
         "checks": {
             "firestore": "connected" if _firestore_available else "disconnected",
             "vertex_ai": "connected" if _vertex_available else "disconnected (check credentials)"
@@ -67,7 +101,13 @@ def read_root():
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy"}
+    # Simple health check for load balancers
+    if _firestore_available and _vertex_available:
+        return {"status": "healthy"}
+    return JSONResponse(
+        status_code=503, 
+        content={"status": "degraded", "details": "One or more services unavailable"}
+    )
 
 @app.get("/projects", response_model=List[Project])
 def list_projects():
@@ -77,24 +117,24 @@ def list_projects():
         docs = db.collection("projects").stream()
         return [Project(**doc.to_dict()) for doc in docs]
     except Exception as e:
-        logger.error(f"List projects failed: {e}")
-        return []
+        # Global handler will catch and log this
+        raise e
 
 @app.post("/projects")
 def create_update_project(project: Project):
     if not _firestore_available or not db:
-        return {"status": "error", "message": "Firestore unavailable"}
-    try:
-        db.collection("projects").document(project.id).set(project.model_dump())
-        return {"status": "success", "id": project.id}
-    except Exception as e:
-        logger.error(f"Create project failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # In dev/offline mode, we might want to return success to let frontend proceed?
+        # But frontend handles offline. Let's return 503 to indicate backend storage failed.
+        raise HTTPException(status_code=503, detail="Firestore unavailable")
+    
+    db.collection("projects").document(project.id).set(project.model_dump())
+    return {"status": "success", "id": project.id}
 
 @app.get("/projects/{project_id}", response_model=Project)
 def get_project(project_id: str):
     if not _firestore_available or not db:
-        return Project(id=project_id, name="Mock Project", location="Stockholm")
+        # Mock fallback for resilience
+        return Project(id=project_id, name="Offline Project", location="Local")
     
     doc = db.collection("projects").document(project_id).get()
     if not doc.exists:
@@ -106,58 +146,56 @@ def delete_project(project_id: str):
     if not _firestore_available or not db:
         return {"status": "mock_deleted"}
     
-    try:
-        db.collection("projects").document(project_id).delete()
-        db.collection("cost_data").document(project_id).delete()
-        logger.info(f"Deleted project: {project_id}")
-        return {"status": "success", "id": project_id}
-    except Exception as e:
-        logger.error(f"Delete failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    db.collection("projects").document(project_id).delete()
+    db.collection("cost_data").document(project_id).delete()
+    logger.info(f"Deleted project: {project_id}")
+    return {"status": "success", "id": project_id}
 
 @app.post("/projects/{project_id}/items")
 def save_project_items(project_id: str, items: List[CostItem]):
     if not _firestore_available or not db:
         return {"status": "mock_saved"}
     
-    try:
-        data = {"items": [item.model_dump() for item in items]}
-        db.collection("cost_data").document(project_id).set(data)
-        return {"status": "success", "count": len(items)}
-    except Exception as e:
-        logger.error(f"Save items failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    data = {"items": [item.model_dump() for item in items]}
+    db.collection("cost_data").document(project_id).set(data)
+    return {"status": "success", "count": len(items)}
 
 @app.get("/projects/{project_id}/items", response_model=List[CostItem])
 def get_project_items(project_id: str):
     if not _firestore_available or not db:
         return []
     
-    try:
-        doc = db.collection("cost_data").document(project_id).get()
-        if not doc.exists:
-            return []
-        data = doc.to_dict()
-        return [CostItem(**item) for item in data.get("items", [])]
-    except Exception as e:
-        logger.error(f"Get items failed: {e}")
+    doc = db.collection("cost_data").document(project_id).get()
+    if not doc.exists:
         return []
+    data = doc.to_dict()
+    return [CostItem(**item) for item in data.get("items", [])]
 
 @app.post("/analyze")
 async def analyze_drawing(file: UploadFile = File(...)):
-    try:
-        contents = await file.read()
-        logger.info(f"Analyzing file: {file.filename} ({len(contents)} bytes)")
-        result = await analyze_image_with_gemini(contents, file.content_type)
-        return result
-    except Exception as e:
-        logger.error(f"Analysis failed: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+    # 1. Validate Content Type
+    if file.content_type not in ALLOWED_CONTENT_TYPES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid file type: {file.content_type}. Allowed: {', '.join(ALLOWED_CONTENT_TYPES)}"
+        )
+
+    # 2. Read content
+    contents = await file.read()
+    
+    # 3. Validate Size
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail=f"File too large ({len(contents)} bytes). Max size: 10MB"
+        )
+
+    logger.info(f"Analyzing file: {file.filename} ({len(contents)} bytes)")
+    
+    # 4. Process
+    result = await analyze_image_with_gemini(contents, file.content_type)
+    return result
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
-    try:
-        return await chat_with_gemini(request.message, request.currentItems)
-    except Exception as e:
-        logger.error(f"Chat failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    return await chat_with_gemini(request.message, request.currentItems)
