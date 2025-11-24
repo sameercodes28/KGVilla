@@ -17,31 +17,20 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
     const { t } = useTranslation();
     
     const { 
-        items, 
+        items,
         totalCost, 
-        updateItem, 
-        addItem, 
         analyzePlan,
         floorPlanUrl,
         isAnalyzing,
-        getItemsByPhase, 
-        getItemsByRoom, 
-        getUnassignedItems,
         highlightedItem,
-        setHighlightedItem,
         inspectingItem,
         setInspectingItem,
         syncState
     } = useProjectContext();
 
     useEffect(() => {
-        logger.info('SplitLayout', 'Project View Loaded', { itemCount: items.length, totalCost });
-    }, [items.length, totalCost]);
-
-    const onAddItem = (item: Partial<CostItem>) => {
-        addItem(item);
-        logger.info('SplitLayout', 'Added new item', item);
-    };
+        logger.info('SplitLayout', 'Project View Loaded', { totalCost });
+    }, [totalCost]);
 
     return (
         <div className="flex h-screen bg-slate-50 relative select-none flex-col">
