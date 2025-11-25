@@ -27,8 +27,11 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
     const quantity = item.customQuantity ?? item.quantity;
     const totalCost = unitPrice * quantity;
 
-    // Check if item has been customized
-    const hasCustomValues = item.customUnitPrice !== undefined || item.customQuantity !== undefined;
+    // Check if item has been ACTUALLY customized (values differ from original)
+    const hasCustomValues = (
+        (item.customUnitPrice !== undefined && item.customUnitPrice !== item.unitPrice) ||
+        (item.customQuantity !== undefined && item.customQuantity !== item.quantity)
+    );
 
     const handleSave = (e: React.MouseEvent) => {
         e.stopPropagation();

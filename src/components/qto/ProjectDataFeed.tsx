@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { Room } from '@/types';
-import { rooms } from '@/data/projectData';
+import React, { useState, useMemo } from 'react';
+import { CostItem } from '@/types';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { ClientCostSection } from './ClientCostSection';
@@ -9,6 +8,37 @@ import { PhaseSection } from './PhaseSection';
 import { TotalSummary } from './TotalSummary';
 import { AddItemForm } from './AddItemForm';
 import { useProjectContext } from '@/contexts/ProjectDataContext';
+
+// Extract room name from item elementName (e.g., "Flooring - SOVRUM 1" → "SOVRUM 1")
+function extractRoomFromItem(item: CostItem): string | null {
+    const name = item.elementName || '';
+
+    // Pattern: "Something - ROOM NAME" or "Something (ROOM NAME)"
+    const dashMatch = name.match(/\s*-\s*([A-ZÅÄÖ][A-ZÅÄÖ0-9\s/]+)$/i);
+    if (dashMatch) return dashMatch[1].trim().toUpperCase();
+
+    const parenMatch = name.match(/\(([A-ZÅÄÖ][A-ZÅÄÖ0-9\s/]+)\)$/i);
+    if (parenMatch) return parenMatch[1].trim().toUpperCase();
+
+    return null;
+}
+
+// Group items by detected room names
+function groupItemsByRoom(items: CostItem[]): Map<string, CostItem[]> {
+    const groups = new Map<string, CostItem[]>();
+
+    for (const item of items) {
+        const roomName = extractRoomFromItem(item);
+        const key = roomName || 'GENERAL';
+
+        if (!groups.has(key)) {
+            groups.set(key, []);
+        }
+        groups.get(key)!.push(item);
+    }
+
+    return groups;
+}
 
 export function ProjectDataFeed() {
     const { t } = useTranslation();
@@ -39,6 +69,9 @@ export function ProjectDataFeed() {
 
     const otherItems = items.filter(i => !phases.some(p => p.id === i.phase));
 
+    // Group items by room (extracted from item names)
+    const roomGroups = useMemo(() => groupItemsByRoom(items), [items]);
+
     if (!project) {
         return <div className="p-8 text-center text-slate-500">Loading project...</div>;
     }
@@ -46,18 +79,13 @@ export function ProjectDataFeed() {
     return (
         <div className="w-full h-full overflow-y-auto bg-white">
             <div className="w-full p-8 pb-32">
-                {/* Header */}
+                {/* Header - Clean & Simple */}
                 <header className="mb-8">
-                    <div className="flex items-center space-x-2 text-sm text-slate-500 mb-4">
-                        <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">{t('qto.beta')}</span>
-                        <span>•</span>
-                        <span>{project.id}</span>
-                        <span>•</span>
-                        <span>{project.lastModified || 'Just now'}</span>
-                    </div>
-
-                    <div className="flex justify-between items-end mb-2">
-                        <h1 className="text-4xl font-serif font-bold text-slate-900 tracking-tight">{project.name}</h1>
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">{project.name}</h1>
+                            <p className="text-slate-500">{project.location} • {totalArea || 0} m²</p>
+                        </div>
 
                         {/* View Mode Toggle */}
                         <div className="bg-slate-100 p-1 rounded-lg flex space-x-1">
@@ -75,8 +103,7 @@ export function ProjectDataFeed() {
                             </button>
                         </div>
                     </div>
-                    <p className="text-slate-500 text-lg">{project.location} • {totalArea || 0} m²</p>
-                                    </header>
+                </header>
                 
                                     <ClientCostSection onInspectItem={setInspectingItem} />
                                 
@@ -115,29 +142,31 @@ export function ProjectDataFeed() {
                     </div>
                 ) : (
                     <div className="space-y-6">
-                        {rooms.map((room: Room) => {
-                            const roomItems = getItemsByRoom(room.id);
-                            if (roomItems.length === 0) return null;
-                            const roomTotal = roomItems.reduce((sum, i) => sum + i.totalCost, 0);
+                        {/* Render room groups extracted from item names */}
+                        {Array.from(roomGroups.entries())
+                            .filter(([key]) => key !== 'GENERAL')  // Show specific rooms first
+                            .sort(([a], [b]) => a.localeCompare(b, 'sv'))  // Sort alphabetically
+                            .map(([roomName, roomItems]) => {
+                                const roomTotal = roomItems.reduce((sum, i) => sum + i.totalCost, 0);
+                                return (
+                                    <PhaseSection
+                                        key={roomName}
+                                        title={roomName}
+                                        totalCost={roomTotal}
+                                        items={roomItems}
+                                        onUpdateItem={updateItem}
+                                        onHoverItem={setHighlightedItem}
+                                        onInspectItem={setInspectingItem}
+                                    />
+                                );
+                            })}
 
-                            return (
-                                <PhaseSection
-                                    key={room.id}
-                                    title={room.name}
-                                    totalCost={roomTotal}
-                                    items={roomItems}
-                                    onUpdateItem={updateItem}
-                                    onHoverItem={setHighlightedItem}
-                                    onInspectItem={setInspectingItem}
-                                />
-                            );
-                        })}
-
-                        {getUnassignedItems().length > 0 && (
+                        {/* Show general/unassigned items last */}
+                        {roomGroups.has('GENERAL') && roomGroups.get('GENERAL')!.length > 0 && (
                             <PhaseSection
                                 title={t('qto.general_unassigned')}
-                                totalCost={getUnassignedItems().reduce((sum, i) => sum + i.totalCost, 0)}
-                                items={getUnassignedItems()}
+                                totalCost={roomGroups.get('GENERAL')!.reduce((sum, i) => sum + i.totalCost, 0)}
+                                items={roomGroups.get('GENERAL')!}
                                 onUpdateItem={updateItem}
                                 onHoverItem={setHighlightedItem}
                                 onInspectItem={setInspectingItem}
