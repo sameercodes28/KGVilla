@@ -6,7 +6,6 @@ import { useTranslation } from '../../contexts/LanguageContext';
 import { logger } from '@/lib/logger';
 import { ProjectHeader } from '@/components/layout/ProjectHeader';
 import { ProjectDataProvider, useProjectContext } from '@/contexts/ProjectDataContext';
-import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
 interface SplitLayoutProps {
     projectId?: string;
@@ -20,6 +19,8 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
         items,
         totalCost,
         totalArea,
+        boa,
+        biarea,
         analyzePlan,
         floorPlanUrl,
         isAnalyzing,
@@ -80,8 +81,6 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
                 syncState={syncState}
             />
 
-            {/* Language Toggle - Bottom Right */}
-            <LanguageToggle />
 
             <div className="flex flex-1 overflow-hidden">
                 {/* Left Pane - Visual Viewer (Static 50%) */}
@@ -104,7 +103,13 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
                     <div className="absolute top-8 left-8 bg-white/90 backdrop-blur p-4 rounded-xl shadow-lg border border-slate-200 pointer-events-none">
                         <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">{t('qto.total_estimate')}</p>
                         <p className="text-3xl font-bold text-slate-900">{Math.round(totalCost).toLocaleString('sv-SE')} kr</p>
-                        {totalArea > 0 && (
+                        {(boa > 0 || biarea > 0) ? (
+                            <p className="text-xs text-slate-500 mt-1">
+                                • {boa > 0 ? `${boa} m² BOA` : ''}
+                                {boa > 0 && biarea > 0 ? ' + ' : ''}
+                                {biarea > 0 ? `${biarea} m² Bi` : ''}
+                            </p>
+                        ) : totalArea > 0 && (
                             <p className="text-xs text-slate-500 mt-1">• {totalArea} m²</p>
                         )}
                     </div>

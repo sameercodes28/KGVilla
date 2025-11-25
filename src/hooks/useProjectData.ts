@@ -123,8 +123,18 @@ export function useProjectData(projectId?: string) {
                         setProject(localProject);
                         if (localProject.totalArea) {
                             setTotalArea(localProject.totalArea);
-                            logger.info('useProjectData', 'Loaded totalArea from localStorage', { totalArea: localProject.totalArea });
                         }
+                        if (localProject.boa) {
+                            setBoa(localProject.boa);
+                        }
+                        if (localProject.biarea) {
+                            setBiarea(localProject.biarea);
+                        }
+                        logger.info('useProjectData', 'Loaded area data from localStorage', {
+                            totalArea: localProject.totalArea,
+                            boa: localProject.boa,
+                            biarea: localProject.biarea
+                        });
                     }
                 }
             } catch (e) {
