@@ -107,18 +107,42 @@ export function useProjectData(projectId?: string) {
                 }
             }
 
-            // C. Fetch Project Details (for Floor Plan)
+            // C. Fetch Project Details (for Floor Plan & totalArea)
+            // First try localStorage (where useProjects stores it)
+            let projectData: Project | null = null;
             try {
-                const projectData = await apiClient.get<Project>(`/projects/${projectId}`);
-                if (isCancelled) return;
-                setProject(projectData);
-                // Set totalArea from project if available
-                if (projectData.totalArea) {
-                    setTotalArea(projectData.totalArea);
+                const storedProjects = localStorage.getItem('kgvilla_projects');
+                if (storedProjects) {
+                    const projects: Project[] = JSON.parse(storedProjects);
+                    const localProject = projects.find(p => p.id === projectId);
+                    if (localProject) {
+                        if (isCancelled) return;
+                        projectData = localProject;
+                        setProject(localProject);
+                        if (localProject.totalArea) {
+                            setTotalArea(localProject.totalArea);
+                            logger.info('useProjectData', 'Loaded totalArea from localStorage', { totalArea: localProject.totalArea });
+                        }
+                    }
                 }
             } catch (e) {
-                // Silent fail for metadata
-                logger.warn('useProjectData', 'Failed to fetch project metadata', e);
+                logger.warn('useProjectData', 'Failed to read project from localStorage', e);
+            }
+
+            // Then try API (may have more up-to-date data)
+            try {
+                const apiProjectData = await apiClient.get<Project>(`/projects/${projectId}`);
+                if (isCancelled) return;
+                setProject(apiProjectData);
+                // Only update totalArea from API if it has a value (don't overwrite localStorage value with 0)
+                if (apiProjectData.totalArea && apiProjectData.totalArea > 0) {
+                    setTotalArea(apiProjectData.totalArea);
+                }
+            } catch (e) {
+                // Silent fail for API metadata - we may have localStorage data
+                if (!projectData) {
+                    logger.warn('useProjectData', 'Failed to fetch project metadata', e);
+                }
             }
         };
 
@@ -234,9 +258,23 @@ export function useProjectData(projectId?: string) {
             setItems(itemsWithProjectId);
             persistItems(itemsWithProjectId);
 
-            // Store totalArea from analysis
+            // Store totalArea from analysis and persist to project
             if (response.totalArea) {
                 setTotalArea(response.totalArea);
+                // Also persist to localStorage projects
+                try {
+                    const storedProjects = localStorage.getItem('kgvilla_projects');
+                    if (storedProjects) {
+                        const projects: Project[] = JSON.parse(storedProjects);
+                        const updatedProjects = projects.map(p =>
+                            p.id === projectId ? { ...p, totalArea: response.totalArea } : p
+                        );
+                        localStorage.setItem('kgvilla_projects', JSON.stringify(updatedProjects));
+                        logger.info('useProjectData', 'Persisted totalArea to project', { totalArea: response.totalArea });
+                    }
+                } catch (e) {
+                    logger.warn('useProjectData', 'Failed to persist totalArea to project', e);
+                }
             }
 
             logger.info('useProjectData', 'Analysis complete', { count: newItems.length, totalArea: response.totalArea });
