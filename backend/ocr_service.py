@@ -335,17 +335,19 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
         r'MATPLATS(?!/)(?!\s*/)',      # Dining alone
         r'ALLRUM',
         r'Room',                       # Generic (seen in some plans)
-        # Entry areas
-        r'ENTRÉ?',
-        r'ENTRE',
-        r'HALL',
-        r'VINDFÅNG',
-        # Utility/laundry - including combined rooms
-        r'GROVENTRÉ\s*/\s*TVÄTT',      # Utility entrance/laundry
-        r'TVÄTT\s*/\s*GROVENTRÉ',      # Laundry/utility entrance
-        r'GROVENTRÉ(?!/)(?!\s*/)',     # Utility entrance alone
+        # Utility/laundry - MUST come BEFORE entry patterns to avoid partial matches
+        r'GROVENTR[EÉ]\s*/\s*TVÄTT',   # Utility entrance/laundry (with or without accent)
+        r'TVÄTT\s*/\s*GROVENTR[EÉ]',   # Laundry/utility entrance
+        r'GROVENTR[EÉ](?!/)(?!\s*/)',  # Utility entrance alone
         r'TVÄTT(?:STUGA)?(?!/)(?!\s*/)',  # Laundry alone
         r'GROVKÖK',
+        # Entry areas - AFTER utility patterns, use word boundaries
+        # Exclude "OVER ENTRE" (label meaning "above entry"), "GROVENTRE", etc.
+        r'(?<!OVER )(?<!GROV)ENTRÉ(?![A-Z])',   # ENTRÉ not after OVER or GROV
+        r'(?<!OVER )(?<!GROV)ENTRE(?![A-Z])',   # ENTRE not after OVER or GROV
+        r'(?<!OVER )(?<!GROV)ENTR(?![A-ZÉE])',  # ENTR alone, not part of other words
+        r'HALL(?!\w)',                 # HALL not followed by letters
+        r'VINDFÅNG',
         # Bathrooms - multiple conventions
         r'WC/BAD',                     # WC/bathroom combo
         r'WC/D\s*\d*',                 # WC/dusch numbered
@@ -388,11 +390,25 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
 
     # Phase 3: Three-pass matching strategy
     # Pass 1: STRICT - area immediately following room (within 20 chars)
-    # Pass 2: PROXIMITY - closest area within 80 chars
+    # Pass 2: PROXIMITY - closest area within reasonable distance
     # Pass 3: FALLBACK - remaining rooms get remaining areas by order
 
     used_rooms = set()
     used_areas = set()
+
+    # Room size validation ranges (typical Swedish floor plans)
+    # These help avoid obviously wrong matches - ranges are permissive
+    ROOM_SIZE_HINTS = {
+        "living": (8, 60),     # VARDAGSRUM, ALLRUM, MATPLATS - 8-60 m² (ALLRUM can be ~10-12)
+        "bedroom": (5, 25),    # SOV typically 5-25 m² (master can be larger)
+        "kitchen": (6, 35),    # KÖK typically 6-35 m² (open kitchens larger)
+        "bathroom": (2, 12),   # WC/BAD typically 2-12 m²
+        "laundry": (2, 15),    # TVÄTT typically 2-15 m²
+        "entry": (2, 20),      # ENTRÉ typically 2-20 m² (large entries exist)
+        "closet": (1, 10),     # KLK typically 1-10 m² (walk-ins can be larger)
+        "storage": (3, 40),    # FÖRRÅD typically 3-40 m² (variable)
+        "garage": (15, 60),    # GARAGE typically 15-60 m²
+    }
 
     # Helper function to validate and extract area
     def get_valid_area(area_match):
@@ -402,11 +418,20 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
             return area_val
         return None
 
+    def is_plausible_size(category: str, area: float) -> bool:
+        """Check if area is plausible for the room category."""
+        if category in ROOM_SIZE_HINTS:
+            min_size, max_size = ROOM_SIZE_HINTS[category]
+            return min_size <= area <= max_size
+        return True  # No hint, accept any size
+
     # Pass 1: Strict immediate matching (within 20 chars)
+    # Only match if area is plausible for the room type
     for room_idx, room_match in enumerate(room_matches):
         room_name = room_match.group(1).strip().upper()
         room_name = ' '.join(room_name.split())  # Clean whitespace
         room_end = room_match.end()
+        category = classify_room(room_name)
 
         for area_idx, area_match in enumerate(area_matches):
             if area_idx in used_areas:
@@ -418,7 +443,10 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
                 if area_val is None:
                     continue
 
-                category = classify_room(room_name)
+                # Skip if area is implausible for this room type
+                if not is_plausible_size(category, area_val):
+                    continue
+
                 room_key = (room_name, round(area_val, 1))
 
                 if room_key not in seen_rooms:
@@ -433,7 +461,7 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
                     used_areas.add(area_idx)
                 break
 
-    # Pass 2: Proximity matching - find closest unused area within 80 chars
+    # Pass 2: Proximity matching - find closest plausible area within 50 chars
     for room_idx, room_match in enumerate(room_matches):
         if room_idx in used_rooms:
             continue
@@ -441,8 +469,9 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
         room_name = room_match.group(1).strip().upper()
         room_name = ' '.join(room_name.split())
         room_end = room_match.end()
+        category = classify_room(room_name)
 
-        # Find closest unused area
+        # Find closest unused area that is plausible for this room type
         best_area_idx = None
         best_distance = float('inf')
         best_area_val = None
@@ -455,10 +484,14 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
             distance = area_match.start() - room_end
             abs_distance = abs(distance)
 
-            # Only consider areas within 80 chars
-            if abs_distance <= 80:
+            # Only consider areas within 50 chars (reduced from 80 for precision)
+            if abs_distance <= 50:
                 area_val = get_valid_area(area_match)
                 if area_val is None:
+                    continue
+
+                # Skip if area is implausible for this room type
+                if not is_plausible_size(category, area_val):
                     continue
 
                 # Prefer areas AFTER the room name (positive distance)
@@ -471,7 +504,6 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
                     best_area_val = area_val
 
         if best_area_idx is not None:
-            category = classify_room(room_name)
             room_key = (room_name, round(best_area_val, 1))
 
             if room_key not in seen_rooms:
@@ -485,7 +517,7 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
                 used_rooms.add(room_idx)
                 used_areas.add(best_area_idx)
 
-    # Pass 3: Order-based fallback for any remaining unmatched rooms
+    # Pass 3: Fallback - match remaining rooms to plausible remaining areas
     unmatched_rooms = [(idx, m) for idx, m in enumerate(room_matches) if idx not in used_rooms]
     unmatched_areas = [(idx, m) for idx, m in enumerate(area_matches) if idx not in used_areas]
 
@@ -495,25 +527,27 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
         if area_val is not None:
             valid_unmatched_areas.append((area_idx, area_match, area_val))
 
-    for i, (room_idx, room_match) in enumerate(unmatched_rooms):
-        if i >= len(valid_unmatched_areas):
-            break
-
+    # For each unmatched room, try to find a plausible area
+    for room_idx, room_match in unmatched_rooms:
         room_name = room_match.group(1).strip().upper()
         room_name = ' '.join(room_name.split())
-        area_idx, area_match, area_val = valid_unmatched_areas[i]
-
         category = classify_room(room_name)
-        room_key = (room_name, round(area_val, 1))
 
-        if room_key not in seen_rooms:
-            seen_rooms.add(room_key)
-            rooms.append({
-                "name": room_name,
-                "area": area_val,
-                "category": category,
-                "is_biarea": is_biarea(category),
-            })
+        # Find first plausible unused area
+        for i, (area_idx, area_match, area_val) in enumerate(valid_unmatched_areas):
+            if is_plausible_size(category, area_val):
+                room_key = (room_name, round(area_val, 1))
+
+                if room_key not in seen_rooms:
+                    seen_rooms.add(room_key)
+                    rooms.append({
+                        "name": room_name,
+                        "area": area_val,
+                        "category": category,
+                        "is_biarea": is_biarea(category),
+                    })
+                    valid_unmatched_areas.pop(i)
+                    break
 
     return rooms
 
