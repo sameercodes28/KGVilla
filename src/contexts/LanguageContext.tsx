@@ -181,12 +181,49 @@ const dictionary: Record<string, DictionaryEntry> = {
     'assump.review': { en: 'to review', sv: 'att granska' },
     'assump.confidence': { en: 'confidence', sv: 'säkerhet' },
     'assump.suggested': { en: 'SUGGESTED VALUE:', sv: 'FÖRESLAGET VÄRDE:' },
+
+    // Room Names (Swedish -> English)
+    'room.VARDAGSRUM': { en: 'Living Room', sv: 'VARDAGSRUM' },
+    'room.V.RUM': { en: 'Living Room', sv: 'V.RUM' },
+    'room.ALLRUM': { en: 'Family Room', sv: 'ALLRUM' },
+    'room.KÖK': { en: 'Kitchen', sv: 'KÖK' },
+    'room.MATPLATS': { en: 'Dining Area', sv: 'MATPLATS' },
+    'room.KÖK/VARDAGSRUM': { en: 'Kitchen/Living Room', sv: 'KÖK/VARDAGSRUM' },
+    'room.KÖK/MATPLATS': { en: 'Kitchen/Dining', sv: 'KÖK/MATPLATS' },
+    'room.MATPLATS / VARDAGSRUM': { en: 'Dining/Living Room', sv: 'MATPLATS / VARDAGSRUM' },
+    'room.SOVRUM': { en: 'Bedroom', sv: 'SOVRUM' },
+    'room.SOV': { en: 'Bedroom', sv: 'SOV' },
+    'room.EV. SOV': { en: 'Possible Bedroom', sv: 'EV. SOV' },
+    'room.ENTRÉ': { en: 'Entry', sv: 'ENTRÉ' },
+    'room.ENTRE': { en: 'Entry', sv: 'ENTRE' },
+    'room.HALL': { en: 'Hall', sv: 'HALL' },
+    'room.WC/D': { en: 'Bathroom', sv: 'WC/D' },
+    'room.WC/BAD': { en: 'Bathroom', sv: 'WC/BAD' },
+    'room.BAD': { en: 'Bathroom', sv: 'BAD' },
+    'room.BADRUM': { en: 'Bathroom', sv: 'BADRUM' },
+    'room.TVÄTT': { en: 'Laundry', sv: 'TVÄTT' },
+    'room.TVÄTTSTUGA': { en: 'Laundry Room', sv: 'TVÄTTSTUGA' },
+    'room.GROVENTRÉ': { en: 'Utility Entry', sv: 'GROVENTRÉ' },
+    'room.GROVENTRÉ / TVÄTT': { en: 'Utility/Laundry', sv: 'GROVENTRÉ / TVÄTT' },
+    'room.TVÄTT / GROVENTRÉ': { en: 'Laundry/Utility', sv: 'TVÄTT / GROVENTRÉ' },
+    'room.FÖRRÅD': { en: 'Storage', sv: 'FÖRRÅD' },
+    'room.KLK': { en: 'Closet', sv: 'KLK' },
+    'room.KLÄDKAMMARE': { en: 'Walk-in Closet', sv: 'KLÄDKAMMARE' },
+    'room.GARAGE': { en: 'Garage', sv: 'GARAGE' },
+    'room.GARAGE/FÖRRÅD': { en: 'Garage/Storage', sv: 'GARAGE/FÖRRÅD' },
+    'room.TEKNIK': { en: 'Technical Room', sv: 'TEKNIK' },
+    'room.ALTAN': { en: 'Terrace', sv: 'ALTAN' },
+    'room.UTEPLATS': { en: 'Patio', sv: 'UTEPLATS' },
+    'room.TERRASS': { en: 'Terrace', sv: 'TERRASS' },
+    'room.BALKONG': { en: 'Balcony', sv: 'BALKONG' },
+    'room.GENERAL': { en: 'General / Unassigned', sv: 'Allmänt / Ej tilldelat' },
 };
 
 interface LanguageContextType {
     language: Language;
     setLanguage: (lang: Language) => void;
     t: (key: string) => string;
+    translateRoom: (roomName: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -213,8 +250,41 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         return entry[language];
     };
 
+    // Translate room names (handles numbered rooms like "SOV 1", "SOVRUM 2", etc.)
+    const translateRoom = (roomName: string): string => {
+        if (!roomName) return roomName;
+
+        // If Swedish, return as-is
+        if (language === 'sv') return roomName;
+
+        // Try exact match first
+        const exactKey = `room.${roomName}`;
+        const exactEntry = dictionary[exactKey];
+        if (exactEntry) return exactEntry[language];
+
+        // Handle numbered rooms (e.g., "SOV 1" -> "Bedroom 1", "SOVRUM 2" -> "Bedroom 2")
+        const numberedMatch = roomName.match(/^(.+?)\s*(\d+)$/);
+        if (numberedMatch) {
+            const baseName = numberedMatch[1].trim();
+            const number = numberedMatch[2];
+            const baseKey = `room.${baseName}`;
+            const baseEntry = dictionary[baseKey];
+            if (baseEntry) return `${baseEntry[language]} ${number}`;
+        }
+
+        // Handle rooms with WC/D prefix (e.g., "WC/D1" -> "Bathroom 1")
+        const wcMatch = roomName.match(/^(WC\/D)(\d*)$/);
+        if (wcMatch) {
+            const number = wcMatch[2] || '';
+            return number ? `Bathroom ${number}` : 'Bathroom';
+        }
+
+        // Return original if no translation found
+        return roomName;
+    };
+
     return (
-        <LanguageContext.Provider value={{ language, setLanguage, t }}>
+        <LanguageContext.Provider value={{ language, setLanguage, t, translateRoom }}>
             {children}
         </LanguageContext.Provider>
     );

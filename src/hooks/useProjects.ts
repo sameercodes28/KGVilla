@@ -59,7 +59,7 @@ export function useProjects() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(newProjects));
     };
 
-    const createProject = async (name: string, location: string, initialData?: { items: CostItem[], planUrl: string, totalArea?: number }) => {
+    const createProject = async (name: string, location: string, initialData?: { items: CostItem[], planUrl: string, totalArea?: number, estimatedCost?: number }) => {
         logger.info('useProjects', 'Creating project', { name });
 
         const newProject: Project = {
@@ -72,6 +72,7 @@ export function useProjects() {
             bbrStandard: 'BBR 29',
             levels: [],
             totalArea: initialData?.totalArea || 0,
+            estimatedCost: initialData?.estimatedCost || 0,
             currency: 'SEK',
             status: 'draft',
             lastModified: new Date().toLocaleDateString(),

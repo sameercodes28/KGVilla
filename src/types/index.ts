@@ -20,6 +20,7 @@ export interface Project {
   clientName?: string;
   address?: string;
   totalArea?: number;
+  estimatedCost?: number; // Total estimated cost from analysis
   currency?: string;
   status?: string;
   lastModified?: string;

@@ -41,7 +41,7 @@ function groupItemsByRoom(items: CostItem[]): Map<string, CostItem[]> {
 }
 
 export function ProjectDataFeed() {
-    const { t } = useTranslation();
+    const { t, translateRoom } = useTranslation();
     const [viewMode, setViewMode] = useState<'phases' | 'rooms'>('phases');
     
     const {
@@ -151,7 +151,7 @@ export function ProjectDataFeed() {
                                 return (
                                     <PhaseSection
                                         key={roomName}
-                                        title={roomName}
+                                        title={translateRoom(roomName)}
                                         totalCost={roomTotal}
                                         items={roomItems}
                                         onUpdateItem={updateItem}
@@ -164,7 +164,7 @@ export function ProjectDataFeed() {
                         {/* Show general/unassigned items last */}
                         {roomGroups.has('GENERAL') && roomGroups.get('GENERAL')!.length > 0 && (
                             <PhaseSection
-                                title={t('qto.general_unassigned')}
+                                title={translateRoom('GENERAL')}
                                 totalCost={roomGroups.get('GENERAL')!.reduce((sum, i) => sum + i.totalCost, 0)}
                                 items={roomGroups.get('GENERAL')!}
                                 onUpdateItem={updateItem}

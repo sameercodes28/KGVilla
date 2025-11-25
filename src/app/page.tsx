@@ -58,6 +58,8 @@ export default function Home() {
     let planUrl = '';
     let totalArea = 0;
 
+    let estimatedCost = 0;
+
     if (selectedFile) {
         // 1. Create Preview URL
         const reader = new FileReader();
@@ -75,7 +77,9 @@ export default function Home() {
             const result = await apiClient.upload<{ items: CostItem[], totalArea: number }>('/analyze', formData);
             initialItems = result.items || [];
             totalArea = result.totalArea || 0;
-            logger.info('Home', 'Analysis complete', { itemCount: initialItems.length, totalArea });
+            // Calculate estimated cost from items
+            estimatedCost = initialItems.reduce((sum, item) => sum + (item.totalCost || 0), 0);
+            logger.info('Home', 'Analysis complete', { itemCount: initialItems.length, totalArea, estimatedCost });
 
             if (initialItems.length === 0) {
                 logger.warn('Home', 'Analysis returned no items');
@@ -87,7 +91,7 @@ export default function Home() {
     }
 
     // 3. Create Project with Data
-    const id = await createProject(newProjectName, newProjectLocation, selectedFile ? { items: initialItems, planUrl, totalArea } : undefined);
+    const id = await createProject(newProjectName, newProjectLocation, selectedFile ? { items: initialItems, planUrl, totalArea, estimatedCost } : undefined);
     
     setIsAnalyzing(false);
     setIsModalOpen(false);
@@ -191,13 +195,25 @@ export default function Home() {
                 <Link key={project.id} href={`/qto?project=${project.id}`} className="block group relative">
                     <div className="h-72 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-200 hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden">
                         <div className="h-36 bg-slate-50 relative flex items-center justify-center border-b border-slate-100 group-hover:bg-blue-50/50 transition-colors">
-                            <FolderOpen className="h-16 w-16 text-slate-300 group-hover:text-blue-400 transition-colors" />
+                            {/* Project Stats Display */}
+                            <div className="flex flex-col items-center justify-center space-y-2">
+                                <div className="text-center">
+                                    <span className="text-3xl font-bold text-slate-800">{project.totalArea || 0}</span>
+                                    <span className="text-lg text-slate-500 ml-1">m²</span>
+                                </div>
+                                <div className="text-center">
+                                    <span className="text-xl font-semibold text-blue-600">
+                                        {(project.estimatedCost || 0).toLocaleString('sv-SE')}
+                                    </span>
+                                    <span className="text-sm text-slate-500 ml-1">kr</span>
+                                </div>
+                            </div>
                             <div className="absolute top-4 right-4 flex space-x-2">
                                 <button
                                     onClick={(e) => handleStatusToggle(e, project)}
                                     className={cn(
                                         "backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase shadow-sm transition-all border z-20",
-                                        project.status === 'final' 
+                                        project.status === 'final'
                                             ? "bg-green-100/90 text-green-700 border-green-200 hover:bg-green-200"
                                             : "bg-white/90 text-slate-500 border-slate-200 hover:bg-slate-100"
                                     )}
@@ -243,6 +259,8 @@ export default function Home() {
                     <tr>
                         <th className="px-6 py-4 font-medium">Project Name</th>
                         <th className="px-6 py-4 font-medium">Location</th>
+                        <th className="px-6 py-4 font-medium text-right">Area</th>
+                        <th className="px-6 py-4 font-medium text-right">Estimated Cost</th>
                         <th className="px-6 py-4 font-medium">Status</th>
                         <th className="px-6 py-4 font-medium">Last Updated</th>
                         <th className="px-6 py-4 font-medium text-right">Actions</th>
@@ -256,6 +274,8 @@ export default function Home() {
                                 {project.name}
                             </td>
                             <td className="px-6 py-4 text-slate-500">{project.location}</td>
+                            <td className="px-6 py-4 text-right text-slate-700">{project.totalArea || 0} m²</td>
+                            <td className="px-6 py-4 text-right font-medium text-blue-600">{(project.estimatedCost || 0).toLocaleString('sv-SE')} kr</td>
                             <td className="px-6 py-4">
                                 <button
                                     onClick={(e) => handleStatusToggle(e, project)}
@@ -271,7 +291,7 @@ export default function Home() {
                             </td>
                             <td className="px-6 py-4 text-slate-500">{project.lastModified}</td>
                             <td className="px-6 py-4 text-right">
-                                <button 
+                                <button
                                     onClick={(e) => handleDelete(e, project.id)}
                                     className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                                 >
@@ -282,7 +302,7 @@ export default function Home() {
                     ))}
                     {filteredProjects.length === 0 && (
                         <tr>
-                            <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                            <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
                                 No projects found matching &quot;{searchQuery}&quot;
                             </td>
                         </tr>
