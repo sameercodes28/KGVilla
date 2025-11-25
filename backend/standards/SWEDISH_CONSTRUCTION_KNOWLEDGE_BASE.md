@@ -189,10 +189,56 @@ This document serves as the ground truth for the AI Quantity Surveyor. It combin
 
 ## SECTION 6: MEASUREMENT & FINISH STANDARDS
 
-### SS 21054 (AREA MEASUREMENT RULES)
-*   **BOA (Living Area):** Measure from the **inside** of exterior walls. Use this for: Flooring, Ceiling Paint, Indoor Climate volume.
-*   **BYA (Building Area):** Measure from the **outside** of exterior walls. Use this for: Foundation (Platta), Roof, Exterior Painting.
-*   **BIA (Non-Living):** Garages, thick walls (>30cm), low ceiling areas (<1.90m).
+### SS 21054:2009 (AREA MEASUREMENT RULES - DETAILED)
+
+#### Area Types in Swedish Building Standards
+*   **NTA (Nettoarea):** Net area - measured inside rooms, excluding walls. This is what floor plan room labels show.
+*   **BRA (Bruksarea):** Usable area - includes inner walls but not outer walls.
+*   **BTA (Bruttoarea):** Gross area - includes all walls.
+*   **BYA (Byggnadsarea):** Building footprint - outside of exterior walls.
+
+#### BOA vs Biarea Classification (Critical for Pricing!)
+
+**BOA (Boarea) - Living Area:**
+*   Heated, finished living spaces
+*   Used for: Flooring, Ceiling Paint, Indoor Climate, kr/m² calculations
+*   Includes:
+    - Bedrooms (SOVRUM, SOV)
+    - Living rooms (VARDAGSRUM, ALLRUM)
+    - Kitchen (KÖK)
+    - Bathrooms (WC, BAD, WC/BAD)
+    - Entry/Hall (ENTRÉ, HALL)
+    - Laundry (TVÄTT, GROVENTRÉ) - typically heated
+    - Walk-in closets (KLK, KLÄDKAMMARE)
+    - Dining (MATPLATS)
+
+**Biarea - Secondary Area:**
+*   Unheated or non-living spaces
+*   Priced differently (lower cost per m²)
+*   Includes:
+    - GARAGE (~8,000-12,000 kr/m²)
+    - FÖRRÅD (Storage) (~6,000-10,000 kr/m²)
+    - CARPORT
+    - TEKNIKRUM (Technical room)
+    - PANNRUM (Boiler room)
+    - KALLFÖRRÅD (Cold storage)
+
+#### Wall Thickness Adjustment (NTA → BRA Conversion)
+Floor plan room labels show **Net Area (NTA)** - the interior dimensions.
+Builder specifications typically use **Gross Area (BRA)** - includes inner walls.
+
+**Conversion Factor: 1.035 (3.5%)**
+*   Typical inner wall: 100-120mm
+*   This adds ~3.5% to net area
+*   Example: 183 m² NTA × 1.035 = 189.4 m² BRA
+
+**Formula Verification (JB Villan Hus 1405):**
+| Source | BOA | Biarea | Total |
+|--------|-----|--------|-------|
+| Room labels (NTA) | 134.6 m² | 48.4 m² | 183.0 m² |
+| With wall adjustment (×1.035) | 139.3 m² | 50.1 m² | 189.4 m² |
+| Builder spec | 140.2 m² | 49.3 m² | 189.5 m² |
+| **Difference** | -0.9 m² | +0.8 m² | **-0.1 m²** |
 
 ### BBV 21:1 (TILING IN WET ROOMS)
 *   **Requirement:** If tiling a bathroom, you MUST follow BBV rules.
@@ -235,25 +281,198 @@ This document serves as the ground truth for the AI Quantity Surveyor. It combin
 
 ---
 
-## SECTION 9: AI ANALYSIS INSTRUCTIONS (MASTER)
+## SECTION 9: SWEDISH FLOOR PLAN OCR PATTERNS
 
-1.  **SCALE & SEGMENTATION:** Measure pixels. Identify rooms.
-2.  **AREA CALCULATION (SS 21054):**
-    *   **Foundation Cost:** Use **BYA** (Outer dimensions).
-    *   **Flooring Cost:** Use **BOA** (Inner dimensions).
-3.  **COMPLIANCE SCAN (BBR):**
-    *   Check Bathroom 1.3m turning circle.
-    *   Check Garage fire wall thickness.
-4.  **QUANTITY TAKE-OFF (AMA/BBV):**
-    *   Calculate areas. Add 10% waste for materials.
-    *   **Bathroom Walls:** Use "Wet Room Wall" assembly (BBV compliant).
-5.  **PRICING (ABT 06):**
-    *   Use the **2025 rates** above.
-    *   **RISK PREMIUM:** Apply a **12% markup** to all construction items (Ground, Structure, Interior) to account for ABT 06 Design Risk + Warranty.
-    *   **REGIONAL LOGIC:** If prompt mentions "Göteborg", use Section 5 (Västra Götaland).
-    *   **MANDATORY ADDITIONS (PBL/Safety):**
-        *   "Climate Declaration" (Admin).
-        *   "BAS-P/U Safety Coordination" (Admin).
-        *   "Leakage Trays" (Kitchen).
-        *   "Kontrollansvarig (KA)" (Admin).
-        *   "Bygglovsavgifter" (Admin).
+### Room Naming Conventions (from analysis of 11 JB Villan floor plans)
+
+#### Bedroom Variations
+| Pattern | Meaning | Example |
+|---------|---------|---------|
+| SOVRUM 1 | Bedroom 1 | Full name with number |
+| SOV 1 | Bedroom 1 | Abbreviated |
+| SOV1 | Bedroom 1 | No space |
+| EV. SOV | Possible bedroom | "Eventuellt sovrum" |
+| MASTER | Master bedroom | English term used |
+
+#### Living/Dining Variations
+| Pattern | Meaning | Notes |
+|---------|---------|-------|
+| VARDAGSRUM | Living room | Full name |
+| V.RUM | Living room | Abbreviated |
+| ALLRUM | Family room | Multi-purpose room |
+| MATPLATS | Dining area | Often combined |
+| KÖK/MATPLATS | Kitchen/Dining | Combined rooms use "/" |
+| MATPLATS / VARDAGSRUM | Dining/Living | Combined open plan |
+
+#### Combined Room Patterns (Important!)
+Swedish floor plans often show combined rooms with "/" separator:
+*   `KÖK/VARDAGSRUM` - Open plan kitchen/living
+*   `KÖK/MATPLATS` - Kitchen with dining area
+*   `GROVENTRÉ/TVÄTT` - Utility entrance/laundry
+*   `TVÄTT/GROVENTRÉ` - Same, reversed
+*   `WC/BAD` - Toilet/bathroom combined
+*   `WC/D` - Toilet/shower (WC/Dusch)
+*   `GARAGE/FÖRRÅD` - Garage with storage
+
+#### Bathroom Patterns
+| Pattern | Meaning | Category |
+|---------|---------|----------|
+| WC | Toilet only | bathroom |
+| WC 1, WC 2 | Numbered toilets | bathroom |
+| WC/BAD | Toilet + bath | bathroom |
+| WC/D | Toilet + shower | bathroom |
+| BAD | Bathroom | bathroom |
+| BADRUM | Bathroom | bathroom |
+| DUSCH | Shower room | bathroom |
+
+#### Storage/Closet Patterns
+| Pattern | Meaning | Category |
+|---------|---------|----------|
+| KLK | Walk-in closet | storage (BOA) |
+| KLK 1, KLK 2 | Numbered closets | storage (BOA) |
+| KLÄDKAMMARE | Wardrobe room | storage (BOA) |
+| FÖRRÅD | Storage room | storage (Biarea) |
+| GARDEROB | Wardrobe | storage (BOA) |
+
+#### Equipment Labels in Floor Plans
+These labels indicate installed equipment (not rooms):
+
+| Label | Swedish | English | Indicates |
+|-------|---------|---------|-----------|
+| VP | Värmepump | Heat pump | HVAC system present |
+| TM | Tvättmaskin | Washing machine | Laundry equipment |
+| TT | Torktumlare | Tumble dryer | Laundry equipment |
+| F | Frys | Freezer | Kitchen appliance |
+| K | Kyl | Refrigerator | Kitchen appliance |
+| DM | Diskmaskin | Dishwasher | Kitchen appliance |
+| U/M | Ugn/Mikro | Oven/Microwave | Kitchen appliance |
+| MVU | Mikrovågsugn | Microwave | Kitchen appliance |
+| ELC | Elcentral | Distribution board | Electrical |
+| EI30 | Brandklassning | Fire rating | Fire separation |
+| VMS | Varmvattenberedare | Water heater | Plumbing |
+| GVF | Golvvärfördelare | Underfloor heating manifold | HVAC |
+| BRASKAMIN | Eldstad | Fireplace | Heating feature |
+
+#### Outdoor Space Patterns
+| Pattern | Category | Include in pricing? |
+|---------|----------|---------------------|
+| ALTAN | terrace | Only if detected |
+| UTEPLATS | terrace | Only if detected |
+| TERRASS | terrace | Only if detected |
+| VERANDA | terrace | Only if detected |
+| BALKONG | terrace | Only if detected |
+| DECK | terrace | Only if detected |
+
+**IMPORTANT:** Never assume outdoor spaces exist. Only include terrace/deck pricing if explicitly detected in the floor plan.
+
+### OCR Best Practices
+
+1. **Pattern Matching Order:** Match longer patterns first to avoid partial matches
+   - Match `KÖK/MATPLATS` before `KÖK`
+   - Match `WC/BAD` before `WC`
+
+2. **Area Extraction:** Look for patterns like:
+   - `ROOM_NAME\n12.5 m²`
+   - `ROOM_NAME 12.5 m²`
+   - `ROOM_NAME\n12,5 m²` (Swedish decimal comma)
+
+3. **Deduplication:** Use (room_name, area) tuple to avoid OCR duplicates
+
+4. **Area Validation:**
+   - Skip areas < 1.0 m² (likely labels, not rooms)
+   - Skip areas > 100 m² (likely summary values like BOYTA)
+
+5. **Summary Areas to Look For:**
+   - `BOYTA: 130.7m²` - Living area (BOA)
+   - `BTA: 184.9m²` - Total gross area
+   - `BIYTA: 48.4m²` - Secondary area
+   - `BYGGYTA: 187.3m²` - Building footprint
+
+---
+
+## SECTION 10: AI ANALYSIS INSTRUCTIONS (MASTER)
+
+### CRITICAL PRINCIPLES
+
+**⚠️ NO HARDCODING OR ASSUMPTIONS**
+The AI must ONLY include items it actually detects in the floor plan. This is a pricing tool with high stakes - incorrect assumptions lead to wrong quotes.
+
+*   ❌ Never assume terrace/deck exists
+*   ❌ Never assume entry steps exist
+*   ❌ Never add appliances without detecting kitchen/laundry
+*   ✅ Only add patio door if terrace is detected
+*   ✅ Only add appliances if kitchen or laundry room is detected
+
+### ANALYSIS WORKFLOW
+
+1.  **OCR & ROOM EXTRACTION:**
+    *   Extract text via Document AI
+    *   Parse room names using Swedish patterns (Section 9)
+    *   Extract areas (handle both . and , as decimal separators)
+    *   Deduplicate by (name, area) tuple
+
+2.  **AREA CLASSIFICATION (SS 21054):**
+    *   Classify each room as BOA or Biarea
+    *   Calculate totals for each category
+    *   Apply 3.5% wall thickness adjustment (NTA → BRA)
+    *   **Report both BOA and Biarea separately**
+
+3.  **EQUIPMENT DETECTION:**
+    *   Scan for equipment labels (VP, TM, TT, etc.)
+    *   Only add equipment-related pricing if detected
+
+4.  **AREA CALCULATION:**
+    *   **Foundation/Roof:** Use total gross area (BOA + Biarea with wall adjustment)
+    *   **Flooring/Interior:** Use room-specific areas with appropriate rates
+    *   **kr/m² calculation:** Use BOA only (standard practice for comparison)
+
+5.  **COMPLIANCE SCAN (BBR):**
+    *   Check Bathroom 1.3m turning circle
+    *   Check Garage fire wall (EI30 required)
+    *   Verify wet room waterproofing requirements
+
+6.  **QUANTITY TAKE-OFF (AMA/BBV):**
+    *   Calculate areas from detected rooms
+    *   Add 10% waste for materials
+    *   **Bathroom Walls:** Use "Wet Room Wall" assembly (Säker Vatten compliant)
+    *   **Garage:** Use lower-spec finishes (concrete floor, basic walls)
+
+7.  **PRICING (ABT 06):**
+    *   Use the **2025 rates** from Part 4
+    *   **RISK PREMIUM:** Apply **12% markup** to construction items
+    *   **REGIONAL LOGIC:** Adjust for location-specific costs (Section 5)
+    *   **MANDATORY ADDITIONS:**
+        *   Climate Declaration (Admin)
+        *   BAS-P/U Safety Coordination (Admin)
+        *   Leakage Trays (Kitchen) - only if kitchen detected
+        *   Kontrollansvarig (KA) (Admin)
+        *   Bygglovsavgifter (Admin)
+
+### PRICING BY AREA TYPE
+
+| Area Type | Foundation | Flooring | Walls | Notes |
+|-----------|------------|----------|-------|-------|
+| BOA (Living) | 3,500 kr/m² | 850-1,600 kr/m² | 1,450-4,200 kr/m² | Full finish |
+| Biarea (Garage) | 2,500 kr/m² | 350 kr/m² | 800 kr/m² | Basic finish |
+| Biarea (Storage) | 3,000 kr/m² | 450 kr/m² | 1,000 kr/m² | Simple finish |
+
+### OUTPUT REQUIREMENTS
+
+The analysis must return:
+```json
+{
+  "items": [...],           // Cost items with phase, description, pricing
+  "totalArea": 189.5,       // Total gross area (BOA + Biarea)
+  "boa": 140.2,             // Living area only
+  "biarea": 49.3,           // Secondary area only
+  "rooms": [...],           // Detected rooms with category and is_biarea flag
+  "areaBreakdown": {
+    "boa_net": 134.6,       // BOA from room labels
+    "biarea_net": 48.4,     // Biarea from room labels
+    "total_net": 183.0,     // Sum of room labels
+    "boa_gross": 139.3,     // BOA with wall adjustment
+    "biarea_gross": 50.1,   // Biarea with wall adjustment
+    "total_gross": 189.4    // Total with wall adjustment
+  }
+}
+```
