@@ -39,7 +39,14 @@ export default function Home() {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-        setSelectedFile(e.target.files[0]);
+        const file = e.target.files[0];
+        setSelectedFile(file);
+
+        // Auto-fill project name from filename (without extension)
+        if (!newProjectName) {
+            const fileName = file.name.replace(/\.[^/.]+$/, ''); // Remove extension
+            setNewProjectName(fileName);
+        }
     }
   };
 

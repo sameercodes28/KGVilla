@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { projectDetails } from '../../data/projectData';
 import { VisualViewer } from './VisualViewer';
 import { ProjectDataFeed } from './ProjectDataFeed';
 import { CostInspector } from './CostInspector';
@@ -7,6 +6,7 @@ import { useTranslation } from '../../contexts/LanguageContext';
 import { logger } from '@/lib/logger';
 import { ProjectHeader } from '@/components/layout/ProjectHeader';
 import { ProjectDataProvider, useProjectContext } from '@/contexts/ProjectDataContext';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 
 interface SplitLayoutProps {
     projectId?: string;
@@ -14,8 +14,9 @@ interface SplitLayoutProps {
 
 function SplitLayoutContent({ projectId }: { projectId?: string }) {
     const { t } = useTranslation();
-    
+
     const {
+        project,
         items,
         totalCost,
         totalArea,
@@ -74,10 +75,13 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
              <ProjectHeader
                 currentProjectId={projectId}
                 showBackButton
-                title={projectDetails.name}
+                title={project?.name || 'New Project'}
                 subtitle={`${items.length} Items • ${Math.round(totalCost / (totalArea || 1)).toLocaleString('sv-SE')} kr/m²`}
                 syncState={syncState}
             />
+
+            {/* Language Toggle - Bottom Right */}
+            <LanguageToggle />
 
             <div className="flex flex-1 overflow-hidden">
                 {/* Left Pane - Visual Viewer (Static 50%) */}

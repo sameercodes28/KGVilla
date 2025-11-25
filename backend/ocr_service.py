@@ -944,14 +944,14 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         guidelineReference="SS 436"
     ))
 
-    # --- COMPLETION (Appliances & External) ---
+    # --- INTERIOR: Appliances ---
     # Appliances - ONLY if kitchen or laundry detected
     has_kitchen = any(r["category"] == "kitchen" for r in rooms)
     has_laundry = any(r["category"] == "laundry" for r in rooms)
     if has_kitchen or has_laundry:
         items.append(CostItem(
-            id="completion-appliances",
-            phase="completion",
+            id="interior-appliances",
+            phase="interior",  # Moved from completion to interior
             elementName="Kitchen & Laundry Appliances",
             description="Stove, fridge, dishwasher, washer, dryer",
             quantity=1,
@@ -961,6 +961,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             confidenceScore=0.9,
             guidelineReference="Market Rate"
         ))
+
+    # --- COMPLETION (External Works) ---
 
     # External works - ONLY if detected in floor plan
     # Terrace/Deck - only if detected (ALTAN, UTEPLATS, TERRASS, etc.)

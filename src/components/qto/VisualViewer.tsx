@@ -19,7 +19,7 @@ interface VisualViewerProps {
 }
 
 export function VisualViewer({ floorPlanUrl, onUpload, highlightedItem }: VisualViewerProps) {
-    const [zoom, setZoom] = useState(1);
+    const [zoom, setZoom] = useState(0.8);  // Start zoomed out to fit
     const [isFullScreen, setIsFullScreen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -39,10 +39,17 @@ export function VisualViewer({ floorPlanUrl, onUpload, highlightedItem }: Visual
             {/* Toolbar (Only show if plan exists) */}
             {hasPlan && (
                 <div className="absolute top-4 right-4 flex space-x-2 z-10">
+                    <button
+                        onClick={() => setZoom(0.8)}
+                        className="px-3 py-2 bg-black/50 backdrop-blur text-white rounded-lg hover:bg-black/70 transition-colors text-xs font-bold"
+                        title="Fit to view"
+                    >
+                        Fit
+                    </button>
                     <button onClick={() => setZoom(z => Math.min(z + 0.2, 3))} className="p-2 bg-black/50 backdrop-blur text-white rounded-lg hover:bg-black/70 transition-colors">
                         <ZoomIn className="h-5 w-5" />
                     </button>
-                    <button onClick={() => setZoom(z => Math.max(z - 0.2, 0.5))} className="p-2 bg-black/50 backdrop-blur text-white rounded-lg hover:bg-black/70 transition-colors">
+                    <button onClick={() => setZoom(z => Math.max(z - 0.2, 0.3))} className="p-2 bg-black/50 backdrop-blur text-white rounded-lg hover:bg-black/70 transition-colors">
                         <ZoomOut className="h-5 w-5" />
                     </button>
                     <button
