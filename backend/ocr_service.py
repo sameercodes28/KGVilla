@@ -313,14 +313,18 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
         r'SOV\s*\d+',                  # SOV with number (SOV 1, SOV 2)
         r'SOV(?!\s*\d)',               # SOV alone (no number following)
         r'EV\.?\s*SOV(?:RUM)?',        # Eventuellt sovrum (no trailing digits to avoid capturing area)
-        # Living/dining - including combined rooms with / separator
-        r'KÖK\s*/\s*VARDAGSRUM',       # Kitchen/living combo
+        # Living/dining - combined rooms MUST come before individual patterns
+        r'KÖKVARDAGSRUM',              # No-slash variant (OCR sometimes drops /)
+        r'KÖK\s*/\s*VARDAGSRUM',       # Kitchen/living combo with slash
+        r'KÖKSMATPLATS',               # No-slash variant
         r'KÖK\s*/\s*MATPLATS',         # Kitchen/dining combo
+        r'MATPLATSVARDAGSRUM',         # No-slash variant
         r'MATPLATS\s*/\s*VARDAGSRUM',  # Dining/living combo
-        r'KÖK(?!/)(?!\s*/)',           # Kitchen alone (negative lookahead to avoid double match)
-        r'MATPLATS(?!/)(?!\s*/)',      # Dining alone
+        # Individual living/dining patterns - AFTER combined patterns
+        r'V\.RUM',                     # Abbreviated vardagsrum (before VARDAGSRUM to match first)
         r'VARDAGSRUM',
-        r'V\.RUM',                     # Abbreviated vardagsrum
+        r'KÖK(?!S)(?!/)(?!\s*/)',      # Kitchen alone (negative lookahead for combined patterns)
+        r'MATPLATS(?!/)(?!\s*/)',      # Dining alone
         r'ALLRUM',
         r'Room',                       # Generic (seen in some plans)
         # Entry areas

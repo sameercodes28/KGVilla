@@ -230,7 +230,7 @@ def get_project_items(project_id: str, api_key: str = Depends(get_api_key)):
         return []
 
 @app.post("/analyze")
-@limiter.limit("10/minute")
+@limiter.limit("20/minute")
 async def analyze_drawing(request: Request, file: UploadFile = File(...), api_key: str = Depends(get_api_key)):
     # 1. Validate Content Type
     if file.content_type not in ALLOWED_CONTENT_TYPES:
