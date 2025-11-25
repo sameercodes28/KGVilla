@@ -11,16 +11,18 @@ import Link from 'next/link';
 function CustomerViewContent() {
     const searchParams = useSearchParams();
     const projectId = searchParams.get('project') || undefined;
-    const { items, totalCost, floorPlanUrl } = useProjectData(projectId);
+    const { items, totalCost, totalArea, floorPlanUrl, project } = useProjectData(projectId);
     const { t } = useTranslation();
 
     // Group items by phase for summary
-    const phases = ['ground', 'structure', 'installations', 'interior'];
-    const phaseCosts = phases.map(phase => ({
-        id: phase,
-        label: t(`phase.${phase}`), // Ensure translation keys match 'phase.ground' etc
-        total: items.filter(i => i.phase === phase).reduce((sum, i) => sum + i.totalCost, 0)
-    }));
+    const phases = ['ground', 'structure', 'electrical', 'plumbing', 'interior', 'completion'];
+    const phaseCosts = phases
+        .map(phase => ({
+            id: phase,
+            label: t(`phase.${phase}`),
+            total: items.filter(i => i.phase === phase).reduce((sum, i) => sum + i.totalCost, 0)
+        }))
+        .filter(phase => phase.total > 0); // Only show phases with costs
 
     return (
         <div className="min-h-screen bg-white font-sans text-slate-900">
@@ -48,10 +50,10 @@ function CustomerViewContent() {
                     <div className="inline-flex items-center px-3 py-1 rounded-full border border-white/30 bg-white/10 backdrop-blur text-xs font-bold uppercase tracking-widest mb-6">
                         Proposal Ready
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 tracking-tight">Villa JB-1405</h1>
+                    <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 tracking-tight">{project?.name || 'New Project'}</h1>
                     <div className="flex items-center justify-center text-lg text-white/80 mb-8">
                         <MapPin className="w-5 h-5 mr-2" />
-                        Husby, Sweden
+                        {project?.location || 'Location'} {totalArea ? `• ${totalArea} m²` : ''}
                     </div>
                     <div className="text-6xl font-mono font-bold tracking-tighter">
                         {totalCost.toLocaleString('sv-SE')} <span className="text-2xl align-top text-white/60">SEK</span>
