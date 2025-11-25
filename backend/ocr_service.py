@@ -39,6 +39,7 @@ ROOM_CATEGORIES = {
     "storage": ["FÖRRÅD", "KLK", "KLÄDKAMMARE", "GARDEROB"],
     "garage": ["GARAGE", "CARPORT"],
     "utility": ["TEKNIK", "PANNRUM"],
+    "terrace": ["ALTAN", "UTEPLATS", "TERRASS", "VERANDA", "DECK", "BALKONG"],
 }
 
 # --- Pricing Database (from SWEDISH_CONSTRUCTION_KNOWLEDGE_BASE.md) ---
@@ -239,6 +240,12 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
         r'GARAGE(?:\s*/\s*FÖRRÅD)?',
         r'TEKNIK',
         r'PANNRUM',
+        # Outdoor spaces (terrace/deck)
+        r'ALTAN',
+        r'UTEPLATS',
+        r'TERRASS',
+        r'VERANDA',
+        r'BALKONG',
     ]
 
     # Build pattern: room keyword followed by area (allow up to 30 chars between)
@@ -653,19 +660,21 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             guidelineReference="BBR"
         ))
 
-        # Patio/terrace door
-        items.append(CostItem(
-            id="structure-patio-door",
-            phase="structure",
-            elementName="Patio Door",
-            description="Sliding glass door to terrace",
-            quantity=1,
-            unit="st",
-            unitPrice=PRICING["patio_door"],
-            totalCost=PRICING["patio_door"],
-            confidenceScore=0.9,
-            guidelineReference="BBR"
-        ))
+        # Patio/terrace door - ONLY if terrace detected
+        terrace_rooms = [r for r in rooms if r["category"] == "terrace"]
+        if terrace_rooms:
+            items.append(CostItem(
+                id="structure-patio-door",
+                phase="structure",
+                elementName="Patio Door",
+                description="Sliding glass door to terrace",
+                quantity=1,
+                unit="st",
+                unitPrice=PRICING["patio_door"],
+                totalCost=PRICING["patio_door"],
+                confidenceScore=0.9,
+                guidelineReference="BBR"
+            ))
 
         # Interior doors (estimate: 1 per room + 2 extra)
         door_count = room_count + 2
@@ -870,50 +879,44 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
     ))
 
     # --- COMPLETION (Appliances & External) ---
-    # Appliances
-    items.append(CostItem(
-        id="completion-appliances",
-        phase="completion",
-        elementName="Kitchen & Laundry Appliances",
-        description="Stove, fridge, dishwasher, washer, dryer",
-        quantity=1,
-        unit="st",
-        unitPrice=PRICING["appliances_package"],
-        totalCost=PRICING["appliances_package"],
-        confidenceScore=0.9,
-        guidelineReference="Market Rate"
-    ))
+    # Appliances - ONLY if kitchen or laundry detected
+    has_kitchen = any(r["category"] == "kitchen" for r in rooms)
+    has_laundry = any(r["category"] == "laundry" for r in rooms)
+    if has_kitchen or has_laundry:
+        items.append(CostItem(
+            id="completion-appliances",
+            phase="completion",
+            elementName="Kitchen & Laundry Appliances",
+            description="Stove, fridge, dishwasher, washer, dryer",
+            quantity=1,
+            unit="st",
+            unitPrice=PRICING["appliances_package"],
+            totalCost=PRICING["appliances_package"],
+            confidenceScore=0.9,
+            guidelineReference="Market Rate"
+        ))
 
-    # External works (estimate based on byggyta)
-    if byggyta > 0:
-        # Terrace (estimate 20 m²) - standard for most villas
-        terrace_area = 20
+    # External works - ONLY if detected in floor plan
+    # Terrace/Deck - only if detected (ALTAN, UTEPLATS, TERRASS, etc.)
+    terrace_rooms = [r for r in rooms if r["category"] == "terrace"]
+    if terrace_rooms:
+        terrace_area = sum(r["area"] for r in terrace_rooms)
         items.append(CostItem(
             id="completion-terrace",
             phase="completion",
             elementName="Terrace/Deck",
-            description=f"Impregnated wood deck, standard 20 m². Includes foundation, joists, decking boards, railing. Per AMA Hus standards.",
+            description=f"Impregnated wood deck - {terrace_area:.1f} m². Includes foundation, joists, decking boards, railing. Per AMA Hus standards.",
             quantity=terrace_area,
             unit="m²",
             unitPrice=PRICING["terrace_per_m2"],
             totalCost=terrace_area * PRICING["terrace_per_m2"],
-            confidenceScore=0.7,
+            confidenceScore=1.0,  # High confidence - actually detected
             guidelineReference="AMA Hus 23"
         ))
 
-        # Entry steps
-        items.append(CostItem(
-            id="completion-steps",
-            phase="completion",
-            elementName="Entry Steps",
-            description="Concrete entry steps with steel railing. BBR 3:4 accessibility requirements for max 150mm rise per step.",
-            quantity=1,
-            unit="st",
-            unitPrice=PRICING["steps_entry"],
-            totalCost=PRICING["steps_entry"],
-            confidenceScore=0.8,
-            guidelineReference="BBR 3:4"
-        ))
+    # NOTE: Entry steps REMOVED - was hardcoded assumption
+    # Entry steps should only be included if explicitly shown in floor plan
+    # or requested by user. Most floor plans don't show exterior steps.
 
     # --- INTERIOR TRIM ---
     if boyta > 0:
