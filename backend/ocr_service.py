@@ -35,18 +35,20 @@ ROOM_CATEGORIES = {
     "living": ["VARDAGSRUM", "V.RUM", "ALLRUM", "RUM", "MATPLATS", "ROOM"],  # V.RUM is common abbreviation
     "kitchen": ["KÖK"],
     "bathroom": ["WC", "BAD", "DUSCH"],
-    "laundry": ["TVÄTT", "TVÄTTSTUGA", "GROVENTRÉ", "GROVKÖK"],
-    "entry": ["ENTRÉ", "HALL", "ENTRE", "VINDFÅNG"],
-    "storage": ["FÖRRÅD", "KLK", "KLÄDKAMMARE", "GARDEROB"],
+    "laundry": ["TVÄTT", "TVÄTTSTUGA", "GROVENTRÉ", "GROVKÖK", "GROVENTR"],
+    "entry": ["ENTRÉ", "HALL", "ENTRE", "ENTR", "VINDFÅNG"],  # ENTR is OCR variant of ENTRÉ
+    "closet": ["KLK", "KLÄDKAMMARE", "GARDEROB"],  # Walk-in closets - BOA (inside heated area)
+    "storage": ["FÖRRÅD", "KALLFÖRRÅD"],  # External storage - Biarea (only these are Biarea)
     "garage": ["GARAGE", "CARPORT"],
     "utility": ["TEKNIK", "PANNRUM"],
     "terrace": ["ALTAN", "UTEPLATS", "TERRASS", "VERANDA", "DECK", "BALKONG"],
 }
 
 # --- BOA vs Biarea Classification (Swedish SS 21054:2009) ---
-# Biarea = Secondary area (unheated: garage, storage, technical rooms)
-# BOA = Living area (heated living spaces)
+# Biarea = Secondary area (unheated: garage, external storage, technical rooms)
+# BOA = Living area (heated living spaces, including walk-in closets)
 BIAREA_CATEGORIES = ["garage", "storage", "utility"]  # Rooms that count as Biarea
+# Note: "closet" is NOT in Biarea - walk-in closets inside the house are BOA
 
 # Wall thickness adjustment factor
 # Floor plan room labels show NTA (net area, inside walls)
@@ -75,6 +77,7 @@ PRICING = {
         "bathroom": 1600,    # Tile
         "laundry": 1600,     # Tile
         "entry": 1600,       # Tile
+        "closet": 850,       # Parquet (same as bedroom)
         "storage": 450,      # Basic
         "garage": 350,       # Concrete/Epoxy
         "utility": 450,      # Basic
@@ -288,6 +291,12 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
     """
     Parse room names and areas from OCR text.
 
+    Uses a two-phase approach to handle cases where multiple room names
+    appear consecutively before their areas (common in floor plan OCR):
+    1. Find all room name positions
+    2. Find all area positions
+    3. Match each room to its nearest following area
+
     Looks for patterns like:
     - "SOVRUM 1\n11.9 m²"
     - "KÖK 18.1 m²"
@@ -301,8 +310,9 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
     room_keywords = [
         # Bedrooms - multiple naming conventions
         r'SOVRUM\s*\d*',
-        r'SOV\s*\d*',
-        r'EV\.?\s*SOV(?:RUM)?\s*\d*',  # Eventuellt sovrum (possible bedroom)
+        r'SOV\s*\d+',                  # SOV with number (SOV 1, SOV 2)
+        r'SOV(?!\s*\d)',               # SOV alone (no number following)
+        r'EV\.?\s*SOV(?:RUM)?',        # Eventuellt sovrum (no trailing digits to avoid capturing area)
         # Living/dining - including combined rooms with / separator
         r'KÖK\s*/\s*VARDAGSRUM',       # Kitchen/living combo
         r'KÖK\s*/\s*MATPLATS',         # Kitchen/dining combo
@@ -349,37 +359,95 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
         r'BALKONG',
     ]
 
-    # Build pattern: room keyword followed by area (allow up to 30 chars between)
-    room_pattern = '(' + '|'.join(room_keywords) + r')[\s\S]{0,30}?(\d{1,3}[.,]\d)\s*m[²2]'
+    # Phase 1: Find all room names with their positions
+    room_name_pattern = '(' + '|'.join(room_keywords) + ')'
+    room_matches = list(re.finditer(room_name_pattern, text, re.IGNORECASE))
 
-    matches = re.findall(room_pattern, text, re.IGNORECASE)
+    # Phase 2: Find all areas with their positions
+    # Match areas like "8.9 m²", "18.8 m²", "5.2 m³", "2.9 m" (OCR sometimes misreads ² or omits it)
+    # The [²³2\s] allows: m², m³, m2, or just "m " (space/newline after m)
+    area_pattern = r'(\d{1,3}[.,]\d)\s*m[²³2]?(?=\s|$|[^\w])'
+    area_matches = list(re.finditer(area_pattern, text, re.IGNORECASE))
 
-    for room_name, area_str in matches:
-        room_name = room_name.strip().upper()
-        area = float(area_str.replace(',', '.'))
+    # Phase 3: Two-pass matching strategy
+    # Pass 1: STRICT - match room to area IMMEDIATELY following (within 15 chars)
+    # Pass 2: ORDER - match remaining rooms to remaining areas by text order
 
-        # Skip very small areas (likely labels, not rooms)
-        if area < 1.0:
-            continue
+    used_rooms = set()
+    used_areas = set()
 
-        # Skip very large areas (likely summary values like BOYTA)
-        if area > 100:
-            continue
+    # Pass 1: Strict immediate matching
+    for room_idx, room_match in enumerate(room_matches):
+        room_name = room_match.group(1).strip().upper()
+        # Clean up newlines and extra whitespace in room name
+        room_name = ' '.join(room_name.split())
+        room_end = room_match.end()
+
+        # Find area immediately after this room (within 15 chars)
+        for area_idx, area_match in enumerate(area_matches):
+            if area_idx in used_areas:
+                continue
+
+            area_start = area_match.start()
+            distance = area_start - room_end
+
+            # Must be after room and very close (immediate)
+            if 0 <= distance <= 15:
+                area_str = area_match.group(1)
+                area_val = float(area_str.replace(',', '.'))
+
+                if area_val < 1.0 or area_val > 100:
+                    continue
+
+                category = classify_room(room_name)
+                room_key = (room_name, round(area_val, 1))
+
+                if room_key not in seen_rooms:
+                    seen_rooms.add(room_key)
+                    rooms.append({
+                        "name": room_name,
+                        "area": area_val,
+                        "category": category,
+                        "is_biarea": is_biarea(category),
+                    })
+                    used_rooms.add(room_idx)
+                    used_areas.add(area_idx)
+                break
+
+    # Pass 2: Order-based matching for remaining rooms
+    # Get unmatched rooms and areas in text order
+    unmatched_rooms = [(idx, m) for idx, m in enumerate(room_matches) if idx not in used_rooms]
+    unmatched_areas = [(idx, m) for idx, m in enumerate(area_matches) if idx not in used_areas]
+
+    # Filter areas to valid ones
+    valid_unmatched_areas = []
+    for area_idx, area_match in unmatched_areas:
+        area_str = area_match.group(1)
+        area_val = float(area_str.replace(',', '.'))
+        if 1.0 <= area_val <= 100:
+            valid_unmatched_areas.append((area_idx, area_match, area_val))
+
+    # Match by order: nth unmatched room gets nth unmatched area
+    for i, (room_idx, room_match) in enumerate(unmatched_rooms):
+        if i >= len(valid_unmatched_areas):
+            break
+
+        room_name = room_match.group(1).strip().upper()
+        # Clean up newlines and extra whitespace in room name
+        room_name = ' '.join(room_name.split())
+        area_idx, area_match, area_val = valid_unmatched_areas[i]
 
         category = classify_room(room_name)
+        room_key = (room_name, round(area_val, 1))
 
-        # Deduplicate by (name, area) to avoid OCR duplicates
-        room_key = (room_name, round(area, 1))
-        if room_key in seen_rooms:
-            continue
-        seen_rooms.add(room_key)
-
-        rooms.append({
-            "name": room_name,
-            "area": area,
-            "category": category,
-            "is_biarea": is_biarea(category),  # True if garage/storage/utility
-        })
+        if room_key not in seen_rooms:
+            seen_rooms.add(room_key)
+            rooms.append({
+                "name": room_name,
+                "area": area_val,
+                "category": category,
+                "is_biarea": is_biarea(category),
+            })
 
     return rooms
 
