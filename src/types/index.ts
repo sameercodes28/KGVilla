@@ -20,6 +20,8 @@ export interface Project {
   clientName?: string;
   address?: string;
   totalArea?: number;
+  boa?: number;           // Living area (BOA) - Swedish standard
+  biarea?: number;        // Secondary area (Biarea) - garage, storage
   estimatedCost?: number; // Total estimated cost from analysis
   currency?: string;
   status?: string;

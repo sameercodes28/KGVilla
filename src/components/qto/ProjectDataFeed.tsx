@@ -49,6 +49,8 @@ export function ProjectDataFeed() {
         items,
         totalCost,
         totalArea,
+        boa,
+        biarea,
         updateItem,
         addItem,
         setHighlightedItem,
@@ -84,7 +86,23 @@ export function ProjectDataFeed() {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">{project.name}</h1>
-                            <p className="text-slate-500">{project.location} • {totalArea || 0} m²</p>
+                            <p className="text-slate-500">
+                                {project.location}
+                                {(boa > 0 || biarea > 0) ? (
+                                    <span>
+                                        {' '} • <span className="font-medium text-slate-700">{boa || 0} m²</span>
+                                        <span className="text-slate-400"> BOA</span>
+                                        {biarea > 0 && (
+                                            <span>
+                                                {' + '}<span className="font-medium text-slate-600">{biarea} m²</span>
+                                                <span className="text-slate-400"> Biarea</span>
+                                            </span>
+                                        )}
+                                    </span>
+                                ) : (
+                                    <span> • {totalArea || 0} m²</span>
+                                )}
+                            </p>
                         </div>
 
                         {/* View Mode Toggle */}
@@ -181,7 +199,7 @@ export function ProjectDataFeed() {
                 </div>
 
                 <div className="mt-12">
-                    <TotalSummary totalCost={totalCost} area={totalArea || 0} />
+                    <TotalSummary totalCost={totalCost} area={totalArea || 0} boa={boa} biarea={biarea} />
                 </div>
             </div>
         </div>

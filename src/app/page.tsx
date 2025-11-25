@@ -59,6 +59,8 @@ export default function Home() {
     let totalArea = 0;
 
     let estimatedCost = 0;
+    let boa = 0;
+    let biarea = 0;
 
     if (selectedFile) {
         // 1. Create Preview URL
@@ -74,12 +76,19 @@ export default function Home() {
             const formData = new FormData();
             formData.append('file', selectedFile);
             logger.info('Home', 'Starting analysis', { fileName: selectedFile.name });
-            const result = await apiClient.upload<{ items: CostItem[], totalArea: number }>('/analyze', formData);
+            const result = await apiClient.upload<{
+                items: CostItem[],
+                totalArea: number,
+                boa?: number,
+                biarea?: number
+            }>('/analyze', formData);
             initialItems = result.items || [];
             totalArea = result.totalArea || 0;
+            boa = result.boa || 0;
+            biarea = result.biarea || 0;
             // Calculate estimated cost from items
             estimatedCost = initialItems.reduce((sum, item) => sum + (item.totalCost || 0), 0);
-            logger.info('Home', 'Analysis complete', { itemCount: initialItems.length, totalArea, estimatedCost });
+            logger.info('Home', 'Analysis complete', { itemCount: initialItems.length, totalArea, boa, biarea, estimatedCost });
 
             if (initialItems.length === 0) {
                 logger.warn('Home', 'Analysis returned no items');
@@ -91,7 +100,7 @@ export default function Home() {
     }
 
     // 3. Create Project with Data
-    const id = await createProject(newProjectName, newProjectLocation, selectedFile ? { items: initialItems, planUrl, totalArea, estimatedCost } : undefined);
+    const id = await createProject(newProjectName, newProjectLocation, selectedFile ? { items: initialItems, planUrl, totalArea, boa, biarea, estimatedCost } : undefined);
     
     setIsAnalyzing(false);
     setIsModalOpen(false);
@@ -198,8 +207,25 @@ export default function Home() {
                             {/* Project Stats Display */}
                             <div className="flex flex-col items-center justify-center space-y-2">
                                 <div className="text-center">
-                                    <span className="text-3xl font-bold text-slate-800">{project.totalArea || 0}</span>
-                                    <span className="text-lg text-slate-500 ml-1">m²</span>
+                                    {(project.boa && project.boa > 0) ? (
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-2xl font-bold text-slate-800">{project.boa}</span>
+                                            <span className="text-sm text-slate-400">BOA</span>
+                                            {project.biarea && project.biarea > 0 && (
+                                                <>
+                                                    <span className="text-slate-300 mx-1">+</span>
+                                                    <span className="text-lg font-semibold text-slate-600">{project.biarea}</span>
+                                                    <span className="text-xs text-slate-400">Bi</span>
+                                                </>
+                                            )}
+                                            <span className="text-sm text-slate-500 ml-1">m²</span>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <span className="text-3xl font-bold text-slate-800">{project.totalArea || 0}</span>
+                                            <span className="text-lg text-slate-500 ml-1">m²</span>
+                                        </>
+                                    )}
                                 </div>
                                 <div className="text-center">
                                     <span className="text-xl font-semibold text-blue-600">
@@ -259,7 +285,8 @@ export default function Home() {
                     <tr>
                         <th className="px-6 py-4 font-medium">Project Name</th>
                         <th className="px-6 py-4 font-medium">Location</th>
-                        <th className="px-6 py-4 font-medium text-right">Area</th>
+                        <th className="px-6 py-4 font-medium text-right">BOA</th>
+                        <th className="px-6 py-4 font-medium text-right">Biarea</th>
                         <th className="px-6 py-4 font-medium text-right">Estimated Cost</th>
                         <th className="px-6 py-4 font-medium">Status</th>
                         <th className="px-6 py-4 font-medium">Last Updated</th>
@@ -274,7 +301,8 @@ export default function Home() {
                                 {project.name}
                             </td>
                             <td className="px-6 py-4 text-slate-500">{project.location}</td>
-                            <td className="px-6 py-4 text-right text-slate-700">{project.totalArea || 0} m²</td>
+                            <td className="px-6 py-4 text-right text-slate-700">{project.boa || project.totalArea || 0} m²</td>
+                            <td className="px-6 py-4 text-right text-slate-500">{project.biarea || 0} m²</td>
                             <td className="px-6 py-4 text-right font-medium text-blue-600">{(project.estimatedCost || 0).toLocaleString('sv-SE')} kr</td>
                             <td className="px-6 py-4">
                                 <button
@@ -302,7 +330,7 @@ export default function Home() {
                     ))}
                     {filteredProjects.length === 0 && (
                         <tr>
-                            <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
+                            <td colSpan={8} className="px-6 py-12 text-center text-slate-400">
                                 No projects found matching &quot;{searchQuery}&quot;
                             </td>
                         </tr>

@@ -43,6 +43,17 @@ ROOM_CATEGORIES = {
     "terrace": ["ALTAN", "UTEPLATS", "TERRASS", "VERANDA", "DECK", "BALKONG"],
 }
 
+# --- BOA vs Biarea Classification (Swedish SS 21054:2009) ---
+# Biarea = Secondary area (unheated: garage, storage, technical rooms)
+# BOA = Living area (heated living spaces)
+BIAREA_CATEGORIES = ["garage", "storage", "utility"]  # Rooms that count as Biarea
+
+# Wall thickness adjustment factor
+# Floor plan room labels show NTA (net area, inside walls)
+# BRA (gross usable area) includes inner wall thickness
+# Typical inner walls: 100-120mm, adds ~3.5% to net area
+WALL_THICKNESS_FACTOR = 1.035  # 3.5% adjustment for wall thickness
+
 # Equipment labels that indicate features (from floor plan analysis)
 EQUIPMENT_LABELS = {
     "heat_pump": ["VP"],  # Värmepump
@@ -177,6 +188,63 @@ def classify_room(room_name: str) -> str:
     return "storage"  # Default
 
 
+def is_biarea(category: str) -> bool:
+    """
+    Determine if a room category is Biarea (secondary area) vs BOA (living area).
+
+    Per Swedish SS 21054:2009:
+    - BOA (Boarea) = Heated living spaces
+    - Biarea = Unheated/secondary spaces (garage, storage, technical rooms)
+    """
+    return category in BIAREA_CATEGORIES
+
+
+def calculate_area_breakdown(rooms: List[Dict]) -> Dict[str, float]:
+    """
+    Calculate BOA (living area) and Biarea (secondary area) from room list.
+
+    Also applies wall thickness adjustment to convert from NTA (net) to BRA (gross).
+
+    Returns:
+        {
+            "boa_net": float,      # Living area (net, from room labels)
+            "biarea_net": float,   # Secondary area (net, from room labels)
+            "total_net": float,    # Total net area
+            "boa_gross": float,    # Living area with wall adjustment
+            "biarea_gross": float, # Secondary area with wall adjustment
+            "total_gross": float,  # Total gross area (comparable to builder specs)
+        }
+    """
+    boa_net = 0.0
+    biarea_net = 0.0
+
+    for room in rooms:
+        category = room.get("category", "storage")
+        area = room.get("area", 0)
+
+        if is_biarea(category):
+            biarea_net += area
+        else:
+            boa_net += area
+
+    total_net = boa_net + biarea_net
+
+    # Apply wall thickness adjustment for gross area
+    # This makes our calculation comparable to builder specs
+    boa_gross = round(boa_net * WALL_THICKNESS_FACTOR, 1)
+    biarea_gross = round(biarea_net * WALL_THICKNESS_FACTOR, 1)
+    total_gross = round(total_net * WALL_THICKNESS_FACTOR, 1)
+
+    return {
+        "boa_net": round(boa_net, 1),
+        "biarea_net": round(biarea_net, 1),
+        "total_net": round(total_net, 1),
+        "boa_gross": boa_gross,
+        "biarea_gross": biarea_gross,
+        "total_gross": total_gross,
+    }
+
+
 def extract_text_with_documentai(image_bytes: bytes, mime_type: str) -> str:
     """Extract all text from image using Document AI OCR."""
     if not _documentai_available:
@@ -309,7 +377,8 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
         rooms.append({
             "name": room_name,
             "area": area,
-            "category": category
+            "category": category,
+            "is_biarea": is_biarea(category),  # True if garage/storage/utility
         })
 
     return rooms
@@ -1136,16 +1205,34 @@ async def analyze_floor_plan_deterministic(image_bytes: bytes, mime_type: str) -
     1. Extract text via Document AI OCR
     2. Parse room names and areas
     3. Detect equipment (heat pump, laundry, fireplace)
-    4. Calculate pricing using fixed rates
+    4. Calculate BOA (living area) vs Biarea (secondary area)
+    5. Apply wall thickness adjustment for accurate totals
+    6. Calculate pricing using fixed rates
 
-    Returns: {items: List[CostItem], totalArea: float, rooms: List[Dict], equipment: Dict}
+    Returns: {
+        items: List[CostItem],
+        totalArea: float,           # Total gross area (comparable to builder specs)
+        boa: float,                 # Living area (BOA) - gross
+        biarea: float,              # Secondary area (Biarea) - gross
+        rooms: List[Dict],
+        equipment: Dict,
+        areaBreakdown: Dict         # Detailed area breakdown
+    }
     """
     # Step 1: OCR
     text = extract_text_with_documentai(image_bytes, mime_type)
 
     if not text:
         logger.warning("No text extracted, falling back to empty result")
-        return {"items": [], "totalArea": 0, "rooms": [], "equipment": {}}
+        return {
+            "items": [],
+            "totalArea": 0,
+            "boa": 0,
+            "biarea": 0,
+            "rooms": [],
+            "equipment": {},
+            "areaBreakdown": {}
+        }
 
     logger.info(f"Extracted {len(text)} characters from document")
 
@@ -1156,25 +1243,48 @@ async def analyze_floor_plan_deterministic(image_bytes: bytes, mime_type: str) -
     # Step 3: Detect equipment labels (VP, TM, TT, BRASKAMIN, etc.)
     equipment = detect_equipment(text)
 
-    logger.info(f"Found {len(rooms)} rooms, BOYTA: {summary.get('boyta', 0)} m², Equipment: {equipment}")
+    # Step 4: Calculate BOA vs Biarea with wall thickness adjustment
+    area_breakdown = calculate_area_breakdown(rooms)
 
-    # Step 4: Calculate pricing
+    logger.info(
+        f"Found {len(rooms)} rooms | "
+        f"BOA: {area_breakdown['boa_gross']} m² | "
+        f"Biarea: {area_breakdown['biarea_gross']} m² | "
+        f"Total: {area_breakdown['total_gross']} m² | "
+        f"Equipment: {equipment}"
+    )
+
+    # Step 5: Calculate pricing
     items = calculate_pricing(rooms, summary)
 
-    # Calculate total area - prefer BOYTA, fall back to sum of rooms
-    total_area = summary.get("boyta", 0) or sum(r["area"] for r in rooms)
+    # Use gross total area (with wall adjustment) as the main totalArea
+    # This makes our calculation comparable to builder specifications
+    total_area = area_breakdown["total_gross"]
+
+    # If OCR found explicit BOYTA, use that for BOA instead
+    if summary.get("boyta", 0) > 0:
+        area_breakdown["boa_gross"] = summary["boyta"]
+        # Recalculate total if we have both explicit values
+        if summary.get("biyta", 0) > 0:
+            area_breakdown["biarea_gross"] = summary["biyta"]
+        total_area = area_breakdown["boa_gross"] + area_breakdown["biarea_gross"]
 
     return {
         "items": [item.model_dump() for item in items],
         "totalArea": round(total_area, 1),
+        "boa": area_breakdown["boa_gross"],                 # Living area (gross)
+        "biarea": area_breakdown["biarea_gross"],           # Secondary area (gross)
         "rooms": rooms,
         "equipment": equipment,
+        "areaBreakdown": area_breakdown,                    # Full breakdown for transparency
         "summary": {
             "boyta": summary.get("boyta", 0),
             "byggyta": summary.get("byggyta", 0),
             "room_count": len(rooms),
             "bedroom_count": len([r for r in rooms if r["category"] == "bedroom"]),
             "bathroom_count": len([r for r in rooms if r["category"] == "bathroom"]),
+            "boa_rooms": len([r for r in rooms if not r.get("is_biarea", False)]),
+            "biarea_rooms": len([r for r in rooms if r.get("is_biarea", False)]),
         },
         "extracted_text": text[:500]  # For debugging
     }

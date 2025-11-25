@@ -18,6 +18,8 @@ export function useProjectData(projectId?: string) {
     const [error, setError] = useState<string | null>(null);
     const [project, setProject] = useState<Project | null>(null);
     const [totalArea, setTotalArea] = useState<number>(0);
+    const [boa, setBoa] = useState<number>(0);           // Living area (BOA)
+    const [biarea, setBiarea] = useState<number>(0);     // Secondary area (Biarea)
     
     // Sync State
     const [syncState, setSyncState] = useState<SyncState>({
@@ -239,7 +241,21 @@ export function useProjectData(projectId?: string) {
             const formData = new FormData();
             formData.append('file', file);
 
-            const response = await apiClient.upload<{items: CostItem[], totalArea?: number, rooms?: unknown[]}>('/analyze', formData);
+            const response = await apiClient.upload<{
+                items: CostItem[],
+                totalArea?: number,
+                boa?: number,           // Living area (BOA)
+                biarea?: number,        // Secondary area (Biarea)
+                rooms?: unknown[],
+                areaBreakdown?: {
+                    boa_net: number,
+                    biarea_net: number,
+                    total_net: number,
+                    boa_gross: number,
+                    biarea_gross: number,
+                    total_gross: number,
+                }
+            }>('/analyze', formData);
             const newItems = response.items || [];
 
             if (newItems.length === 0) {
@@ -258,26 +274,47 @@ export function useProjectData(projectId?: string) {
             setItems(itemsWithProjectId);
             persistItems(itemsWithProjectId);
 
-            // Store totalArea from analysis and persist to project
+            // Store totalArea, boa, biarea from analysis and persist to project
             if (response.totalArea) {
                 setTotalArea(response.totalArea);
-                // Also persist to localStorage projects
-                try {
-                    const storedProjects = localStorage.getItem('kgvilla_projects');
-                    if (storedProjects) {
-                        const projects: Project[] = JSON.parse(storedProjects);
-                        const updatedProjects = projects.map(p =>
-                            p.id === projectId ? { ...p, totalArea: response.totalArea } : p
-                        );
-                        localStorage.setItem('kgvilla_projects', JSON.stringify(updatedProjects));
-                        logger.info('useProjectData', 'Persisted totalArea to project', { totalArea: response.totalArea });
-                    }
-                } catch (e) {
-                    logger.warn('useProjectData', 'Failed to persist totalArea to project', e);
-                }
+            }
+            if (response.boa !== undefined) {
+                setBoa(response.boa);
+            }
+            if (response.biarea !== undefined) {
+                setBiarea(response.biarea);
             }
 
-            logger.info('useProjectData', 'Analysis complete', { count: newItems.length, totalArea: response.totalArea });
+            // Persist to localStorage projects
+            try {
+                const storedProjects = localStorage.getItem('kgvilla_projects');
+                if (storedProjects) {
+                    const projects: Project[] = JSON.parse(storedProjects);
+                    const updatedProjects = projects.map(p =>
+                        p.id === projectId ? {
+                            ...p,
+                            totalArea: response.totalArea,
+                            boa: response.boa,
+                            biarea: response.biarea,
+                        } : p
+                    );
+                    localStorage.setItem('kgvilla_projects', JSON.stringify(updatedProjects));
+                    logger.info('useProjectData', 'Persisted area data to project', {
+                        totalArea: response.totalArea,
+                        boa: response.boa,
+                        biarea: response.biarea
+                    });
+                }
+            } catch (e) {
+                logger.warn('useProjectData', 'Failed to persist area data to project', e);
+            }
+
+            logger.info('useProjectData', 'Analysis complete', {
+                count: newItems.length,
+                totalArea: response.totalArea,
+                boa: response.boa,
+                biarea: response.biarea
+            });
 
         } catch (e) {
             logger.error('useProjectData', 'Analysis failed', e);
@@ -299,6 +336,8 @@ export function useProjectData(projectId?: string) {
         items,
         totalCost,
         totalArea,
+        boa,         // Living area (BOA)
+        biarea,      // Secondary area (Biarea)
         isLoading,
         error,
         syncState,

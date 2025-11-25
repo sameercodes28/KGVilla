@@ -9,6 +9,8 @@ interface ProjectDataContextType {
     items: CostItem[];
     totalCost: number;
     totalArea: number;
+    boa: number;         // Living area (BOA)
+    biarea: number;      // Secondary area (Biarea)
     floorPlanUrl: string | null;
     project: Project | null;
     isLoading: boolean;
