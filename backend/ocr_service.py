@@ -29,17 +29,28 @@ except ImportError as e:
     logger.warning(f"Document AI not available: {e}")
 
 # --- Room Classification ---
+# Based on analysis of 11 real floor plans from JB Villan
 ROOM_CATEGORIES = {
-    "bedroom": ["SOVRUM", "SOV", "MASTER", "EV. SOV", "EV SOV"],
-    "living": ["VARDAGSRUM", "ALLRUM", "RUM", "MATPLATS"],
+    "bedroom": ["SOVRUM", "SOV", "MASTER", "EV. SOV", "EV SOV", "EV.SOV"],
+    "living": ["VARDAGSRUM", "V.RUM", "ALLRUM", "RUM", "MATPLATS", "ROOM"],  # V.RUM is common abbreviation
     "kitchen": ["KÖK"],
     "bathroom": ["WC", "BAD", "DUSCH"],
-    "laundry": ["TVÄTT", "TVÄTTSTUGA", "GROVENTRÉ"],
-    "entry": ["ENTRÉ", "HALL", "ENTRE"],
+    "laundry": ["TVÄTT", "TVÄTTSTUGA", "GROVENTRÉ", "GROVKÖK"],
+    "entry": ["ENTRÉ", "HALL", "ENTRE", "VINDFÅNG"],
     "storage": ["FÖRRÅD", "KLK", "KLÄDKAMMARE", "GARDEROB"],
     "garage": ["GARAGE", "CARPORT"],
     "utility": ["TEKNIK", "PANNRUM"],
     "terrace": ["ALTAN", "UTEPLATS", "TERRASS", "VERANDA", "DECK", "BALKONG"],
+}
+
+# Equipment labels that indicate features (from floor plan analysis)
+EQUIPMENT_LABELS = {
+    "heat_pump": ["VP"],  # Värmepump
+    "laundry": ["TM", "TT"],  # Tvättmaskin, Torktumlare
+    "kitchen_appliances": ["F", "K", "DM", "U/M", "MVU"],  # Frys, Kyl, Diskmaskin, Mikro
+    "fireplace": ["BRASKAMIN", "KAMIN"],
+    "electrical": ["ELC", "EI30"],  # Elcentral, Fire rating
+    "hvac": ["VMS", "GVF", "GVF1", "GVF2"],  # Varmvattenberedare, Golvvärme
 }
 
 # --- Pricing Database (from SWEDISH_CONSTRUCTION_KNOWLEDGE_BASE.md) ---
@@ -218,26 +229,48 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
     seen_rooms = set()  # Deduplicate by (name, area) combination
 
     # Known room name patterns (Swedish)
+    # Updated based on analysis of 11 real floor plans from JB Villan
     room_keywords = [
+        # Bedrooms - multiple naming conventions
         r'SOVRUM\s*\d*',
         r'SOV\s*\d*',
-        r'EV\.?\s*SOV(?:RUM)?\s*\d*',  # Eventuellt sovrum
-        r'KÖK(?:\s*/\s*VARDAGSRUM)?',
-        r'MATPLATS(?:\s*/\s*VARDAGSRUM)?',  # Dining/living combo
+        r'EV\.?\s*SOV(?:RUM)?\s*\d*',  # Eventuellt sovrum (possible bedroom)
+        # Living/dining - including combined rooms with / separator
+        r'KÖK\s*/\s*VARDAGSRUM',       # Kitchen/living combo
+        r'KÖK\s*/\s*MATPLATS',         # Kitchen/dining combo
+        r'MATPLATS\s*/\s*VARDAGSRUM',  # Dining/living combo
+        r'KÖK(?!/)(?!\s*/)',           # Kitchen alone (negative lookahead to avoid double match)
+        r'MATPLATS(?!/)(?!\s*/)',      # Dining alone
         r'VARDAGSRUM',
+        r'V\.RUM',                     # Abbreviated vardagsrum
         r'ALLRUM',
+        r'Room',                       # Generic (seen in some plans)
+        # Entry areas
         r'ENTRÉ?',
-        r'GROVENTRÉ(?:\s*/\s*TVÄTT)?',  # Utility entrance
+        r'ENTRE',
         r'HALL',
-        r'TVÄTT(?:STUGA)?(?:\s*/\s*GROVENTRÉ)?',
-        r'WC/?D?\s*\d*',
-        r'WC/BAD',
+        r'VINDFÅNG',
+        # Utility/laundry - including combined rooms
+        r'GROVENTRÉ\s*/\s*TVÄTT',      # Utility entrance/laundry
+        r'TVÄTT\s*/\s*GROVENTRÉ',      # Laundry/utility entrance
+        r'GROVENTRÉ(?!/)(?!\s*/)',     # Utility entrance alone
+        r'TVÄTT(?:STUGA)?(?!/)(?!\s*/)',  # Laundry alone
+        r'GROVKÖK',
+        # Bathrooms - multiple conventions
+        r'WC/BAD',                     # WC/bathroom combo
+        r'WC/D\s*\d*',                 # WC/dusch numbered
+        r'WC\s*\d*',                   # WC numbered
         r'BAD(?:RUM)?',
         r'DUSCH',
-        r'KLK\s*\d*',  # Numbered closets
+        # Storage - including numbered closets
+        r'KLK\s*\d*',                  # Numbered closets (KLK 1, KLK2, etc.)
         r'KLÄDKAMMARE',
         r'FÖRRÅD',
-        r'GARAGE(?:\s*/\s*FÖRRÅD)?',
+        # Garage - including combined storage
+        r'GARAGE\s*/\s*FÖRRÅD',        # Garage/storage combo
+        r'GARAGE(?!/)(?!\s*/)',        # Garage alone
+        r'CARPORT',
+        # Technical rooms
         r'TEKNIK',
         r'PANNRUM',
         # Outdoor spaces (terrace/deck)
@@ -280,6 +313,39 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
         })
 
     return rooms
+
+
+def detect_equipment(text: str) -> Dict[str, bool]:
+    """
+    Detect equipment labels in floor plan text.
+
+    These labels indicate what features are included in the building.
+    Based on analysis of 11 real floor plans.
+    """
+    detected = {
+        "has_heat_pump": False,
+        "has_laundry": False,
+        "has_fireplace": False,
+    }
+
+    text_upper = text.upper()
+
+    # Check for heat pump (VP = Värmepump)
+    if re.search(r'\bVP\b', text_upper):
+        detected["has_heat_pump"] = True
+        logger.info("Detected heat pump (VP) in floor plan")
+
+    # Check for laundry (TM = Tvättmaskin, TT = Torktumlare)
+    if re.search(r'\b(TM|TT)\b', text_upper):
+        detected["has_laundry"] = True
+        logger.info("Detected laundry equipment (TM/TT) in floor plan")
+
+    # Check for fireplace (BRASKAMIN, KAMIN)
+    if re.search(r'\b(BRASKAMIN|KAMIN)', text_upper):
+        detected["has_fireplace"] = True
+        logger.info("Detected fireplace in floor plan")
+
+    return detected
 
 
 def parse_summary_areas(text: str) -> Dict[str, float]:
@@ -1067,34 +1133,46 @@ async def analyze_floor_plan_deterministic(image_bytes: bytes, mime_type: str) -
 
     1. Extract text via Document AI OCR
     2. Parse room names and areas
-    3. Calculate pricing using fixed rates
+    3. Detect equipment (heat pump, laundry, fireplace)
+    4. Calculate pricing using fixed rates
 
-    Returns: {items: List[CostItem], totalArea: float, rooms: List[Dict]}
+    Returns: {items: List[CostItem], totalArea: float, rooms: List[Dict], equipment: Dict}
     """
     # Step 1: OCR
     text = extract_text_with_documentai(image_bytes, mime_type)
 
     if not text:
         logger.warning("No text extracted, falling back to empty result")
-        return {"items": [], "totalArea": 0, "rooms": []}
+        return {"items": [], "totalArea": 0, "rooms": [], "equipment": {}}
 
     logger.info(f"Extracted {len(text)} characters from document")
 
-    # Step 2: Parse
+    # Step 2: Parse rooms and summary areas
     rooms = parse_rooms_from_text(text)
     summary = parse_summary_areas(text)
 
-    logger.info(f"Found {len(rooms)} rooms, BOYTA: {summary.get('boyta', 0)} m²")
+    # Step 3: Detect equipment labels (VP, TM, TT, BRASKAMIN, etc.)
+    equipment = detect_equipment(text)
 
-    # Step 3: Calculate
+    logger.info(f"Found {len(rooms)} rooms, BOYTA: {summary.get('boyta', 0)} m², Equipment: {equipment}")
+
+    # Step 4: Calculate pricing
     items = calculate_pricing(rooms, summary)
 
-    # Calculate total area
+    # Calculate total area - prefer BOYTA, fall back to sum of rooms
     total_area = summary.get("boyta", 0) or sum(r["area"] for r in rooms)
 
     return {
         "items": [item.model_dump() for item in items],
-        "totalArea": total_area,
+        "totalArea": round(total_area, 1),
         "rooms": rooms,
+        "equipment": equipment,
+        "summary": {
+            "boyta": summary.get("boyta", 0),
+            "byggyta": summary.get("byggyta", 0),
+            "room_count": len(rooms),
+            "bedroom_count": len([r for r in rooms if r["category"] == "bedroom"]),
+            "bathroom_count": len([r for r in rooms if r["category"] == "bathroom"]),
+        },
         "extracted_text": text[:500]  # For debugging
     }
