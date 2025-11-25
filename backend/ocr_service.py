@@ -291,11 +291,10 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
     """
     Parse room names and areas from OCR text.
 
-    Uses a two-phase approach to handle cases where multiple room names
-    appear consecutively before their areas (common in floor plan OCR):
+    Uses a three-phase approach to handle floor plan OCR challenges:
     1. Find all room name positions
-    2. Find all area positions
-    3. Match each room to its nearest following area
+    2. Find all area positions (excluding summary areas like BOYTA, BIYTA)
+    3. Match each room to nearest area using proximity-based matching
 
     Looks for patterns like:
     - "SOVRUM 1\n11.9 m²"
@@ -304,6 +303,15 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
     """
     rooms = []
     seen_rooms = set()  # Deduplicate by (name, area) combination
+
+    # Pre-processing: Find summary label positions to exclude their areas
+    # Summary areas like "BIYTA: 34.0m²" should not be matched to rooms
+    summary_pattern = r'(BOYTA|BIYTA|BTA|BYGGYTA)\s*:\s*'
+    summary_exclusion_zones = set()
+    for m in re.finditer(summary_pattern, text, re.IGNORECASE):
+        # Mark 50 chars after summary label as exclusion zone
+        for i in range(m.start(), min(m.end() + 30, len(text))):
+            summary_exclusion_zones.add(i)
 
     # Known room name patterns (Swedish)
     # Updated based on analysis of 11 real floor plans from JB Villan
@@ -367,40 +375,47 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
     room_name_pattern = '(' + '|'.join(room_keywords) + ')'
     room_matches = list(re.finditer(room_name_pattern, text, re.IGNORECASE))
 
-    # Phase 2: Find all areas with their positions
+    # Phase 2: Find all areas with their positions, EXCLUDING summary areas
     # Match areas like "8.9 m²", "18.8 m²", "5.2 m³", "2.9 m" (OCR sometimes misreads ² or omits it)
-    # The [²³2\s] allows: m², m³, m2, or just "m " (space/newline after m)
     area_pattern = r'(\d{1,3}[.,]\d)\s*m[²³2]?(?=\s|$|[^\w])'
-    area_matches = list(re.finditer(area_pattern, text, re.IGNORECASE))
+    all_area_matches = list(re.finditer(area_pattern, text, re.IGNORECASE))
 
-    # Phase 3: Two-pass matching strategy
-    # Pass 1: STRICT - match room to area IMMEDIATELY following (within 15 chars)
-    # Pass 2: ORDER - match remaining rooms to remaining areas by text order
+    # Filter out areas in summary exclusion zones
+    area_matches = []
+    for m in all_area_matches:
+        if m.start() not in summary_exclusion_zones:
+            area_matches.append(m)
+
+    # Phase 3: Three-pass matching strategy
+    # Pass 1: STRICT - area immediately following room (within 20 chars)
+    # Pass 2: PROXIMITY - closest area within 80 chars
+    # Pass 3: FALLBACK - remaining rooms get remaining areas by order
 
     used_rooms = set()
     used_areas = set()
 
-    # Pass 1: Strict immediate matching
+    # Helper function to validate and extract area
+    def get_valid_area(area_match):
+        area_str = area_match.group(1)
+        area_val = float(area_str.replace(',', '.'))
+        if 1.0 <= area_val <= 100:  # Valid room area range
+            return area_val
+        return None
+
+    # Pass 1: Strict immediate matching (within 20 chars)
     for room_idx, room_match in enumerate(room_matches):
         room_name = room_match.group(1).strip().upper()
-        # Clean up newlines and extra whitespace in room name
-        room_name = ' '.join(room_name.split())
+        room_name = ' '.join(room_name.split())  # Clean whitespace
         room_end = room_match.end()
 
-        # Find area immediately after this room (within 15 chars)
         for area_idx, area_match in enumerate(area_matches):
             if area_idx in used_areas:
                 continue
 
-            area_start = area_match.start()
-            distance = area_start - room_end
-
-            # Must be after room and very close (immediate)
-            if 0 <= distance <= 15:
-                area_str = area_match.group(1)
-                area_val = float(area_str.replace(',', '.'))
-
-                if area_val < 1.0 or area_val > 100:
+            distance = area_match.start() - room_end
+            if 0 <= distance <= 20:  # Strict: within 20 chars after room
+                area_val = get_valid_area(area_match)
+                if area_val is None:
                     continue
 
                 category = classify_room(room_name)
@@ -418,26 +433,73 @@ def parse_rooms_from_text(text: str) -> List[Dict]:
                     used_areas.add(area_idx)
                 break
 
-    # Pass 2: Order-based matching for remaining rooms
-    # Get unmatched rooms and areas in text order
+    # Pass 2: Proximity matching - find closest unused area within 80 chars
+    for room_idx, room_match in enumerate(room_matches):
+        if room_idx in used_rooms:
+            continue
+
+        room_name = room_match.group(1).strip().upper()
+        room_name = ' '.join(room_name.split())
+        room_end = room_match.end()
+
+        # Find closest unused area
+        best_area_idx = None
+        best_distance = float('inf')
+        best_area_val = None
+
+        for area_idx, area_match in enumerate(area_matches):
+            if area_idx in used_areas:
+                continue
+
+            # Allow area before or after room, but prefer after
+            distance = area_match.start() - room_end
+            abs_distance = abs(distance)
+
+            # Only consider areas within 80 chars
+            if abs_distance <= 80:
+                area_val = get_valid_area(area_match)
+                if area_val is None:
+                    continue
+
+                # Prefer areas AFTER the room name (positive distance)
+                # Add penalty for areas before the room
+                effective_distance = abs_distance if distance >= 0 else abs_distance + 20
+
+                if effective_distance < best_distance:
+                    best_distance = effective_distance
+                    best_area_idx = area_idx
+                    best_area_val = area_val
+
+        if best_area_idx is not None:
+            category = classify_room(room_name)
+            room_key = (room_name, round(best_area_val, 1))
+
+            if room_key not in seen_rooms:
+                seen_rooms.add(room_key)
+                rooms.append({
+                    "name": room_name,
+                    "area": best_area_val,
+                    "category": category,
+                    "is_biarea": is_biarea(category),
+                })
+                used_rooms.add(room_idx)
+                used_areas.add(best_area_idx)
+
+    # Pass 3: Order-based fallback for any remaining unmatched rooms
     unmatched_rooms = [(idx, m) for idx, m in enumerate(room_matches) if idx not in used_rooms]
     unmatched_areas = [(idx, m) for idx, m in enumerate(area_matches) if idx not in used_areas]
 
-    # Filter areas to valid ones
     valid_unmatched_areas = []
     for area_idx, area_match in unmatched_areas:
-        area_str = area_match.group(1)
-        area_val = float(area_str.replace(',', '.'))
-        if 1.0 <= area_val <= 100:
+        area_val = get_valid_area(area_match)
+        if area_val is not None:
             valid_unmatched_areas.append((area_idx, area_match, area_val))
 
-    # Match by order: nth unmatched room gets nth unmatched area
     for i, (room_idx, room_match) in enumerate(unmatched_rooms):
         if i >= len(valid_unmatched_areas):
             break
 
         room_name = room_match.group(1).strip().upper()
-        # Clean up newlines and extra whitespace in room name
         room_name = ' '.join(room_name.split())
         area_idx, area_match, area_val = valid_unmatched_areas[i]
 
