@@ -4,7 +4,7 @@
  * This file contains the base rates and multipliers used across the application.
  * Edit this file to update prices globally.
  *
- * Note: Future iteration could fetch these from the Backend API (/config/pricing).
+ * Note: Consider fetching these dynamically from the Backend API (/config/pricing).
  *
  * ============================================================================
  * PRICING SOURCES & REFERENCES (Last updated: November 2025)

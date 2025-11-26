@@ -244,7 +244,7 @@ This document provides authoritative references for Swedish building codes and r
 ## Cost Calculation Basis
 
 The costs in the KGVilla application are based on:
-1. **2024 Swedish Market Prices**: Current material and labor costs
+1. **2025 Swedish Market Prices**: Current material and labor costs
 2. **Regulatory Compliance**: All costs include compliance with above standards
 3. **Professional Installation**: Assumes work by authorized/certified contractors
 4. **Quality Materials**: Mid-to-high range materials meeting Swedish standards
@@ -287,5 +287,5 @@ The costs in the KGVilla application are based on:
 
 ---
 
-*Last Updated: November 2024*
+*Last Updated: November 2025*
 *Next Review: January 2026 (after new BBR regulations take full effect)*

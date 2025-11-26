@@ -77,7 +77,7 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
                 currentProjectId={projectId}
                 showBackButton
                 title={project?.name || 'New Project'}
-                subtitle={`${items.length} Items • ${Math.round(totalCost / (totalArea || 1)).toLocaleString('sv-SE')} kr/m²`}
+                subtitle={`${items.length} Items • ${totalArea > 0 ? Math.round(totalCost / totalArea).toLocaleString('sv-SE') : '—'} kr/m²`}
                 syncState={syncState}
             />
 
@@ -107,7 +107,7 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
                             <p className="text-xs text-slate-500 mt-1">
                                 • {boa > 0 ? `${boa} m² BOA` : ''}
                                 {boa > 0 && biarea > 0 ? ' + ' : ''}
-                                {biarea > 0 ? `${biarea} m² Bi` : ''}
+                                {biarea > 0 ? `${biarea} m² Biarea` : ''}
                             </p>
                         ) : totalArea > 0 && (
                             <p className="text-xs text-slate-500 mt-1">• {totalArea} m²</p>

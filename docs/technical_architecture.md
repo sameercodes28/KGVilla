@@ -15,7 +15,7 @@ KGVilla uses a **Resilient Hybrid Architecture**. The frontend is designed to be
 ### 1.2 Backend (Python FastAPI)
 *   **Service:** FastAPI application running in Docker (Google Cloud Run).
 *   **Resilience:** Includes startup probes (`/` endpoint) to report the status of dependent services (Firestore, Vertex AI) without crashing the container.
-*   **AI Engine:** Google Vertex AI (Gemini 1.5 Pro) for multimodal analysis of floor plans.
+*   **AI Engine:** Google Vertex AI (Gemini 2.0 Flash) for multimodal analysis and narrative explanations.
 *   **Database:** Google Cloud Firestore (NoSQL) for project and cost item storage.
 
 ---

@@ -79,3 +79,6 @@ class Project(BaseModel):
     name: str
     location: str
     floorPlanUrl: Optional[str] = None
+    totalArea: Optional[float] = None
+    boa: Optional[float] = None       # Living area (BOA)
+    biarea: Optional[float] = None    # Secondary area (Biarea)

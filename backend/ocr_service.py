@@ -675,7 +675,7 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             id="ground-foundation",
             phase="ground",
             elementName="Foundation (Platta på mark)",
-            description=f"Insulated slab on grade with 300mm EPS under, 100mm edge insulation. Includes reinforcement mesh, radon barrier, and underfloor heating pipes preparation. Rate: 3,500 kr/m² based on 2024 market rates.",
+            description=f"Insulated slab on grade with 300mm EPS under, 100mm edge insulation. Includes reinforcement mesh, radon barrier, and underfloor heating pipes preparation. Rate: 3,500 kr/m² based on 2025 market rates.",
             quantity=byggyta,
             unit="m²",
             unitPrice=PRICING["foundation_per_m2"],

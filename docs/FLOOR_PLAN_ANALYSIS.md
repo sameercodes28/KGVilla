@@ -175,7 +175,7 @@ Different rooms need different finishes:
 All pricing follows Swedish building standards:
 
 - **BBR 2025** - Building regulations
-- **Säker Vatten 2021:2** - Wet room requirements
+- **Säker Vatten 2021:1** - Wet room requirements
 - **SS 21054:2009** - Area measurement standards
 - **ABT 06** - Contract standards (12% risk premium included)
 - **AMA Hus** - Construction specifications
