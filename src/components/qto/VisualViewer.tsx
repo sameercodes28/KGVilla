@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react';
 import { Maximize2, Minimize2, ZoomIn, ZoomOut, UploadCloud } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 interface VisualViewerProps {
     floorPlanUrl?: string | null;
@@ -19,6 +20,7 @@ interface VisualViewerProps {
 }
 
 export function VisualViewer({ floorPlanUrl, onUpload, highlightedItem }: VisualViewerProps) {
+    const { t } = useTranslation();
     const [zoom, setZoom] = useState(0.8);  // Start zoomed out to fit
     const [isFullScreen, setIsFullScreen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -42,9 +44,9 @@ export function VisualViewer({ floorPlanUrl, onUpload, highlightedItem }: Visual
                     <button
                         onClick={() => setZoom(0.8)}
                         className="px-3 py-2 bg-black/50 backdrop-blur text-white rounded-lg hover:bg-black/70 transition-colors text-xs font-bold"
-                        title="Fit to view"
+                        title={t('viewer.fit_view')}
                     >
-                        Fit
+                        {t('viewer.fit')}
                     </button>
                     <button onClick={() => setZoom(z => Math.min(z + 0.2, 3))} className="p-2 bg-black/50 backdrop-blur text-white rounded-lg hover:bg-black/70 transition-colors">
                         <ZoomIn className="h-5 w-5" />
@@ -80,24 +82,24 @@ export function VisualViewer({ floorPlanUrl, onUpload, highlightedItem }: Visual
                         <div className="w-20 h-20 bg-slate-800 rounded-3xl flex items-center justify-center mb-6">
                             <UploadCloud className="h-10 w-10 text-blue-500" />
                         </div>
-                        <h3 className="text-2xl font-bold text-white mb-2">Upload Floor Plan</h3>
+                        <h3 className="text-2xl font-bold text-white mb-2">{t('viewer.upload_title')}</h3>
                         <p className="text-slate-400 mb-8">
-                            Upload your architectural drawing (PDF or Image) to start the AI analysis.
+                            {t('viewer.upload_desc')}
                         </p>
-                        
-                        <input 
-                            type="file" 
+
+                        <input
+                            type="file"
                             ref={fileInputRef}
                             onChange={handleFileSelect}
-                            className="hidden" 
+                            className="hidden"
                             accept="image/*,application/pdf"
                         />
-                        
-                        <button 
+
+                        <button
                             onClick={() => fileInputRef.current?.click()}
                             className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 hover:scale-105"
                         >
-                            Select File
+                            {t('viewer.select_file')}
                         </button>
                     </div>
                 )}
@@ -107,16 +109,16 @@ export function VisualViewer({ floorPlanUrl, onUpload, highlightedItem }: Visual
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white">
                 <div className="flex justify-between items-end">
                     <div>
-                        <h3 className="font-bold text-lg">{hasPlan ? 'Floor Plan Loaded' : 'No Plan Loaded'}</h3>
-                        <p className="text-sm text-slate-300">{hasPlan ? 'Ready for analysis' : 'Upload to start'}</p>
+                        <h3 className="font-bold text-lg">{hasPlan ? t('viewer.plan_loaded') : t('viewer.no_plan')}</h3>
+                        <p className="text-sm text-slate-300">{hasPlan ? t('viewer.ready_analysis') : t('viewer.upload_start')}</p>
                     </div>
                     {highlightedItem ? (
                         <div className="bg-blue-600 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider">
-                            Validating: {highlightedItem.name}
+                            {t('viewer.validating')} {highlightedItem.name}
                         </div>
                     ) : (
                         <div className="bg-slate-700 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider text-slate-300">
-                            Ready
+                            {t('viewer.ready')}
                         </div>
                     )}
                 </div>

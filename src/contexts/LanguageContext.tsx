@@ -11,6 +11,120 @@ const dictionary: Record<string, DictionaryEntry> = {
     'nav.project_view': { en: 'Project View', sv: 'Projektvy' },
     'nav.ai_analysis': { en: 'AI Analysis', sv: 'AI Analys' },
 
+    // Common / Shared
+    'common.loading': { en: 'Loading...', sv: 'Laddar...' },
+    'common.loading_project': { en: 'Loading project...', sv: 'Laddar projekt...' },
+    'common.error': { en: 'Error', sv: 'Fel' },
+    'common.try_again': { en: 'Try Again', sv: 'Försök igen' },
+    'common.back_home': { en: 'Back to Home', sv: 'Tillbaka till Start' },
+    'common.save': { en: 'Save', sv: 'Spara' },
+    'common.items': { en: 'items', sv: 'poster' },
+    'common.item': { en: 'item', sv: 'post' },
+    'common.regulations': { en: 'regulations', sv: 'regler' },
+    'common.select_project': { en: 'Select Project', sv: 'Välj Projekt' },
+    'common.open_project': { en: 'Open Project', sv: 'Öppna Projekt' },
+    'common.go_home': { en: 'Go to Home', sv: 'Gå till Start' },
+
+    // 404 Page
+    'notfound.title': { en: 'Page Not Found', sv: 'Sidan hittades inte' },
+    'notfound.message': { en: "The blueprint you're looking for doesn't exist in our archive.", sv: 'Ritningen du söker finns inte i vårt arkiv.' },
+
+    // Error Fallback
+    'error.title': { en: 'Blueprint Blew Away!', sv: 'Ritningen blåste bort!' },
+    'error.message': { en: 'Whoops! The architect left the window open and your drawings just flew out. (We encountered an unexpected error)', sv: 'Hoppsan! Arkitekten lämnade fönstret öppet och dina ritningar flög ut. (Ett oväntat fel uppstod)' },
+    'error.retry': { en: 'Catch the Blueprint (Retry)', sv: 'Fånga ritningen (Försök igen)' },
+    'error.return_home': { en: 'Return to Safety (Home)', sv: 'Tillbaka till tryggheten (Start)' },
+    'error.for_developer': { en: 'For the Site Foreman', sv: 'För platschefen' },
+    'error.code': { en: 'Error Code:', sv: 'Felkod:' },
+    'error.copied': { en: 'Debug Info Copied!', sv: 'Felsökningsinfo kopierad!' },
+    'error.copy_report': { en: 'Copy Crash Report', sv: 'Kopiera felrapport' },
+
+    // Sync Indicator
+    'sync.synced': { en: 'Synced', sv: 'Synkroniserad' },
+    'sync.saving': { en: 'Saving...', sv: 'Sparar...' },
+    'sync.offline': { en: 'Offline (Saved locally)', sv: 'Offline (Sparad lokalt)' },
+
+    // Visual Viewer
+    'viewer.fit_view': { en: 'Fit to view', sv: 'Anpassa till vy' },
+    'viewer.fit': { en: 'Fit', sv: 'Anpassa' },
+    'viewer.upload_title': { en: 'Upload Floor Plan', sv: 'Ladda upp planritning' },
+    'viewer.upload_desc': { en: 'Upload your architectural drawing (PDF or Image) to start the AI analysis.', sv: 'Ladda upp din arkitektritning (PDF eller bild) för att starta AI-analysen.' },
+    'viewer.select_file': { en: 'Select File', sv: 'Välj fil' },
+    'viewer.plan_loaded': { en: 'Floor Plan Loaded', sv: 'Planritning laddad' },
+    'viewer.no_plan': { en: 'No Plan Loaded', sv: 'Ingen planritning' },
+    'viewer.ready_analysis': { en: 'Ready for analysis', sv: 'Redo för analys' },
+    'viewer.upload_start': { en: 'Upload to start', sv: 'Ladda upp för att börja' },
+    'viewer.validating': { en: 'Validating:', sv: 'Validerar:' },
+    'viewer.ready': { en: 'Ready', sv: 'Redo' },
+
+    // Cost Inspector
+    'inspector.title': { en: 'Cost Analysis', sv: 'Kostnadsanalys' },
+    'inspector.subtitle': { en: 'Detailed calculation breakdown', sv: 'Detaljerad beräkningsuppdelning' },
+    'inspector.confidence': { en: 'Confidence:', sv: 'Säkerhet:' },
+    'inspector.how_calculated': { en: 'How We Calculated the Quantity', sv: 'Hur vi beräknade mängden' },
+    'inspector.quantity_derived': { en: 'Quantity derived from AI analysis of the floor plan dimensions.', sv: 'Mängd beräknad från AI-analys av planritningens mått.' },
+    'inspector.result': { en: 'Result', sv: 'Resultat' },
+    'inspector.regulations': { en: 'Applicable Regulations', sv: 'Tillämpliga regelverk' },
+    'inspector.section': { en: 'Section:', sv: 'Avsnitt:' },
+    'inspector.price_breakdown': { en: 'Price Breakdown', sv: 'Prisuppdelning' },
+    'inspector.materials': { en: 'Materials', sv: 'Material' },
+    'inspector.labor': { en: 'Labor', sv: 'Arbete' },
+    'inspector.includes': { en: 'Includes:', sv: 'Inkluderar:' },
+    'inspector.price_source': { en: 'Price source:', sv: 'Priskälla:' },
+    'inspector.ai_analysis': { en: 'AI Analysis', sv: 'AI-analys' },
+    'inspector.generating': { en: 'Generating detailed analysis...', sv: 'Genererar detaljerad analys...' },
+    'inspector.assumptions': { en: 'Assumptions Made:', sv: 'Antaganden:' },
+    'inspector.retry': { en: 'Retry AI analysis', sv: 'Försök AI-analys igen' },
+    'inspector.regenerate': { en: 'Regenerate Analysis', sv: 'Generera ny analys' },
+    'inspector.based_on': { en: 'Based on BBR 2025, Säker Vatten & Swedish standards', sv: 'Baserat på BBR 2025, Säker Vatten & svenska standarder' },
+    'inspector.error_ai': { en: 'Unable to generate AI explanation. Showing available data.', sv: 'Kunde inte generera AI-förklaring. Visar tillgänglig data.' },
+
+    // Contract Scope
+    'contract.title': { en: 'Contract & Payment Plan', sv: 'Avtal & Betalningsplan' },
+    'contract.subtitle': { en: 'Standard JB Villan Terms (ABT 06)', sv: 'Standard JB Villan Villkor (ABT 06)' },
+    'contract.warranty': { en: '10-Year Warranty', sv: '10 års garanti' },
+    'contract.warranty_desc': { en: 'Defect Liability Period', sv: 'Ansvarstid för fel' },
+    'contract.fixed_price': { en: 'Fixed Price', sv: 'Fast pris' },
+    'contract.fixed_price_desc': { en: 'Consumer Protection Law', sv: 'Konsumenttjänstlagen' },
+    'contract.payment_schedule': { en: 'Payment Schedule (Betalningsplan)', sv: 'Betalningsplan' },
+    'contract.included': { en: 'Included: Scaffolding, Dehumidifiers, Temporary Electricity, Site Cleaning, Project Management (BAS-U)', sv: 'Ingår: Byggställning, Avfuktare, Byggström, Byggstädning, Projektledning (BAS-U)' },
+    'contract.excluded': { en: 'Excluded: Fine landscaping (grass/hedges) unless specified.', sv: 'Ingår ej: Finplanering (gräs/häckar) om ej specificerat.' },
+
+    // Split Layout
+    'split.loading': { en: 'Loading project...', sv: 'Laddar projekt...' },
+    'split.error_title': { en: 'Error Loading Project', sv: 'Fel vid laddning av projekt' },
+    'split.analyzing': { en: 'AI Architect is analyzing your plan...', sv: 'AI-arkitekten analyserar din ritning...' },
+    'split.identifying': { en: 'Identifying rooms, walls, and requirements.', sv: 'Identifierar rum, väggar och krav.' },
+
+    // Phase Section
+    'phase.est_total': { en: 'Est. Total', sv: 'Ber. Total' },
+
+    // Project Header
+    'header.back_home': { en: 'Back to Home', sv: 'Tillbaka till Start' },
+    'header.create_new': { en: '+ Create New Project', sv: '+ Skapa Nytt Projekt' },
+
+    // Chat Page
+    'chat.loading': { en: 'Loading AI Assistant...', sv: 'Laddar AI-assistent...' },
+    'chat.no_projects': { en: 'No Projects Yet', sv: 'Inga projekt ännu' },
+    'chat.create_first': { en: 'Create a project first by uploading a floor plan on the home page.', sv: 'Skapa ett projekt först genom att ladda upp en planritning på startsidan.' },
+    'chat.ai_assistant': { en: 'AI Assistant', sv: 'AI-assistent' },
+    'chat.apply_scenario': { en: 'Apply Scenario to Project', sv: 'Tillämpa scenario på projekt' },
+    'chat.add_note': { en: 'Add a note about this file...', sv: 'Lägg till en anteckning om denna fil...' },
+
+    // Project List
+    'list.select_project': { en: 'Select a Project', sv: 'Välj ett projekt' },
+    'list.choose_desc': { en: 'Choose a project to view details or go back home to create a new one.', sv: 'Välj ett projekt för att se detaljer eller gå tillbaka för att skapa ett nytt.' },
+
+    // Add Item Form
+    'form.qty_error': { en: 'Quantity must be greater than 0', sv: 'Antal måste vara större än 0' },
+    'form.price_error': { en: 'Price cannot be negative', sv: 'Pris kan inte vara negativt' },
+    'form.placeholder': { en: 'e.g. Extra Insulation', sv: 't.ex. Extra isolering' },
+
+    // Cost Card
+    'costcard.enable': { en: 'Enable item', sv: 'Aktivera post' },
+    'costcard.disable': { en: 'Disable item', sv: 'Inaktivera post' },
+    'costcard.view_analysis': { en: 'View Cost Analysis', sv: 'Visa kostnadsanalys' },
+
     // Dashboard / Home
     'dash.welcome': { en: 'Welcome back', sv: 'Välkommen tillbaka' },
     'dash.overview': { en: 'Here is an overview of your project', sv: 'Här är en översikt över ditt pågående projekt' },
@@ -20,6 +134,34 @@ const dictionary: Record<string, DictionaryEntry> = {
     'dash.manage_desc': { en: 'Manage your house estimates and calculations.', sv: 'Hantera dina huskalkyler och beräkningar.' },
     'dash.my_projects': { en: 'My Projects', sv: 'Mina Projekt' },
     'dash.updated': { en: 'Updated', sv: 'Uppdaterad' },
+    'dash.smart_intelligence': { en: 'Smart Construction Intelligence', sv: 'Smart Byggintelligens' },
+    'dash.hero_title': { en: 'Precision Pricing for', sv: 'Precisionsprissättning för' },
+    'dash.hero_subtitle': { en: 'Swedish Villas.', sv: 'Svenska Villor.' },
+    'dash.hero_desc': { en: 'Instantly analyze blueprints against <strong>22 Swedish building regulations</strong> including BBR, Säker Vatten, EKS, and more. Generate compliant, professional quotes in seconds.', sv: 'Analysera ritningar direkt mot <strong>22 svenska byggregler</strong> inklusive BBR, Säker Vatten, EKS och fler. Generera regelenliga, professionella offerter på sekunder.' },
+    'dash.recent_activity': { en: 'Recent Activity', sv: 'Senaste Aktivitet' },
+    'dash.search_placeholder': { en: 'Search projects...', sv: 'Sök projekt...' },
+    'dash.start_blueprint': { en: 'Start from a blueprint', sv: 'Börja från en ritning' },
+    'dash.all_projects': { en: 'All Projects', sv: 'Alla Projekt' },
+    'dash.project_name': { en: 'Project Name', sv: 'Projektnamn' },
+    'dash.location': { en: 'Location', sv: 'Plats' },
+    'dash.estimated_cost': { en: 'Estimated Cost', sv: 'Beräknad Kostnad' },
+    'dash.status': { en: 'Status', sv: 'Status' },
+    'dash.last_updated': { en: 'Last Updated', sv: 'Senast Uppdaterad' },
+    'dash.actions': { en: 'Actions', sv: 'Åtgärder' },
+    'dash.no_projects_found': { en: 'No projects found matching', sv: 'Inga projekt hittades som matchar' },
+    'dash.delete_project': { en: 'Delete Project?', sv: 'Radera Projekt?' },
+    'dash.delete_confirm': { en: 'This action cannot be undone. The project will be permanently removed.', sv: 'Denna åtgärd kan inte ångras. Projektet kommer att tas bort permanent.' },
+    'dash.cancel': { en: 'Cancel', sv: 'Avbryt' },
+    'dash.delete': { en: 'Delete', sv: 'Radera' },
+    'dash.new_project': { en: 'New Project', sv: 'Nytt Projekt' },
+    'dash.floor_plan': { en: 'Floor Plan (Recommended)', sv: 'Planritning (Rekommenderas)' },
+    'dash.click_to_change': { en: 'Click to change', sv: 'Klicka för att ändra' },
+    'dash.click_to_upload': { en: 'Click to upload PDF/Image', sv: 'Klicka för att ladda upp PDF/Bild' },
+    'dash.drag_drop': { en: 'or drag and drop here', sv: 'eller dra och släpp här' },
+    'dash.analyze_create': { en: 'Analyze & Create Project', sv: 'Analysera & Skapa Projekt' },
+    'dash.create_empty': { en: 'Create Empty Project', sv: 'Skapa Tomt Projekt' },
+    'dash.analyzing': { en: 'Analyzing Blueprint...', sv: 'Analyserar Ritning...' },
+    'dash.checking_compliance': { en: 'Checking compliance with 22 Swedish building standards.', sv: 'Kontrollerar efterlevnad av 22 svenska byggregler.' },
 
     // QTO Page / Split Layout
     'qto.title': { en: 'Quantity Take-Off & Analysis', sv: 'Mängdning & Analys' },

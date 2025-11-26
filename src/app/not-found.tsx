@@ -1,7 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import { Home, Search } from 'lucide-react';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 export default function NotFound() {
+    const { t } = useTranslation();
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
             <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 text-center">
@@ -10,9 +15,9 @@ export default function NotFound() {
                     <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6 shadow-sm">
                         <Search className="h-10 w-10 text-blue-600" />
                     </div>
-                    <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Page Not Found</h2>
+                    <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">{t('notfound.title')}</h2>
                     <p className="text-slate-500 text-lg leading-relaxed">
-                        The blueprint you&apos;re looking for doesn&apos;t exist in our archive.
+                        {t('notfound.message')}
                     </p>
                 </div>
 
@@ -22,7 +27,7 @@ export default function NotFound() {
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center justify-center"
                     >
                         <Home className="h-5 w-5 mr-2" />
-                        Back to Home
+                        {t('common.back_home')}
                     </Link>
                 </div>
             </div>

@@ -36,7 +36,7 @@ export function ProjectDataFeed() {
     const otherItems = items.filter(i => !phases.some(p => p.id === i.phase));
 
     if (!project) {
-        return <div className="p-8 text-center text-slate-500">Loading project...</div>;
+        return <div className="p-8 text-center text-slate-500">{t('common.loading_project')}</div>;
     }
 
     return (

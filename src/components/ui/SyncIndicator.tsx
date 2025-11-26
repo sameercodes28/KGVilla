@@ -1,7 +1,10 @@
+'use client';
+
 import React from 'react';
 import { SyncState } from '@/hooks/useProjectData';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 interface SyncIndicatorProps {
     syncState: SyncState;
@@ -9,6 +12,7 @@ interface SyncIndicatorProps {
 }
 
 export function SyncIndicator({ syncState, className }: SyncIndicatorProps) {
+    const { t } = useTranslation();
     const { status, errorMessage } = syncState;
 
     return (
@@ -16,19 +20,19 @@ export function SyncIndicator({ syncState, className }: SyncIndicatorProps) {
             {status === 'synced' && (
                 <div className="flex items-center text-green-600 animate-in fade-in">
                     <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
-                    <span>Synced</span>
+                    <span>{t('sync.synced')}</span>
                 </div>
             )}
             {status === 'pending' && (
                 <div className="flex items-center text-blue-600">
                     <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                    <span>Saving...</span>
+                    <span>{t('sync.saving')}</span>
                 </div>
             )}
             {status === 'error' && (
                 <div className="flex items-center text-amber-600" title={errorMessage || 'Sync failed'}>
                     <AlertCircle className="w-3.5 h-3.5 mr-1.5" />
-                    <span>Offline (Saved locally)</span>
+                    <span>{t('sync.offline')}</span>
                 </div>
             )}
         </div>

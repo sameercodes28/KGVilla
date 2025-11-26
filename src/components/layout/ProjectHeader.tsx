@@ -41,7 +41,7 @@ export function ProjectHeader({
                         <Link 
                             href="/" 
                             className="p-2 -ml-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
-                            title="Back to Home"
+                            title={t('header.back_home')}
                         >
                             <ArrowLeft className="h-5 w-5" />
                         </Link>
@@ -84,7 +84,7 @@ export function ProjectHeader({
                         >
                             <Building className="h-4 w-4 text-slate-500" />
                             <span className="max-w-[150px] truncate">
-                                {selectedProject?.name || 'Select Project'}
+                                {selectedProject?.name || t('common.select_project')}
                             </span>
                             <ChevronDown className="h-4 w-4 text-slate-400" />
                         </button>
@@ -109,7 +109,7 @@ export function ProjectHeader({
                                 </div>
                                 <div className="p-2 bg-slate-50 border-t border-slate-100">
                                     <Link href="/" className="block text-center text-xs font-bold text-blue-600 hover:underline py-1">
-                                        + Create New Project
+                                        {t('header.create_new')}
                                     </Link>
                                 </div>
                             </div>
