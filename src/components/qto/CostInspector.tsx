@@ -155,7 +155,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                         {Math.round(item.totalCost).toLocaleString('sv-SE')} kr
                     </span>
                     <span className="text-sm text-slate-500">
-                        ({item.quantity} {item.unit} × {Math.round(item.unitPrice).toLocaleString('sv-SE')} kr)
+                        ({Number(item.quantity).toFixed(1)} {item.unit} × {Math.round(item.unitPrice).toLocaleString('sv-SE')} kr)
                     </span>
                 </div>
             </div>

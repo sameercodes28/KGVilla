@@ -153,6 +153,9 @@ const dictionary: Record<string, DictionaryEntry> = {
     'card.custom': { en: 'Custom', sv: 'Egen' },
     'card.edited': { en: 'Edited', sv: 'Ändrad' },
     'card.regulations': { en: 'Applicable Regulations', sv: 'Tillämpliga Regelverk' },
+    'card.excluded': { en: 'Excluded', sv: 'Exkluderad' },
+    'card.enable': { en: 'Enable item', sv: 'Aktivera post' },
+    'card.disable': { en: 'Disable item', sv: 'Inaktivera post' },
 
     // Total Summary
     'summary.title': { en: 'Total Estimated Cost', sv: 'Total Beräknad Kostnad' },

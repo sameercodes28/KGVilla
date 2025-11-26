@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { CostItem } from '@/types';
-import { ChevronDown, Info, Edit2, Save, X, Calculator, BookOpen, ShieldCheck } from 'lucide-react';
+import { ChevronDown, Info, Edit2, Save, X, Calculator, BookOpen, ShieldCheck, ToggleLeft, ToggleRight } from 'lucide-react';
 import { getItemRegulations, REGULATION_COLORS, RegulationRef } from '@/data/regulationMapping';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
@@ -121,12 +121,25 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
         phase: item.phase
     });
 
+    const isDisabled = item.disabled === true;
+
+    const handleToggleDisabled = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (onUpdate) {
+            onUpdate({
+                ...item,
+                disabled: !isDisabled
+            });
+        }
+    };
+
     return (
         <div
             className={cn(
                 "border rounded-xl transition-all duration-200 bg-white hover:shadow-md",
                 isExpanded ? "border-blue-200 shadow-sm" : "border-slate-100",
-                item.isUserAdded ? "border-l-4 border-l-purple-500" : ""
+                item.isUserAdded ? "border-l-4 border-l-purple-500" : "",
+                isDisabled && "opacity-50 bg-slate-50"
             )}
         >
             <div
@@ -136,9 +149,31 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                 <div className="flex justify-between items-start">
                     <div className="flex-1">
                         <div className="flex items-center space-x-2">
-                            <h4 className="font-semibold text-slate-900">{translatedName}</h4>
+                            {/* Enable/Disable Toggle */}
+                            {onUpdate && (
+                                <button
+                                    onClick={handleToggleDisabled}
+                                    className={cn(
+                                        "p-0.5 rounded transition-colors flex-shrink-0",
+                                        isDisabled
+                                            ? "text-slate-400 hover:text-green-600"
+                                            : "text-green-600 hover:text-slate-400"
+                                    )}
+                                    title={isDisabled ? t('card.enable') || 'Enable item' : t('card.disable') || 'Disable item'}
+                                >
+                                    {isDisabled ? (
+                                        <ToggleLeft className="h-5 w-5" />
+                                    ) : (
+                                        <ToggleRight className="h-5 w-5" />
+                                    )}
+                                </button>
+                            )}
+                            <h4 className={cn(
+                                "font-semibold text-slate-900",
+                                isDisabled && "line-through text-slate-400"
+                            )}>{translatedName}</h4>
                             {onInspect && (
-                                <button 
+                                <button
                                     onClick={(e) => { e.stopPropagation(); onInspect(item); }}
                                     className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
                                     title="View Cost Analysis"
@@ -146,10 +181,13 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                                     <Info className="h-4 w-4" />
                                 </button>
                             )}
-                            {item.isUserAdded && (
+                            {isDisabled && (
+                                <span className="px-1.5 py-0.5 bg-slate-200 text-slate-500 text-[10px] font-bold uppercase rounded">{t('card.excluded') || 'Excluded'}</span>
+                            )}
+                            {item.isUserAdded && !isDisabled && (
                                 <span className="px-1.5 py-0.5 bg-purple-100 text-purple-700 text-[10px] font-bold uppercase rounded">{t('card.custom')}</span>
                             )}
-                            {hasCustomValues && !item.isUserAdded && (
+                            {hasCustomValues && !item.isUserAdded && !isDisabled && (
                                 <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold uppercase rounded">{t('card.edited')}</span>
                             )}
                         </div>

@@ -230,8 +230,18 @@ export function useProjectData(projectId?: string) {
         setItems(prev => prev.map(item => {
             if (item.id === id) {
                 const updatedItem = { ...item, ...updates };
-                if (updates.quantity !== undefined || updates.unitPrice !== undefined) {
-                    updatedItem.totalCost = updatedItem.quantity * updatedItem.unitPrice;
+
+                // Recalculate totalCost if any quantity/price fields changed
+                // Use effective values (custom overrides base)
+                if (
+                    updates.quantity !== undefined ||
+                    updates.unitPrice !== undefined ||
+                    updates.customQuantity !== undefined ||
+                    updates.customUnitPrice !== undefined
+                ) {
+                    const effectiveQuantity = updatedItem.customQuantity ?? updatedItem.quantity;
+                    const effectiveUnitPrice = updatedItem.customUnitPrice ?? updatedItem.unitPrice;
+                    updatedItem.totalCost = effectiveQuantity * effectiveUnitPrice;
                 }
                 return updatedItem;
             }
@@ -334,8 +344,10 @@ export function useProjectData(projectId?: string) {
         }
     };
 
-    // Derived State
-    const totalCost = useMemo(() => items.reduce((sum, item) => sum + item.totalCost, 0), [items]);
+    // Derived State - excludes disabled items from total
+    const totalCost = useMemo(() =>
+        items.filter(item => !item.disabled).reduce((sum, item) => sum + item.totalCost, 0),
+    [items]);
 
     // Selectors - memoized to prevent recreation on each render
     const getItemsByPhase = useCallback((phaseId: string) => items.filter(i => i.phase === phaseId), [items]);

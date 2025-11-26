@@ -103,6 +103,7 @@ export interface CostItem {
   customQuantity?: number;
   isUserAdded?: boolean;
   userNotes?: string;
+  disabled?: boolean; // When true, item is excluded from total cost calculation
 }
 
 export interface Room {
