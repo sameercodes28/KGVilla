@@ -206,19 +206,25 @@ export function useProjectData(projectId?: string) {
     const addItem = (partialItem: Partial<CostItem>) => {
         if (!projectId) return;
 
+        // Calculate effective quantity and price
+        const quantity = partialItem.quantity || 1;
+        const unitPrice = partialItem.unitPrice || 0;
+
         const newItem: CostItem = {
             id: generateUUID(),
             projectId,
             phase: 'structure',
             elementName: 'New Item',
             description: '',
-            quantity: 1,
+            quantity,
             unit: 'st',
-            unitPrice: 0,
+            unitPrice,
             confidenceScore: 1.0,
             ...partialItem,
-            totalCost: (partialItem.quantity || 1) * (partialItem.unitPrice || 0),
-            totalQuantity: partialItem.quantity || 1
+            // Ensure totalCost is calculated correctly
+            totalCost: quantity * unitPrice,
+            totalQuantity: quantity,
+            isUserAdded: true  // Mark as user-added custom item
         };
 
         isUserModified.current = true;
