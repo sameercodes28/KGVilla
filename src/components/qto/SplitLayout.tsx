@@ -126,7 +126,7 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
                 <CostInspector
                     item={inspectingItem}
                     onClose={() => setInspectingItem(null)}
-                    context={{ boa, biarea }}
+                    context={{ boa, biarea, totalArea }}
                 />
             </div>
         </div>
