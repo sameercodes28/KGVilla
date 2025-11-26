@@ -1,18 +1,261 @@
 'use client';
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useState, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useProjectData } from '@/hooks/useProjectData';
 import { useTranslation } from '@/contexts/LanguageContext';
-import { MapPin, CheckCircle, ShieldCheck, FileText, ArrowRight, ArrowLeft } from 'lucide-react';
+import {
+    MapPin, ShieldCheck, FileText, ArrowRight, ArrowLeft,
+    ChevronDown, ChevronUp, Scale, Home, Ruler,
+    CheckCircle2, AlertCircle, Sparkles, Download,
+    Phone, Building2, Hammer, Zap, Droplets, PaintBucket,
+    ClipboardCheck, Eye, EyeOff, Plus, Minus
+} from 'lucide-react';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import Link from 'next/link';
+import { CostItem } from '@/types';
+import { getItemRegulations, RegulationRef, REGULATION_COLORS } from '@/data/regulationMapping';
+import { cn } from '@/lib/utils';
+
+// Phase Icons mapping
+const PHASE_ICONS: Record<string, React.ElementType> = {
+    ground: Building2,
+    structure: Hammer,
+    electrical: Zap,
+    plumbing: Droplets,
+    interior: PaintBucket,
+    completion: ClipboardCheck,
+    admin: FileText,
+};
+
+// Phase Colors
+const PHASE_COLORS: Record<string, { bg: string; border: string; text: string; light: string }> = {
+    ground: { bg: 'bg-amber-500', border: 'border-amber-200', text: 'text-amber-700', light: 'bg-amber-50' },
+    structure: { bg: 'bg-slate-600', border: 'border-slate-200', text: 'text-slate-700', light: 'bg-slate-50' },
+    electrical: { bg: 'bg-yellow-500', border: 'border-yellow-200', text: 'text-yellow-700', light: 'bg-yellow-50' },
+    plumbing: { bg: 'bg-blue-500', border: 'border-blue-200', text: 'text-blue-700', light: 'bg-blue-50' },
+    interior: { bg: 'bg-purple-500', border: 'border-purple-200', text: 'text-purple-700', light: 'bg-purple-50' },
+    completion: { bg: 'bg-green-500', border: 'border-green-200', text: 'text-green-700', light: 'bg-green-50' },
+    admin: { bg: 'bg-gray-500', border: 'border-gray-200', text: 'text-gray-700', light: 'bg-gray-50' },
+};
+
+interface PhaseBreakdownProps {
+    phase: {
+        id: string;
+        label: string;
+        items: CostItem[];
+        total: number;
+    };
+    totalCost: number;
+    t: (key: string) => string;
+}
+
+function PhaseBreakdown({ phase, totalCost, t }: PhaseBreakdownProps) {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const PhaseIcon = PHASE_ICONS[phase.id] || FileText;
+    const colors = PHASE_COLORS[phase.id] || PHASE_COLORS.admin;
+    const percentage = totalCost > 0 ? ((phase.total / totalCost) * 100).toFixed(1) : '0';
+
+    // Get unique regulations for this phase
+    const phaseRegulations = useMemo(() => {
+        const regs = new Map<string, RegulationRef>();
+        phase.items.forEach(item => {
+            const itemRegs = getItemRegulations(item);
+            itemRegs.forEach(reg => {
+                if (!regs.has(reg.id)) {
+                    regs.set(reg.id, reg);
+                }
+            });
+        });
+        return Array.from(regs.values());
+    }, [phase.items]);
+
+    return (
+        <div className={cn(
+            "bg-white rounded-2xl border overflow-hidden transition-all duration-300",
+            isExpanded ? "shadow-lg" : "shadow-sm hover:shadow-md",
+            colors.border
+        )}>
+            {/* Phase Header */}
+            <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="w-full p-6 flex items-center justify-between hover:bg-slate-50 transition-colors"
+            >
+                <div className="flex items-center gap-4">
+                    <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", colors.bg)}>
+                        <PhaseIcon className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="text-left">
+                        <h4 className="text-lg font-bold text-slate-900">{phase.label}</h4>
+                        <p className="text-sm text-slate-500">
+                            {phase.items.length} {t('report.phase_items')} • {percentage}% {t('report.material_labor')}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-2xl font-mono font-bold text-slate-900">
+                        {Math.round(phase.total).toLocaleString('sv-SE')} kr
+                    </span>
+                    {isExpanded ? (
+                        <ChevronUp className="w-5 h-5 text-slate-400" />
+                    ) : (
+                        <ChevronDown className="w-5 h-5 text-slate-400" />
+                    )}
+                </div>
+            </button>
+
+            {/* Expanded Content */}
+            {isExpanded && (
+                <div className={cn("border-t", colors.border)}>
+                    {/* Phase Regulations Summary */}
+                    {phaseRegulations.length > 0 && (
+                        <div className={cn("px-6 py-3 flex flex-wrap gap-2", colors.light)}>
+                            {phaseRegulations.slice(0, 6).map(reg => {
+                                const regColors = REGULATION_COLORS[reg.id] || { bgColor: 'bg-slate-100', color: 'text-slate-700' };
+                                return (
+                                    <span
+                                        key={reg.id}
+                                        className={cn("px-2 py-1 rounded text-xs font-medium", regColors.bgColor, regColors.color)}
+                                    >
+                                        {reg.name}
+                                    </span>
+                                );
+                            })}
+                            {phaseRegulations.length > 6 && (
+                                <span className="px-2 py-1 bg-slate-200 text-slate-600 rounded text-xs font-medium">
+                                    +{phaseRegulations.length - 6} more
+                                </span>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Item List */}
+                    <div className="divide-y divide-slate-100">
+                        {phase.items.map((item, idx) => {
+                            const itemRegs = getItemRegulations(item);
+                            const isDisabled = item.disabled === true;
+                            const hasCustomPrice = item.customUnitPrice !== undefined || item.customQuantity !== undefined;
+
+                            return (
+                                <div
+                                    key={item.id || idx}
+                                    className={cn(
+                                        "px-6 py-4 flex items-start justify-between",
+                                        isDisabled && "bg-slate-50 opacity-60"
+                                    )}
+                                >
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                            <span className={cn(
+                                                "font-medium",
+                                                isDisabled ? "text-slate-400 line-through" : "text-slate-900"
+                                            )}>
+                                                {item.elementName}
+                                            </span>
+                                            {isDisabled && (
+                                                <span className="px-2 py-0.5 bg-slate-200 text-slate-500 rounded text-xs">
+                                                    Excluded
+                                                </span>
+                                            )}
+                                            {hasCustomPrice && !isDisabled && (
+                                                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
+                                                    Custom
+                                                </span>
+                                            )}
+                                            {item.isUserAdded && (
+                                                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
+                                                    Added
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-slate-500 mt-0.5">
+                                            {Number(item.quantity).toFixed(1)} {item.unit} × {Math.round(item.unitPrice).toLocaleString('sv-SE')} kr
+                                        </p>
+                                        {/* Item Regulations */}
+                                        {itemRegs.length > 0 && (
+                                            <div className="flex flex-wrap gap-1 mt-2">
+                                                {itemRegs.slice(0, 3).map(reg => (
+                                                    <span
+                                                        key={reg.id}
+                                                        className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-medium"
+                                                    >
+                                                        {reg.name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className={cn(
+                                        "font-mono font-bold whitespace-nowrap ml-4",
+                                        isDisabled ? "text-slate-400 line-through" : "text-slate-900"
+                                    )}>
+                                        {Math.round(item.totalCost).toLocaleString('sv-SE')} kr
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Phase Total */}
+                    <div className={cn("px-6 py-4 flex justify-between items-center", colors.light)}>
+                        <span className={cn("font-semibold", colors.text)}>{phase.label} Total</span>
+                        <span className={cn("text-xl font-mono font-bold", colors.text)}>
+                            {Math.round(phase.total).toLocaleString('sv-SE')} kr
+                        </span>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
 
 function CustomerViewContent() {
     const searchParams = useSearchParams();
     const projectId = searchParams.get('project') || undefined;
-    const { items, totalCost, totalArea, floorPlanUrl, project, isLoading } = useProjectData(projectId);
+    const { items, totalCost, totalArea, boa, biarea, floorPlanUrl, project, isLoading } = useProjectData(projectId);
     const { t } = useTranslation();
+
+    // Compute derived data
+    const costPerSqm = totalArea && totalArea > 0 ? Math.round(totalCost / totalArea) : 0;
+
+    // Group items by phase
+    const phases = ['ground', 'structure', 'electrical', 'plumbing', 'interior', 'completion', 'admin'];
+    const phaseData = useMemo(() => {
+        return phases
+            .map(phase => ({
+                id: phase,
+                label: t(`phase.${phase}`),
+                items: items.filter(i => i.phase === phase && !i.disabled),
+                total: items.filter(i => i.phase === phase && !i.disabled).reduce((sum, i) => sum + i.totalCost, 0)
+            }))
+            .filter(phase => phase.total > 0);
+    }, [items, t]);
+
+    // Collect all unique regulations across all items
+    const allRegulations = useMemo(() => {
+        const regs = new Map<string, { reg: RegulationRef; count: number }>();
+        items.forEach(item => {
+            const itemRegs = getItemRegulations(item);
+            itemRegs.forEach(reg => {
+                if (regs.has(reg.id)) {
+                    regs.get(reg.id)!.count++;
+                } else {
+                    regs.set(reg.id, { reg, count: 1 });
+                }
+            });
+        });
+        return Array.from(regs.values()).sort((a, b) => b.count - a.count);
+    }, [items]);
+
+    // Compute decision stats
+    const decisionStats = useMemo(() => {
+        const excludedItems = items.filter(i => i.disabled);
+        const customItems = items.filter(i => i.isUserAdded);
+        const customPricing = items.filter(i =>
+            !i.isUserAdded && (i.customUnitPrice !== undefined || i.customQuantity !== undefined)
+        );
+        return { excludedItems, customItems, customPricing };
+    }, [items]);
 
     // Show loading state
     if (isLoading) {
@@ -20,123 +263,300 @@ function CustomerViewContent() {
             <div className="min-h-screen bg-white flex items-center justify-center">
                 <div className="text-center">
                     <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-slate-600">Loading proposal...</p>
+                    <p className="text-slate-600">{t('report.loading')}</p>
                 </div>
             </div>
         );
     }
 
-    // Group items by phase for summary (including admin phase)
-    const phases = ['ground', 'structure', 'electrical', 'plumbing', 'interior', 'completion', 'admin'];
-    const phaseCosts = phases
-        .map(phase => ({
-            id: phase,
-            label: t(`phase.${phase}`),
-            total: items.filter(i => i.phase === phase).reduce((sum, i) => sum + i.totalCost, 0)
-        }))
-        .filter(phase => phase.total > 0); // Only show phases with costs
-
     return (
-        <div className="min-h-screen bg-white font-sans text-slate-900">
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white font-sans text-slate-900">
             <LanguageToggle />
-            
-            <Link 
+
+            {/* Back Button */}
+            <Link
                 href={`/qto?project=${projectId || ''}`}
                 className="fixed top-6 left-6 z-50 flex items-center text-white/80 hover:text-white bg-black/30 hover:bg-black/50 backdrop-blur px-4 py-2 rounded-full transition-all"
             >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                <span className="text-sm font-medium">Back to Editor</span>
+                <span className="text-sm font-medium">{t('report.back')}</span>
             </Link>
-            
+
             {/* Hero Section */}
-            <div className="relative h-[60vh] bg-slate-900 flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-black/40 z-10" />
+            <div className="relative min-h-[50vh] bg-slate-900 flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 to-slate-900/95 z-10" />
                 {floorPlanUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={floorPlanUrl} alt="Floor Plan" className="absolute inset-0 w-full h-full object-cover opacity-50 blur-sm scale-105" />
+                    <img src={floorPlanUrl} alt="Floor Plan" className="absolute inset-0 w-full h-full object-cover opacity-20 blur-sm scale-105" />
                 ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]" />
                 )}
-                
-                <div className="relative z-20 text-center text-white px-6 max-w-4xl mx-auto">
-                    <div className="inline-flex items-center px-3 py-1 rounded-full border border-white/30 bg-white/10 backdrop-blur text-xs font-bold uppercase tracking-widest mb-6">
-                        Proposal Ready
+
+                <div className="relative z-20 text-center text-white px-6 max-w-4xl mx-auto py-20">
+                    <div className="inline-flex items-center px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur text-sm font-medium mb-6">
+                        <Sparkles className="w-4 h-4 mr-2 text-yellow-400" />
+                        {t('report.ready')}
                     </div>
-                    <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 tracking-tight">{project?.name || 'New Project'}</h1>
-                    <div className="flex items-center justify-center text-lg text-white/80 mb-8">
+                    <h1 className="text-4xl md:text-6xl font-bold mb-4 tracking-tight">{project?.name || 'New Project'}</h1>
+                    <div className="flex items-center justify-center text-lg text-white/70 mb-8">
                         <MapPin className="w-5 h-5 mr-2" />
-                        {project?.location || 'Location'} {totalArea ? `• ${totalArea} m²` : ''}
+                        {project?.location || 'Location'}
                     </div>
-                    <div className="text-6xl font-mono font-bold tracking-tighter">
-                        {totalCost.toLocaleString('sv-SE')} <span className="text-2xl align-top text-white/60">SEK</span>
+                    <div className="text-6xl md:text-7xl font-mono font-bold tracking-tighter mb-2">
+                        {Math.round(totalCost).toLocaleString('sv-SE')}
+                        <span className="text-2xl ml-2 text-white/60 font-sans">SEK</span>
                     </div>
-                    <p className="mt-4 text-white/60 text-sm uppercase tracking-widest">Estimated Turnkey Price (Totalentreprenad)</p>
+                    <p className="text-white/50 text-sm uppercase tracking-widest">{t('report.turnkey')}</p>
+                </div>
+
+                {/* Curved bottom edge */}
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-slate-50 z-20" />
+            </div>
+
+            {/* Key Metrics Cards */}
+            <div className="max-w-5xl mx-auto px-6 -mt-8 relative z-30">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-white rounded-2xl p-5 shadow-lg border border-slate-100">
+                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t('report.cost_per_sqm')}</div>
+                        <div className="text-2xl font-mono font-bold text-slate-900">
+                            {costPerSqm.toLocaleString('sv-SE')} <span className="text-sm text-slate-400">kr/m²</span>
+                        </div>
+                    </div>
+                    <div className="bg-white rounded-2xl p-5 shadow-lg border border-slate-100">
+                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t('report.living_area')}</div>
+                        <div className="text-2xl font-mono font-bold text-slate-900">
+                            {boa || totalArea || '—'} <span className="text-sm text-slate-400">m²</span>
+                        </div>
+                    </div>
+                    <div className="bg-white rounded-2xl p-5 shadow-lg border border-slate-100">
+                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t('report.regulations_count')}</div>
+                        <div className="text-2xl font-mono font-bold text-slate-900">
+                            {allRegulations.length} <span className="text-sm text-slate-400">regler</span>
+                        </div>
+                    </div>
+                    <div className="bg-white rounded-2xl p-5 shadow-lg border border-slate-100">
+                        <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t('report.items_count')}</div>
+                        <div className="text-2xl font-mono font-bold text-slate-900">
+                            {items.filter(i => !i.disabled).length} <span className="text-sm text-slate-400">poster</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Executive Summary */}
-            <div className="max-w-4xl mx-auto px-6 py-24">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            {/* Value Propositions */}
+            <div className="max-w-5xl mx-auto px-6 py-16">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="text-center">
-                        <div className="w-16 h-16 mx-auto bg-green-100 text-green-700 rounded-full flex items-center justify-center mb-4">
+                        <div className="w-16 h-16 mx-auto bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-4">
                             <ShieldCheck className="w-8 h-8" />
                         </div>
-                        <h3 className="text-lg font-bold mb-2">10-Year Warranty</h3>
-                        <p className="text-slate-500 text-sm leading-relaxed">Full defect liability protection under Konsumenttjänstlagen.</p>
+                        <h3 className="text-lg font-bold mb-2">{t('report.warranty_title')}</h3>
+                        <p className="text-slate-500 text-sm leading-relaxed">{t('report.warranty_desc')}</p>
                     </div>
                     <div className="text-center">
-                        <div className="w-16 h-16 mx-auto bg-blue-100 text-blue-700 rounded-full flex items-center justify-center mb-4">
+                        <div className="w-16 h-16 mx-auto bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-4">
                             <FileText className="w-8 h-8" />
                         </div>
-                        <h3 className="text-lg font-bold mb-2">Fixed Price Contract</h3>
-                        <p className="text-slate-500 text-sm leading-relaxed">No hidden fees. ABT 06 standard contract for your peace of mind.</p>
+                        <h3 className="text-lg font-bold mb-2">{t('report.fixed_price_title')}</h3>
+                        <p className="text-slate-500 text-sm leading-relaxed">{t('report.fixed_price_desc')}</p>
                     </div>
                     <div className="text-center">
-                        <div className="w-16 h-16 mx-auto bg-purple-100 text-purple-700 rounded-full flex items-center justify-center mb-4">
-                            <CheckCircle className="w-8 h-8" />
+                        <div className="w-16 h-16 mx-auto bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-4">
+                            <CheckCircle2 className="w-8 h-8" />
                         </div>
-                        <h3 className="text-lg font-bold mb-2">Turnkey Delivery</h3>
-                        <p className="text-slate-500 text-sm leading-relaxed">We handle everything from permits (Bygglov) to final cleaning.</p>
+                        <h3 className="text-lg font-bold mb-2">{t('report.turnkey_title')}</h3>
+                        <p className="text-slate-500 text-sm leading-relaxed">{t('report.turnkey_desc')}</p>
                     </div>
                 </div>
             </div>
 
-            {/* Cost Breakdown (Simplified) */}
-            <div className="bg-slate-50 py-24 px-6">
-                <div className="max-w-3xl mx-auto">
-                    <h2 className="text-3xl font-bold text-center mb-16">Where your money goes</h2>
-                    
+            {/* Detailed Cost Breakdown */}
+            <div className="bg-white py-16">
+                <div className="max-w-5xl mx-auto px-6">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold mb-2">{t('report.where_money_goes')}</h2>
+                        <p className="text-slate-500">{t('report.cost_breakdown')}</p>
+                    </div>
+
                     <div className="space-y-4">
-                        {phaseCosts.map((phase) => (
-                            <div key={phase.id} className="bg-white p-6 rounded-2xl border border-slate-200 flex items-center justify-between hover:shadow-md transition-all">
-                                <div>
-                                    <h4 className="text-lg font-bold text-slate-900">{phase.label || phase.id}</h4>
-                                    <p className="text-sm text-slate-500">Material & Labor included</p>
-                                </div>
-                                <div className="text-xl font-mono font-bold text-slate-900">
-                                    {phase.total.toLocaleString('sv-SE')} kr
-                                </div>
-                            </div>
+                        {phaseData.map((phase) => (
+                            <PhaseBreakdown
+                                key={phase.id}
+                                phase={phase}
+                                totalCost={totalCost}
+                                t={t}
+                            />
                         ))}
-                        
-                        <div className="flex justify-between items-center pt-8 mt-8 border-t border-slate-200">
-                            <span className="text-xl font-bold">Total Estimated Cost</span>
-                            <span className="text-4xl font-bold text-blue-600">{totalCost.toLocaleString('sv-SE')} kr</span>
+
+                        {/* Total */}
+                        <div className="bg-slate-900 text-white rounded-2xl p-6 flex justify-between items-center">
+                            <span className="text-xl font-bold">{t('summary.title')}</span>
+                            <span className="text-4xl font-mono font-bold">
+                                {Math.round(totalCost).toLocaleString('sv-SE')} kr
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Regulatory Compliance Section */}
+            <div className="py-16 bg-gradient-to-b from-slate-50 to-white">
+                <div className="max-w-5xl mx-auto px-6">
+                    <div className="text-center mb-12">
+                        <div className="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium mb-4">
+                            <Scale className="w-4 h-4 mr-2" />
+                            {t('report.compliance_title')}
+                        </div>
+                        <h2 className="text-3xl font-bold mb-2">{t('report.compliance_title')}</h2>
+                        <p className="text-slate-500">{t('report.compliance_subtitle')}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {allRegulations.slice(0, 12).map(({ reg, count }) => {
+                            const colors = REGULATION_COLORS[reg.id] || { bgColor: 'bg-slate-100', color: 'text-slate-700', borderColor: 'border-slate-200' };
+                            return (
+                                <div
+                                    key={reg.id}
+                                    className={cn(
+                                        "rounded-xl p-4 border transition-all hover:shadow-md",
+                                        colors.bgColor,
+                                        colors.borderColor
+                                    )}
+                                >
+                                    <div className={cn("text-sm font-bold mb-1", colors.color)}>{reg.name}</div>
+                                    <div className="text-xs text-slate-500">
+                                        {count} {count === 1 ? 'item' : 'items'} affected
+                                    </div>
+                                    {reg.requirement && (
+                                        <div className="text-xs text-slate-400 mt-2 line-clamp-2">{reg.requirement}</div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {allRegulations.length > 12 && (
+                        <p className="text-center text-sm text-slate-500 mt-6">
+                            + {allRegulations.length - 12} more regulations applied
+                        </p>
+                    )}
+                </div>
+            </div>
+
+            {/* Your Decisions Section */}
+            {(decisionStats.excludedItems.length > 0 || decisionStats.customItems.length > 0 || decisionStats.customPricing.length > 0) && (
+                <div className="py-16 bg-white">
+                    <div className="max-w-5xl mx-auto px-6">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl font-bold mb-2">{t('report.decisions_title')}</h2>
+                            <p className="text-slate-500">{t('report.decisions_subtitle')}</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Excluded Items */}
+                            {decisionStats.excludedItems.length > 0 && (
+                                <div className="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-10 h-10 bg-slate-200 rounded-lg flex items-center justify-center">
+                                            <EyeOff className="w-5 h-5 text-slate-600" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-900">{t('report.excluded_items')}</h4>
+                                            <p className="text-xs text-slate-500">{decisionStats.excludedItems.length} items</p>
+                                        </div>
+                                    </div>
+                                    <ul className="space-y-2">
+                                        {decisionStats.excludedItems.slice(0, 5).map(item => (
+                                            <li key={item.id} className="flex justify-between text-sm">
+                                                <span className="text-slate-600 line-through">{item.elementName}</span>
+                                                <span className="text-slate-400 font-mono">-{Math.round(item.totalCost).toLocaleString('sv-SE')} kr</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* Custom Items Added */}
+                            {decisionStats.customItems.length > 0 && (
+                                <div className="bg-green-50 rounded-2xl p-6 border border-green-200">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-10 h-10 bg-green-200 rounded-lg flex items-center justify-center">
+                                            <Plus className="w-5 h-5 text-green-700" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-green-900">{t('report.custom_items')}</h4>
+                                            <p className="text-xs text-green-600">{decisionStats.customItems.length} items</p>
+                                        </div>
+                                    </div>
+                                    <ul className="space-y-2">
+                                        {decisionStats.customItems.slice(0, 5).map(item => (
+                                            <li key={item.id} className="flex justify-between text-sm">
+                                                <span className="text-green-800">{item.elementName}</span>
+                                                <span className="text-green-700 font-mono">+{Math.round(item.totalCost).toLocaleString('sv-SE')} kr</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* Custom Pricing */}
+                            {decisionStats.customPricing.length > 0 && (
+                                <div className="bg-blue-50 rounded-2xl p-6 border border-blue-200">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-10 h-10 bg-blue-200 rounded-lg flex items-center justify-center">
+                                            <Ruler className="w-5 h-5 text-blue-700" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-blue-900">{t('report.custom_pricing')}</h4>
+                                            <p className="text-xs text-blue-600">{decisionStats.customPricing.length} items</p>
+                                        </div>
+                                    </div>
+                                    <ul className="space-y-2">
+                                        {decisionStats.customPricing.slice(0, 5).map(item => (
+                                            <li key={item.id} className="flex justify-between text-sm">
+                                                <span className="text-blue-800">{item.elementName}</span>
+                                                <span className="text-blue-700 font-mono">{Math.round(item.totalCost).toLocaleString('sv-SE')} kr</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Call to Action */}
-            <div className="py-24 px-6 text-center">
-                <h2 className="text-3xl font-bold mb-6">Ready to move forward?</h2>
-                <div className="flex flex-col sm:flex-row justify-center gap-4">
-                    <button className="px-8 py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center">
-                        Download Full PDF Quote
-                    </button>
-                    <button className="px-8 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center">
-                        Contact Builder <ArrowRight className="ml-2 w-5 h-5" />
-                    </button>
+            <div className="py-20 bg-gradient-to-b from-white to-slate-100">
+                <div className="max-w-3xl mx-auto px-6 text-center">
+                    <h2 className="text-3xl font-bold mb-4">{t('report.cta_title')}</h2>
+                    <p className="text-slate-500 mb-8 max-w-xl mx-auto">{t('report.disclaimer')}</p>
+                    <div className="flex flex-col sm:flex-row justify-center gap-4">
+                        <button className="px-8 py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center shadow-lg">
+                            <Download className="w-5 h-5 mr-2" />
+                            {t('report.download_pdf')}
+                        </button>
+                        <button className="px-8 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all flex items-center justify-center shadow-lg">
+                            <Phone className="w-5 h-5 mr-2" />
+                            {t('report.contact')}
+                            <ArrowRight className="ml-2 w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="bg-slate-900 text-white py-8">
+                <div className="max-w-5xl mx-auto px-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div className="flex items-center gap-2 text-slate-400 text-sm">
+                            <Sparkles className="w-4 h-4" />
+                            {t('report.generated')} <span className="font-bold text-white">JB Villan Kalkyl</span>
+                        </div>
+                        <div className="text-xs text-slate-500">
+                            {new Date().toLocaleDateString('sv-SE')} • BBR 2025 • 22 {t('report.regulations_count').toLowerCase()}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -145,7 +565,11 @@ function CustomerViewContent() {
 
 export default function CustomerViewPage() {
     return (
-        <Suspense fallback={<div>Loading Proposal...</div>}>
+        <Suspense fallback={
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        }>
             <CustomerViewContent />
         </Suspense>
     );

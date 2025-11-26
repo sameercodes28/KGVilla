@@ -37,7 +37,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
         setNewItemData({
             ...newItemData,
             elementName: item.label,
-            unitPrice: item.price,
+            unitPrice: Math.round(item.price),
             unit: item.unit,
             phase: item.phase,
             description: item.description || ''
@@ -108,7 +108,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
                                 >
                                     <div className="font-medium text-slate-900">{item.label}</div>
                                     <div className="text-xs text-slate-500 flex justify-between">
-                                        <span>{item.price} kr/{item.unit}</span>
+                                        <span>{Math.round(item.price).toLocaleString('sv-SE')} kr/{item.unit}</span>
                                         <span className="uppercase">{item.phase}</span>
                                     </div>
                                 </li>
@@ -121,9 +121,10 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
                     <input
                         type="number"
                         min="0"
+                        step="1"
                         className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
-                        value={newItemData.unitPrice}
-                        onChange={e => setNewItemData({ ...newItemData, unitPrice: Number(e.target.value) })}
+                        value={Math.round(newItemData.unitPrice || 0)}
+                        onChange={e => setNewItemData({ ...newItemData, unitPrice: Math.round(Number(e.target.value)) })}
                     />
                 </div>
                 <div>

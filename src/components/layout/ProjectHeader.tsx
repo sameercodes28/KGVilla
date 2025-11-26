@@ -122,7 +122,7 @@ export function ProjectHeader({
                             className="hidden md:flex items-center text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors text-xs font-bold"
                         >
                             <Presentation className="h-3.5 w-3.5 mr-1.5" />
-                            Proposal
+                            {t('report.quote')}
                         </Link>
                     )}
                 </div>
