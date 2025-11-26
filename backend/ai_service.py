@@ -153,12 +153,11 @@ async def generate_narrative_explanation(item: CostItem, context: Dict) -> Dict:
 
     prompt = f"""
 You are a Swedish construction expert writing a detailed explanation of a cost item
-for a villa construction project. Write in a NARRATIVE STYLE - flowing prose that
-tells the "story" of this cost.
+for a villa construction project. Write in a WELL-STRUCTURED format that is easy
+to scan and understand.
 
 Your audience is both professional builders and homeowner clients. The tone should
-be authoritative yet accessible - like a well-written technical document that
-anyone can understand.
+be authoritative yet accessible.
 
 ITEM DATA:
 - Element: {item.elementName}
@@ -175,43 +174,50 @@ FLOOR PLAN CONTEXT:
 - Total BOA: {boa} m²
 - Total Biarea: {biarea} m²
 
-WRITE A NARRATIVE (IN ENGLISH) THAT COVERS:
+WRITE AN EXPLANATION (IN ENGLISH) WITH THIS EXACT STRUCTURE:
 
-1. WHY THIS COST EXISTS
-   - What is this element and why is it needed?
-   - What regulatory requirements drive it?
-   - What would happen if it wasn't done properly?
+## How We Calculated This
+[1-2 sentences explaining the measurement approach]
 
-2. HOW WE CALCULATED THE QUANTITY
-   - What measurement from the floor plan did we use?
-   - Show the calculation step by step
-   - Explain any assumptions (wall height, waste factor, etc.)
-   - Reference the Swedish standard (SS 21054:2009)
+**Calculation:**
+- [Step 1 of calculation]
+- [Step 2 if applicable]
+- Total: [final quantity with unit]
 
-3. WHAT'S INCLUDED IN THE PRICE
-   - List all materials with their purpose
-   - Mention Swedish brands where relevant (Weber, Mapei, Paroc, etc.)
-   - Explain the labor component
-   - Note any certifications required (Säker Vatten, etc.)
+## What's Included in the Price
 
-4. REGULATORY REQUIREMENTS
-   - Which BBR chapters apply?
-   - What does Säker Vatten require (if wet room)?
-   - What AMA standards govern the workmanship?
-   - What are the consequences of non-compliance?
+**Materials:**
+- [Material 1] - [purpose]
+- [Material 2] - [purpose]
+- [etc.]
+
+**Labor:**
+- [Description of work involved]
+- [Any certifications required]
+
+## Applicable Regulations
+
+> **[Regulation Code]** - [Brief description of requirement]
+
+> **[Another Regulation]** - [Brief description]
+
+[1 sentence about compliance importance]
+
+---
 
 FORMAT REQUIREMENTS:
-- Write as flowing paragraphs, not bullet points
-- Use **bold** for key terms (markdown formatting)
-- Include Swedish terms with English explanations in parentheses
-- Be thorough but readable
-- Approximately 400-600 words
-- End with a brief note that this is an estimate based on 2025 Swedish market rates
+- Use markdown headers (##) for sections
+- Use bullet points (- ) for lists
+- Use blockquotes (> ) to highlight regulations - this is IMPORTANT
+- Use **bold** for key terms
+- Include Swedish terms with English in parentheses where helpful
+- Keep it concise - approximately 250-350 words total
+- Make it scannable - someone should grasp key points in 10 seconds
 
 Return a JSON object with this structure:
 {{
-    "narrative": "The full narrative text here with **bold** markdown...",
-    "keyRegulations": ["BBR 6:5", "Säker Vatten 2021:2", ...],
+    "narrative": "The full formatted markdown text here...",
+    "keyRegulations": ["BBR 6:5", "Säker Vatten 2021:1", ...],
     "materials": ["Material 1", "Material 2", ...]
 }}
 """
