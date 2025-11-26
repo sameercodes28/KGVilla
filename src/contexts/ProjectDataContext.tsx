@@ -31,8 +31,6 @@ interface ProjectDataContextType {
 
     // Selectors
     getItemsByPhase: (phase: string) => CostItem[];
-    getItemsByRoom: (roomId: string) => CostItem[];
-    getUnassignedItems: () => CostItem[];
 }
 
 const ProjectDataContext = createContext<ProjectDataContextType | undefined>(undefined);
