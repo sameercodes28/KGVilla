@@ -25,14 +25,12 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [newProjectName, setNewProjectName] = useState('');
-  const [newProjectLocation, setNewProjectLocation] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredProjects = projects.filter(p => 
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.location.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredProjects = projects.filter(p =>
+      p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Top 3 for the Grid (Recent)
@@ -52,7 +50,9 @@ export default function Home() {
   };
 
   const handleCreate = async () => {
-    if (!newProjectName) return;
+    // Use filename if no project name provided
+    const projectName = newProjectName || (selectedFile ? selectedFile.name.replace(/\.[^/.]+$/, '') : '');
+    if (!projectName) return;
     
     setIsAnalyzing(true);
     let initialItems: CostItem[] = [];
@@ -101,7 +101,7 @@ export default function Home() {
     }
 
     // 3. Create Project with Data
-    const id = await createProject(newProjectName, newProjectLocation, selectedFile ? { items: initialItems, planUrl, totalArea, boa, biarea, estimatedCost } : undefined);
+    const id = await createProject(projectName, '', selectedFile ? { items: initialItems, planUrl, totalArea, boa, biarea, estimatedCost } : undefined);
     
     setIsAnalyzing(false);
     setIsModalOpen(false);
@@ -388,17 +388,6 @@ export default function Home() {
                             autoFocus
                         />
                     </div>
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Location</label>
-                        <input 
-                            type="text" 
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 placeholder:text-slate-400 transition-all bg-slate-50 focus:bg-white"
-                            placeholder="e.g. Stockholm"
-                            value={newProjectLocation}
-                            onChange={e => setNewProjectLocation(e.target.value)}
-                        />
-                    </div>
-                    
                     {/* File Upload Area */}
                     <div>
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Floor Plan (Recommended)</label>
@@ -430,9 +419,9 @@ export default function Home() {
                         </div>
                     </div>
 
-                    <button 
+                    <button
                         onClick={handleCreate}
-                        disabled={!newProjectName}
+                        disabled={!newProjectName && !selectedFile}
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all mt-2 active:scale-[0.98]"
                     >
                         {selectedFile ? 'Analyze & Create Project' : 'Create Empty Project'}
