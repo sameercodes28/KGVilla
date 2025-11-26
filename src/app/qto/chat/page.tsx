@@ -102,7 +102,7 @@ function ChatContent() {
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
                 <div className="text-center">
                     <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-slate-600">Loading AI Assistant...</p>
+                    <p className="text-slate-600">{t('chat.loading')}</p>
                 </div>
             </div>
         );
@@ -116,10 +116,10 @@ function ChatContent() {
                     <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Bot className="w-8 h-8 text-blue-500" />
                     </div>
-                    <h2 className="text-xl font-bold text-slate-900 mb-2">No Projects Yet</h2>
-                    <p className="text-slate-600 mb-4">Create a project first by uploading a floor plan on the home page.</p>
+                    <h2 className="text-xl font-bold text-slate-900 mb-2">{t('chat.no_projects')}</h2>
+                    <p className="text-slate-600 mb-4">{t('chat.create_first')}</p>
                     <Link href="/" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700">
-                        Go to Home
+                        {t('common.go_home')}
                     </Link>
                 </div>
             </div>
@@ -185,7 +185,7 @@ function ChatContent() {
                             {msg.role === 'ai' && !msg.items && (
                                 <div className="flex items-center mb-2 text-purple-600 font-bold text-xs uppercase tracking-wide">
                                     <Bot className="h-4 w-4 mr-2" />
-                                    AI Assistant
+                                    {t('chat.ai_assistant')}
                                 </div>
                             )}
 
@@ -226,7 +226,7 @@ function ChatContent() {
                                             onClick={() => handleApplyScenario(msg.scenario!)}
                                             className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm"
                                         >
-                                            Apply Scenario to Project
+                                            {t('chat.apply_scenario')}
                                         </button>
                                     </div>
                                 </div>

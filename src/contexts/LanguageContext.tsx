@@ -89,6 +89,11 @@ const dictionary: Record<string, DictionaryEntry> = {
     'contract.payment_schedule': { en: 'Payment Schedule (Betalningsplan)', sv: 'Betalningsplan' },
     'contract.included': { en: 'Included: Scaffolding, Dehumidifiers, Temporary Electricity, Site Cleaning, Project Management (BAS-U)', sv: 'Ingår: Byggställning, Avfuktare, Byggström, Byggstädning, Projektledning (BAS-U)' },
     'contract.excluded': { en: 'Excluded: Fine landscaping (grass/hedges) unless specified.', sv: 'Ingår ej: Finplanering (gräs/häckar) om ej specificerat.' },
+    'contract.step1': { en: 'Signing & Permits', sv: 'Avtal & Bygglov' },
+    'contract.step2': { en: 'Foundation Complete', sv: 'Grund klar' },
+    'contract.step3': { en: 'Structure Erected (Weather-tight)', sv: 'Stomme rest (Vädertät)' },
+    'contract.step4': { en: 'Interior Works', sv: 'Invändigt arbete' },
+    'contract.step5': { en: 'Final Inspection (Slutbesiktning)', sv: 'Slutbesiktning' },
 
     // Split Layout
     'split.loading': { en: 'Loading project...', sv: 'Laddar projekt...' },
@@ -124,6 +129,22 @@ const dictionary: Record<string, DictionaryEntry> = {
     'costcard.enable': { en: 'Enable item', sv: 'Aktivera post' },
     'costcard.disable': { en: 'Disable item', sv: 'Inaktivera post' },
     'costcard.view_analysis': { en: 'View Cost Analysis', sv: 'Visa kostnadsanalys' },
+
+    // Customer Report - Additional
+    'report.more_regulations': { en: 'more regulations applied', sv: 'fler regelverk tillämpade' },
+    'report.items_affected': { en: 'items affected', sv: 'poster påverkade' },
+    'report.item_affected': { en: 'item affected', sv: 'post påverkad' },
+    'report.more': { en: 'more', sv: 'fler' },
+    'report.total': { en: 'Total', sv: 'Totalt' },
+    'report.excluded_badge': { en: 'Excluded', sv: 'Exkluderad' },
+    'report.modified_badge': { en: 'Modified', sv: 'Ändrad' },
+    'report.added_by_you': { en: 'Added by you', sv: 'Tillagd av dig' },
+    'report.scenario_proposal': { en: 'Scenario Proposal', sv: 'Scenarioförslag' },
+    'report.cost_impact': { en: 'Cost Impact:', sv: 'Kostnadspåverkan:' },
+    'report.total_estimate': { en: 'TOTAL ESTIMATE', sv: 'TOTAL UPPSKATTNING' },
+    'report.est_cost': { en: 'Est. Cost:', sv: 'Ber. kostnad:' },
+    'report.attach_floor_plan': { en: 'Attach Floor Plan', sv: 'Bifoga planritning' },
+    'report.reference_standard': { en: 'Reference Standard', sv: 'Referensstandard' },
 
     // Dashboard / Home
     'dash.welcome': { en: 'Welcome back', sv: 'Välkommen tillbaka' },

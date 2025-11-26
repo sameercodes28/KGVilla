@@ -55,11 +55,11 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
         
         // Basic Validation
         if (newItemData.quantity <= 0) {
-            setError("Quantity must be greater than 0");
+            setError(t('form.qty_error'));
             return;
         }
         if (newItemData.unitPrice < 0) {
-            setError("Price cannot be negative");
+            setError(t('form.price_error'));
             return;
         }
 
@@ -91,7 +91,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
                     <input
                         type="text"
                         className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
-                        placeholder="e.g. Extra Insulation"
+                        placeholder={t('form.placeholder')}
                         value={newItemData.elementName}
                         onChange={handleNameChange}
                         onFocus={() => setShowSuggestions(true)}

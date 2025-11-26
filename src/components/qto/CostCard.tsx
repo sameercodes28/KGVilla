@@ -176,7 +176,7 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                                 <button
                                     onClick={(e) => { e.stopPropagation(); onInspect(item); }}
                                     className="p-1 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
-                                    title="View Cost Analysis"
+                                    title={t('costcard.view_analysis')}
                                 >
                                     <Info className="h-4 w-4" />
                                 </button>

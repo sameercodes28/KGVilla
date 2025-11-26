@@ -32,7 +32,7 @@ function QTOContent() {
 
 export default function QTOPage() {
     return (
-        <Suspense fallback={<div className="h-screen flex items-center justify-center">Loading Project...</div>}>
+        <Suspense fallback={<div className="h-screen flex items-center justify-center text-slate-500">{/* Loading handled by SplitLayout */}</div>}>
             <QTOContent />
         </Suspense>
     );

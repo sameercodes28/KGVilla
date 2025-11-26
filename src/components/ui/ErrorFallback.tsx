@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Copy, RefreshCcw, Wind } from 'lucide-react';
 import { logger } from '@/lib/logger';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 interface ErrorFallbackProps {
     error: Error & { digest?: string };
@@ -10,6 +11,7 @@ interface ErrorFallbackProps {
 }
 
 export function ErrorFallback({ error, reset }: ErrorFallbackProps) {
+    const { t } = useTranslation();
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
@@ -25,7 +27,7 @@ export function ErrorFallback({ error, reset }: ErrorFallbackProps) {
                 userAgent: window.navigator.userAgent,
                 timestamp: new Date().toISOString(),
             },
-            telemetry: JSON.parse(logger.exportLogs() || '[]') 
+            telemetry: JSON.parse(logger.exportLogs() || '[]')
         }, null, 2);
 
         navigator.clipboard.writeText(debugInfo);
@@ -36,16 +38,15 @@ export function ErrorFallback({ error, reset }: ErrorFallbackProps) {
     return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 font-sans">
             <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 text-center">
-                
+
                 {/* Fun Header */}
                 <div className="bg-gradient-to-b from-blue-50 to-white p-10 pb-6">
                     <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6 animate-bounce shadow-sm">
                         <Wind className="h-10 w-10 text-blue-600" />
                     </div>
-                    <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">Blueprint Blew Away!</h2>
+                    <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">{t('error.title')}</h2>
                     <p className="text-slate-500 text-lg leading-relaxed">
-                        Whoops! The architect left the window open and your drawings just flew out. 
-                        <br/><span className="text-sm text-slate-400 mt-2 block">(We encountered an unexpected error)</span>
+                        {t('error.message')}
                     </p>
                 </div>
 
@@ -57,27 +58,27 @@ export function ErrorFallback({ error, reset }: ErrorFallbackProps) {
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center justify-center"
                         >
                             <RefreshCcw className="h-5 w-5 mr-2" />
-                            Catch the Blueprint (Retry)
+                            {t('error.retry')}
                         </button>
-                        
+
                         <button
                             onClick={() => window.location.href = '/'}
                             className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-3.5 rounded-2xl font-semibold transition-all"
                         >
-                            Return to Safety (Home)
+                            {t('error.return_home')}
                         </button>
                     </div>
 
                     {/* Developer Tools */}
                     <div className="pt-6 border-t border-slate-100 mt-6">
-                        <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-3">For the Site Foreman</p>
-                        <button 
+                        <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-3">{t('error.for_developer')}</p>
+                        <button
                             onClick={handleCopy}
                             className="w-full group flex items-center justify-between bg-slate-50 hover:bg-slate-900 hover:text-white border border-slate-200 p-4 rounded-xl transition-all duration-300"
                         >
                             <div className="text-left">
-                                <p className="text-xs font-mono font-medium opacity-70 mb-0.5">Error Code: {error.digest || 'UNKNOWN'}</p>
-                                <p className="text-sm font-bold">{copied ? 'Debug Info Copied!' : 'Copy Crash Report'}</p>
+                                <p className="text-xs font-mono font-medium opacity-70 mb-0.5">{t('error.code')} {error.digest || 'UNKNOWN'}</p>
+                                <p className="text-sm font-bold">{copied ? t('error.copied') : t('error.copy_report')}</p>
                             </div>
                             <Copy className="h-5 w-5 opacity-50 group-hover:opacity-100" />
                         </button>

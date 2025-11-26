@@ -4,6 +4,7 @@ import React from 'react';
 import { CostItem } from '@/types';
 import { CostCard } from './CostCard';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 interface PhaseSectionProps {
     title: string;
@@ -15,13 +16,15 @@ interface PhaseSectionProps {
 }
 
 export function PhaseSection({ title, totalCost, items, onUpdateItem, onHoverItem, onInspectItem }: PhaseSectionProps) {
+    const { t } = useTranslation();
+
     const TotalDisplay = (
         <div className="text-right">
             <div className="text-lg font-bold text-slate-900 font-mono">
                 {Math.round(totalCost).toLocaleString('sv-SE')} kr
             </div>
             <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">
-                Est. Total
+                {t('phase.est_total')}
             </div>
         </div>
     );
@@ -29,13 +32,13 @@ export function PhaseSection({ title, totalCost, items, onUpdateItem, onHoverIte
     return (
         <CollapsibleSection
             title={title}
-            subtitle={`${items.length} items`}
+            subtitle={`${items.length} ${items.length === 1 ? t('common.item') : t('common.items')}`}
             rightContent={TotalDisplay}
         >
             {items.map(item => (
-                <div 
-                    key={item.id} 
-                    onMouseEnter={() => onHoverItem(item)} 
+                <div
+                    key={item.id}
+                    onMouseEnter={() => onHoverItem(item)}
                     onMouseLeave={() => onHoverItem(null)}
                 >
                     <CostCard
