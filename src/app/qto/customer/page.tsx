@@ -184,7 +184,7 @@ function PhaseBreakdown({ phase, totalCost, t }: PhaseBreakdownProps) {
 
                                             {/* Quantity & Price */}
                                             <p className="text-sm text-slate-400 mt-2 font-mono">
-                                                {Number(item.quantity).toFixed(1)} {item.unit} × {Math.round(item.unitPrice).toLocaleString('sv-SE')} kr/{item.unit}
+                                                {(Math.round(Number(item.quantity) * 10) / 10).toFixed(1)} {item.unit} × {Math.round(item.unitPrice).toLocaleString('sv-SE')} kr/{item.unit}
                                             </p>
 
                                             {/* Item Regulations with Explanations */}

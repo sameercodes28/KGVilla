@@ -237,7 +237,7 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                         ) : (
                             <>
                                 <div className="font-mono font-medium text-slate-900">
-                                    {quantity.toFixed(1)} <span className="text-slate-500 text-sm">{item.unit}</span>
+                                    {(Math.round(quantity * 10) / 10).toFixed(1)} <span className="text-slate-500 text-sm">{item.unit}</span>
                                 </div>
                                 <div className="text-sm font-semibold text-slate-700 mt-0.5">
                                     {Math.round(totalCost).toLocaleString('sv-SE')} kr

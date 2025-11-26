@@ -257,7 +257,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                     </div>
                     <div className="text-right">
                         <div className="text-sm font-mono text-slate-600">
-                            {Number(item.quantity).toFixed(1)} {item.unit} × {Math.round(item.unitPrice).toLocaleString('sv-SE')} kr
+                            {(Math.round(Number(item.quantity) * 10) / 10).toFixed(1)} {item.unit} × {Math.round(item.unitPrice).toLocaleString('sv-SE')} kr
                         </div>
                         {item.confidenceScore && (
                             <div className="text-xs text-slate-400 mt-1">
@@ -294,7 +294,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-medium text-blue-800 uppercase">Result</span>
                                 <span className="font-mono font-bold text-blue-900">
-                                    {Number(item.quantity).toFixed(1)} {item.unit}
+                                    {(Math.round(Number(item.quantity) * 10) / 10).toFixed(1)} {item.unit}
                                 </span>
                             </div>
                         </div>
