@@ -33,13 +33,14 @@ function ChatContent() {
         }
     }, [projectIdParam, selectedProjectId]);
 
-    // Auto-select the most recent project (last in list) if none selected
+    // Auto-select the most recent project (first in list) if none selected
+    // Note: projects are stored with newest first (createProject prepends)
     useEffect(() => {
         if (projects.length > 0 && !selectedProjectId) {
-            // Select the last project (most recently created/updated)
-            const lastProject = projects[projects.length - 1];
+            // Select the first project (most recently created)
+            const mostRecentProject = projects[0];
             // eslint-disable-next-line react-hooks/set-state-in-effect
-            setSelectedProjectId(lastProject.id);
+            setSelectedProjectId(mostRecentProject.id);
         }
     }, [projects, selectedProjectId]);
 
