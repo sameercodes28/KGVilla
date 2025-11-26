@@ -16,7 +16,7 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, Request, Depends
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import firestore
-from ai_service import analyze_image_with_gemini, chat_with_gemini, _vertex_available
+from ai_service import analyze_image_with_gemini, chat_with_gemini, generate_narrative_explanation, _vertex_available
 from ocr_service import analyze_floor_plan_deterministic, _documentai_available
 from models import CostItem, Project, ChatResponse
 from security import get_api_key
@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 # --- Rate Limiter ---
 limiter = Limiter(key_func=get_remote_address)
 
-app = FastAPI(title="KGVilla API", version="0.1.1")
+app = FastAPI(title="KGVilla API", version="1.0.0")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(StructuredLoggingMiddleware)
@@ -98,13 +98,17 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=10000, description="User message")
     currentItems: List[CostItem] = Field(..., max_length=500, description="Current project items")
 
+class ExplainRequest(BaseModel):
+    item: CostItem = Field(..., description="Cost item to explain")
+    context: dict = Field(default={}, description="Floor plan context (room, dimensions, boa, biarea)")
+
 # --- Routes ---
 @app.get("/")
 def read_root():
     status = {
         "status": "active",
         "service": "KGVilla Backend",
-        "version": "0.2.0",
+        "version": "1.0.0",
         "checks": {
             "firestore": "connected" if _firestore_available else "disconnected",
             "document_ai": "connected" if _documentai_available else "disconnected",
@@ -263,5 +267,15 @@ async def analyze_drawing(request: Request, file: UploadFile = File(...), api_ke
 
 @app.post("/chat", response_model=ChatResponse)
 @limiter.limit("20/minute")
-async def chat_endpoint(request: ChatRequest, req: Request, api_key: str = Depends(get_api_key)):
-    return await chat_with_gemini(request.message, request.currentItems)
+async def chat_endpoint(request: Request, body: ChatRequest, api_key: str = Depends(get_api_key)):
+    return await chat_with_gemini(body.message, body.currentItems)
+
+@app.post("/explain")
+@limiter.limit("30/minute")
+async def explain_cost_item(request: Request, body: ExplainRequest, api_key: str = Depends(get_api_key)):
+    """
+    Generate a detailed narrative explanation for a cost item.
+    Returns flowing prose covering WHY, HOW, WHAT, and REGULATIONS.
+    """
+    logger.info(f"Generating explanation for: {body.item.elementName}")
+    return await generate_narrative_explanation(body.item, body.context)

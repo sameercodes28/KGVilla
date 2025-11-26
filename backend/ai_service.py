@@ -38,7 +38,7 @@ def get_model():
     if _model is None:
         logger.info(f"Initializing Vertex AI for project {PROJECT_ID}...")
         vertexai.init(project=PROJECT_ID, location=LOCATION)
-        _model = GenerativeModel("gemini-1.5-flash-001")
+        _model = GenerativeModel("gemini-2.0-flash-001")
         logger.info("Vertex AI Model initialized successfully.")
     return _model
 
@@ -135,6 +135,130 @@ async def analyze_image_with_gemini(image_bytes: bytes, mime_type: str) -> Dict:
     except Exception as e:
         logger.error(f"Error calling Gemini: {e}")
         return {"items": [], "totalArea": 0}
+
+async def generate_narrative_explanation(item: CostItem, context: Dict) -> Dict:
+    """
+    Generate a detailed narrative explanation for a cost item.
+    Returns flowing prose covering WHY, HOW, WHAT, and REGULATIONS.
+    """
+    if not _vertex_available:
+        logger.error("Vertex AI unavailable for narrative generation")
+        return {"narrative": "AI Service unavailable. Unable to generate detailed explanation."}
+
+    # Extract context data
+    room = context.get("room", "Unknown room")
+    dimensions = context.get("dimensions", "Not specified")
+    boa = context.get("boa", 0)
+    biarea = context.get("biarea", 0)
+
+    prompt = f"""
+You are a Swedish construction expert writing a detailed explanation of a cost item
+for a villa construction project. Write in a NARRATIVE STYLE - flowing prose that
+tells the "story" of this cost.
+
+Your audience is both professional builders and homeowner clients. The tone should
+be authoritative yet accessible - like a well-written technical document that
+anyone can understand.
+
+ITEM DATA:
+- Element: {item.elementName}
+- Description: {item.description}
+- Quantity: {item.quantity} {item.unit}
+- Unit Price: {item.unitPrice} kr/{item.unit}
+- Total Cost: {item.totalCost} kr
+- Phase: {item.phase}
+- Room: {room}
+
+FLOOR PLAN CONTEXT:
+- Room this belongs to: {room}
+- Room dimensions: {dimensions}
+- Total BOA: {boa} m²
+- Total Biarea: {biarea} m²
+
+WRITE A NARRATIVE (IN ENGLISH) THAT COVERS:
+
+1. WHY THIS COST EXISTS
+   - What is this element and why is it needed?
+   - What regulatory requirements drive it?
+   - What would happen if it wasn't done properly?
+
+2. HOW WE CALCULATED THE QUANTITY
+   - What measurement from the floor plan did we use?
+   - Show the calculation step by step
+   - Explain any assumptions (wall height, waste factor, etc.)
+   - Reference the Swedish standard (SS 21054:2009)
+
+3. WHAT'S INCLUDED IN THE PRICE
+   - List all materials with their purpose
+   - Mention Swedish brands where relevant (Weber, Mapei, Paroc, etc.)
+   - Explain the labor component
+   - Note any certifications required (Säker Vatten, etc.)
+
+4. REGULATORY REQUIREMENTS
+   - Which BBR chapters apply?
+   - What does Säker Vatten require (if wet room)?
+   - What AMA standards govern the workmanship?
+   - What are the consequences of non-compliance?
+
+FORMAT REQUIREMENTS:
+- Write as flowing paragraphs, not bullet points
+- Use **bold** for key terms (markdown formatting)
+- Include Swedish terms with English explanations in parentheses
+- Be thorough but readable
+- Approximately 400-600 words
+- End with a brief note that this is an estimate based on 2025 Swedish market rates
+
+Return a JSON object with this structure:
+{{
+    "narrative": "The full narrative text here with **bold** markdown...",
+    "keyRegulations": ["BBR 6:5", "Säker Vatten 2021:2", ...],
+    "materials": ["Material 1", "Material 2", ...]
+}}
+"""
+
+    generation_config = {
+        "max_output_tokens": 4096,
+        "temperature": 0.3,
+        "response_mime_type": "application/json"
+    }
+
+    try:
+        model = get_model()
+        responses = model.generate_content(
+            [prompt],
+            generation_config=generation_config,
+            stream=False,
+        )
+
+        text_response = responses.text.strip()
+        if text_response.startswith("```json"):
+            text_response = text_response[7:]
+        if text_response.endswith("```"):
+            text_response = text_response[:-3]
+
+        result = json.loads(text_response)
+
+        # Add disclaimer
+        disclaimer = (
+            "\n\n---\n\n**Prisuppskattning / Price Estimate:** "
+            "This estimate is based on Swedish market rates for 2025, compiled from "
+            "industry sources including Wikells Sektionsfakta and SCB Byggkostnadsindex. "
+            "JB Villan should verify all prices against their actual vendor quotes."
+        )
+
+        if "narrative" in result:
+            result["narrative"] += disclaimer
+
+        return result
+
+    except Exception as e:
+        logger.error(f"Narrative generation error: {e}")
+        return {
+            "narrative": f"Unable to generate detailed explanation. Error: {str(e)}",
+            "keyRegulations": [],
+            "materials": []
+        }
+
 
 async def chat_with_gemini(message: str, current_items: List[CostItem]) -> ChatResponse:
     if not _vertex_available:
