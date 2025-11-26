@@ -11,11 +11,23 @@ import Link from 'next/link';
 function CustomerViewContent() {
     const searchParams = useSearchParams();
     const projectId = searchParams.get('project') || undefined;
-    const { items, totalCost, totalArea, floorPlanUrl, project } = useProjectData(projectId);
+    const { items, totalCost, totalArea, floorPlanUrl, project, isLoading } = useProjectData(projectId);
     const { t } = useTranslation();
 
-    // Group items by phase for summary
-    const phases = ['ground', 'structure', 'electrical', 'plumbing', 'interior', 'completion'];
+    // Show loading state
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-slate-600">Loading proposal...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Group items by phase for summary (including admin phase)
+    const phases = ['ground', 'structure', 'electrical', 'plumbing', 'interior', 'completion', 'admin'];
     const phaseCosts = phases
         .map(phase => ({
             id: phase,
