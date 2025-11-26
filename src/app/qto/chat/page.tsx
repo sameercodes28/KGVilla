@@ -9,6 +9,7 @@ import { useProjects } from '@/hooks/useProjects';
 import { useProjectData } from '@/hooks/useProjectData';
 import { ProjectHeader } from '@/components/layout/ProjectHeader';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 /**
  * ChatContent Component
@@ -18,9 +19,9 @@ function ChatContent() {
     const { t } = useTranslation();
     const searchParams = useSearchParams();
     const projectIdParam = searchParams.get('project');
-    
+
     const { projects } = useProjects();
-    
+
     // Project Selection State (Derived from URL or Default)
     const [selectedProjectId, setSelectedProjectId] = useState<string>(projectIdParam || '');
 
@@ -32,29 +33,34 @@ function ChatContent() {
         }
     }, [projectIdParam, selectedProjectId]);
 
-    // Select first project by default if available and none selected
+    // Auto-select the most recent project (last in list) if none selected
     useEffect(() => {
         if (projects.length > 0 && !selectedProjectId) {
-            // eslint-disable-next-line
-            setSelectedProjectId(projects[0].id);
+            // Select the last project (most recently created/updated)
+            const lastProject = projects[projects.length - 1];
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setSelectedProjectId(lastProject.id);
         }
     }, [projects, selectedProjectId]);
 
     const selectedProject = projects.find(p => p.id === selectedProjectId);
-    
-    // Fetch data for context card
-    const { totalCost, floorPlanUrl, items, addItem, syncState } = useProjectData(selectedProjectId);
 
-    const { 
-        messages, 
-        input, 
-        setInput, 
-        selectedFile, 
-        setSelectedFile, 
-        isTyping, 
-        sendMessage 
-    } = useChat(selectedProjectId, items);
-    
+    // Fetch project data - pass undefined if no project to prevent 404 API calls
+    const { totalCost, floorPlanUrl, items, addItem, syncState, isLoading: dataLoading } = useProjectData(
+        selectedProjectId || undefined
+    );
+
+    // Chat hooks - always called regardless of state
+    const {
+        messages,
+        input,
+        setInput,
+        selectedFile,
+        setSelectedFile,
+        isTyping,
+        sendMessage
+    } = useChat(selectedProjectId || '', items);
+
     // Refs for auto-scrolling and hidden file input
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -74,7 +80,6 @@ function ChatContent() {
         scenario.items.forEach((item) => {
             addItem(item);
         });
-        // TODO: Replace with Toast notification
         console.log(`Applied scenario: ${scenario.title}`);
     };
 
@@ -87,15 +92,44 @@ function ChatContent() {
 
     const handleSend = () => {
         sendMessage();
-        // Reset file input ref visually
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
+    // Loading state
+    if (selectedProjectId && dataLoading) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-slate-600">Loading AI Assistant...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // No projects state
+    if (projects.length === 0) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <div className="text-center max-w-md p-6">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Bot className="w-8 h-8 text-blue-500" />
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-900 mb-2">No Projects Yet</h2>
+                    <p className="text-slate-600 mb-4">Create a project first by uploading a floor plan on the home page.</p>
+                    <Link href="/" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700">
+                        Go to Home
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-slate-50 pb-32 relative flex flex-col">
-            <ProjectHeader 
-                currentProjectId={selectedProjectId} 
-                title={t('chat.title')} 
+            <ProjectHeader
+                currentProjectId={selectedProjectId}
+                title={t('chat.title')}
                 subtitle={t('chat.subtitle')}
                 showBackButton
                 syncState={syncState}
@@ -141,8 +175,8 @@ function ChatContent() {
                         {/* Message Bubble */}
                         <div className={cn(
                             "flex flex-col max-w-[85%] md:max-w-[75%] rounded-2xl p-5 text-base leading-relaxed shadow-sm",
-                            msg.role === 'user' 
-                                ? "bg-blue-600 text-white rounded-br-sm" 
+                            msg.role === 'user'
+                                ? "bg-blue-600 text-white rounded-br-sm"
                                 : "bg-white border border-slate-200 text-slate-800 rounded-bl-sm"
                         )}>
                             {/* AI Label */}
@@ -175,7 +209,7 @@ function ChatContent() {
                                     </div>
                                     <div className="p-4">
                                         <p className="text-sm text-slate-600 mb-4">{msg.scenario.description}</p>
-                                        
+
                                         <div className="flex items-center justify-between bg-slate-50 p-3 rounded-lg mb-4">
                                             <span className="text-sm font-medium text-slate-600">Cost Impact:</span>
                                             <span className={cn(
@@ -186,7 +220,7 @@ function ChatContent() {
                                             </span>
                                         </div>
 
-                                        <button 
+                                        <button
                                             onClick={() => handleApplyScenario(msg.scenario!)}
                                             className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm"
                                         >
@@ -256,22 +290,22 @@ function ChatContent() {
 
                     <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-2 flex items-center space-x-2">
                         {/* Hidden File Input */}
-                        <input 
-                            type="file" 
+                        <input
+                            type="file"
                             ref={fileInputRef}
                             onChange={handleFileSelect}
-                            className="hidden" 
+                            className="hidden"
                             accept="image/*,application/pdf"
                         />
                         {/* Attachment Button */}
-                        <button 
+                        <button
                             onClick={() => fileInputRef.current?.click()}
                             className="p-3 text-slate-400 hover:bg-slate-100 rounded-xl transition-colors"
                             title="Attach Floor Plan"
                         >
                             <Paperclip className="h-5 w-5" />
                         </button>
-                        
+
                         {/* Text Input */}
                         <input
                             type="text"
@@ -281,7 +315,7 @@ function ChatContent() {
                             placeholder={selectedFile ? "Add a note about this file..." : t('chat.placeholder')}
                             className="flex-1 pl-2 py-3 bg-transparent focus:outline-none text-slate-800 placeholder:text-slate-400"
                         />
-                        
+
                         {/* Send Button */}
                         <button
                             onClick={handleSend}
