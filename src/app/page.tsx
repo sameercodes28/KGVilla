@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Plus, FolderOpen, ArrowRight, MapPin, X, UploadCloud, Trash2, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
+import { Plus, FolderOpen, ArrowRight, MapPin, X, UploadCloud, Trash2, Sparkles } from 'lucide-react';
+import { RegulationBadges } from '@/components/ui/RegulationBadges';
 import Link from 'next/link';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
@@ -152,21 +153,8 @@ export default function Home() {
                 Instantly analyze blueprints against <strong>BBR 2025</strong> regulations and current market rates. Generate compliant, professional quotes in seconds.
             </p>
 
-            {/* Feature Badges */}
-            <div className="flex flex-wrap justify-center gap-3 text-xs font-medium text-slate-600">
-                <div className="flex items-center bg-white/60 px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
-                    <ShieldCheck className="w-3.5 h-3.5 mr-1.5 text-green-600" />
-                    BBR 2025 Compliant
-                </div>
-                <div className="flex items-center bg-white/60 px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
-                    <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-blue-600" />
-                    Säker Vatten Ready
-                </div>
-                <div className="flex items-center bg-white/60 px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
-                    <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-purple-600" />
-                    ABT 06 Logic
-                </div>
-            </div>
+            {/* Regulation Badges - Clickable with explanations */}
+            <RegulationBadges />
         </div>
 
         {/* Action Bar */}
