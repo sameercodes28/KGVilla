@@ -1,7 +1,7 @@
 # SWEDISH BUILDING REGULATIONS ENCYCLOPEDIA
 ## A Comprehensive Reference for Residential Construction Compliance
 
-**Version:** 2.0 (November 2025)
+**Version:** 2.1 (November 2025) - 22 Regulations
 **Maintained by:** JB Villan / KGVilla Team
 **Applicable to:** Småhus (Single-family residential construction) in Sweden
 
@@ -27,9 +27,14 @@
 16. [Radon Protection](#16-radon-protection)
 17. [CE/CPR - Construction Products](#17-cecpr---construction-products)
 18. [HIN - Accessibility Requirements](#18-hin---accessibility-requirements)
-19. [Cross-Reference Matrix](#19-cross-reference-matrix)
-20. [Compliance Checklists](#20-compliance-checklists)
-21. [Glossary of Swedish Terms](#21-glossary-of-swedish-terms)
+19. [AB 04 - General Contract Terms](#19-ab-04---general-contract-terms)
+20. [Klimatdeklaration - Climate Declaration](#20-klimatdeklaration---climate-declaration)
+21. [Konsumenttjänstlagen - Consumer Services](#21-konsumenttjänstlagen---consumer-services)
+22. [AFS - Work Environment Regulations](#22-afs---work-environment-regulations)
+23. [ALM - Accessibility for Limited Mobility](#23-alm---accessibility-for-limited-mobility)
+24. [Cross-Reference Matrix](#24-cross-reference-matrix)
+25. [Compliance Checklists](#25-compliance-checklists)
+26. [Glossary of Swedish Terms](#26-glossary-of-swedish-terms)
 
 ---
 
@@ -2539,9 +2544,565 @@ Accessible Bathroom Layout:
 
 ---
 
-# 19. CROSS-REFERENCE MATRIX
+# 19. AB 04 - GENERAL CONTRACT TERMS
 
-## 19.1 Regulation Interactions
+## 19.1 Overview
+
+**Full Name:** Allmänna Bestämmelser 04 (General Conditions 04)
+**Publisher:** Byggandets Kontraktskommitté (BKK)
+**Current Version:** AB 04 (2004)
+**Legal Status:** Industry standard, contractual requirement
+**Companion Document:** ABT 06 (Allmänna Bestämmelser för Totalentreprenader 06)
+
+## 19.2 Purpose and Scope
+
+AB 04 is the Swedish standard contract for construction works where the client provides the design (traditional procurement). It governs the relationship between clients and contractors in construction projects and is used extensively in Swedish residential construction.
+
+### 19.2.1 Key Differences: AB 04 vs ABT 06
+
+| Aspect | AB 04 | ABT 06 |
+|--------|-------|--------|
+| Design responsibility | Client | Contractor |
+| Risk allocation | Split | More on contractor |
+| Use case | Traditional procurement | Design-build |
+| Documentation req. | Client provides | Contractor develops |
+| Typical for villas | Architect-led projects | Turnkey solutions |
+
+## 19.3 Key Provisions for Residential Construction
+
+### 19.3.1 Chapter Structure
+
+1. **Chapter 1 - Scope and Definitions**
+   - Contract documents hierarchy
+   - Administrative provisions
+
+2. **Chapter 2 - Execution**
+   - Quality requirements
+   - Compliance with regulations
+   - Material selection
+
+3. **Chapter 3 - Organization**
+   - Site management
+   - Subcontractor requirements
+   - Communication protocols
+
+4. **Chapter 4 - Contract Period**
+   - Start and completion dates
+   - Delay penalties
+   - Extension provisions
+
+5. **Chapter 5 - Economic Terms**
+   - Payment schedules
+   - Cost adjustments
+   - ÄTA work (changes/additions/deductions)
+
+6. **Chapter 6 - Inspection and Guarantee**
+   - Final inspection procedures
+   - 5-year guarantee period
+   - Defect liability
+
+### 19.3.2 Guarantee Periods
+
+| Work Type | Guarantee Period | Inspection |
+|-----------|-----------------|------------|
+| General construction | 5 years | Slutbesiktning + Garantibesiktning |
+| Waterproofing | 10 years (if Säker Vatten) | Extended |
+| Electrical | 5 years | Certification required |
+| Ground/foundation | 5 years | Special inspection |
+
+## 19.4 ÄTA Work (Changes, Additions, Deductions)
+
+### 19.4.1 Definition
+
+ÄTA = Ändringsarbete, Tilläggsarbete, Avgående arbete (Changes, Additions, Deductions)
+
+### 19.4.2 Pricing Methods
+
+| Method | Description | When Used |
+|--------|-------------|-----------|
+| Unit prices | Pre-agreed rates | Contract specified |
+| Cost + margin | Actual cost + agreed % | Undefined work |
+| Lump sum | Fixed price | Clear scope changes |
+
+### 19.4.3 Typical ÄTA Costs in Villa Projects
+
+| Change Type | Average Cost Impact |
+|-------------|-------------------|
+| Foundation upgrades | 30,000-80,000 SEK |
+| Window changes | 5,000-15,000 SEK/unit |
+| Kitchen upgrades | 50,000-150,000 SEK |
+| Bathroom additions | 100,000-200,000 SEK |
+| Electrical additions | 500-2,000 SEK/point |
+
+## 19.5 Cost Implications
+
+### 19.5.1 Administrative Costs
+
+- Contract administration: 2-4% of project value
+- Inspection fees: 10,000-30,000 SEK
+- Legal review: 5,000-15,000 SEK
+
+### 19.5.2 Guarantee Provisions
+
+- Guarantee retention: Typically 5% held for 2 years
+- Bank guarantee alternative: 5-10,000 SEK annual cost
+
+---
+
+# 20. KLIMATDEKLARATION - CLIMATE DECLARATION
+
+## 20.1 Overview
+
+**Full Name:** Klimatdeklaration för byggnader (Climate Declaration for Buildings)
+**Regulation:** Lag (2021:787) om klimatdeklaration för byggnader
+**Implementing Regulation:** BFS 2021:7 (Boverkets föreskrifter om klimatdeklaration)
+**Effective Date:** January 1, 2022
+**Authority:** Boverket (National Board of Housing, Building and Planning)
+
+## 20.2 Purpose and Background
+
+Sweden became one of the first countries to mandate climate declarations for new buildings. The purpose is to:
+- Reduce embodied carbon in construction
+- Provide transparency in environmental impact
+- Drive innovation toward low-carbon building materials
+- Align with Sweden's 2045 climate neutrality goal
+
+## 20.3 Requirements
+
+### 20.3.1 What Must Be Declared
+
+The declaration must cover greenhouse gas emissions from:
+
+| Life Cycle Stage | Description | Modules |
+|-----------------|-------------|---------|
+| Raw material supply | Extraction and processing | A1 |
+| Transport to factory | Material transport | A2 |
+| Manufacturing | Production processes | A3 |
+| Transport to site | Delivery to construction site | A4 |
+| Construction | On-site activities | A5 |
+
+### 20.3.2 Building Parts Included
+
+| Building Element | Included | Details |
+|-----------------|----------|---------|
+| Structural frame | Yes | Load-bearing elements |
+| Foundation | Yes | Including ground slab |
+| External walls | Yes | Including insulation |
+| Internal walls | Yes | Load-bearing and non-load-bearing |
+| Roof structure | Yes | Not including roofing material |
+| Internal floor slabs | Yes | Between stories |
+
+### 20.3.3 Exemptions
+
+- Buildings < 50 m² (but småhus > 50 m² are included)
+- Temporary buildings (< 2 years)
+- Agricultural buildings
+- Industrial facilities
+- Monuments and protected buildings
+
+## 20.4 Data Requirements
+
+### 20.4.1 Emission Factors
+
+Only Boverket's conservative emission factors may be used, unless:
+- Product-specific EPD (Environmental Product Declaration) is available
+- Data is verified according to EN 15804
+
+### 20.4.2 Typical Emission Values
+
+| Material | kg CO2e/kg | Notes |
+|----------|-----------|-------|
+| Concrete (standard) | 0.10-0.15 | Varies by mix |
+| Steel reinforcement | 0.85-1.1 | Recycled content affects this |
+| Timber (CLT) | -0.5 to 0.2 | Can be carbon negative |
+| Insulation (mineral wool) | 1.2-1.8 | Production energy intensive |
+| Gypsum board | 0.25-0.35 | |
+
+## 20.5 Submission Process
+
+### 20.5.1 Timeline
+
+| Stage | Deadline | Action |
+|-------|----------|--------|
+| Building permit | N/A | Declaration not required |
+| Before final clearance | Mandatory | Submit to Boverket registry |
+| Registration | Within 6 months | Digital submission |
+
+### 20.5.2 Who Submits
+
+- The building developer (byggherre) is responsible
+- Can delegate to certified expert
+- Registration in Boverket's national register
+
+## 20.6 Cost Implications
+
+### 20.6.1 Declaration Costs
+
+| Service | Cost Range | Notes |
+|---------|-----------|-------|
+| Basic calculation | 15,000-30,000 SEK | Standard villa |
+| Complex calculation | 30,000-60,000 SEK | Unique designs |
+| EPD acquisition | 5,000-20,000 SEK | Per product |
+| Registration fee | 0 SEK | Currently free |
+
+### 20.6.2 Impact on Material Choices
+
+| Standard Material | Low-Carbon Alternative | Cost Premium | CO2 Reduction |
+|-------------------|----------------------|--------------|---------------|
+| Standard concrete | Green concrete | +5-15% | 30-50% |
+| Virgin steel | Recycled steel | +0-5% | 50-70% |
+| Standard insulation | Bio-based insulation | +10-30% | 40-60% |
+
+## 20.7 Future Developments
+
+### 20.7.1 Limit Values (From July 2025)
+
+Boverket proposes maximum climate impact limits:
+- Residential buildings: TBD kg CO2e/m²
+- Commercial buildings: TBD kg CO2e/m²
+
+### 20.7.2 Expanded Declaration (From 2027)
+
+Additional life cycle stages to be included:
+- B2: Maintenance
+- B4: Replacement
+- B6: Operating energy
+- C1-C4: End of life
+
+---
+
+# 21. KONSUMENTTJÄNSTLAGEN - CONSUMER SERVICES ACT
+
+## 21.1 Overview
+
+**Full Name:** Konsumenttjänstlagen (Consumer Services Act)
+**Regulation:** SFS 1985:716
+**Scope:** Services performed for consumers by businesses
+**Authority:** Konsumentverket (Swedish Consumer Agency)
+
+## 21.2 Applicability to Construction
+
+The Consumer Services Act provides important protections for private individuals hiring contractors for villa construction or renovation.
+
+### 21.2.1 Covered Services
+
+| Service Type | Covered | Limitation |
+|-------------|---------|------------|
+| New villa construction | Yes | Consumer as client |
+| Renovation work | Yes | On private residence |
+| Plumbing/electrical | Yes | When hired by homeowner |
+| Landscaping | Yes | On residential property |
+| Commercial projects | No | Business clients |
+
+### 21.2.2 Key Protections
+
+1. **Professional Execution** (Fackmässigt utförande)
+   - Work must meet professional standards
+   - Follow current regulations
+   - Use appropriate materials
+
+2. **Information Duty** (Upplysningsplikt)
+   - Contractor must inform about:
+     - Work scope and limitations
+     - Costs and pricing methods
+     - Risks and alternatives
+
+3. **Price Limits**
+   - Estimated price may not be exceeded by >15%
+   - Unless explicitly agreed otherwise
+
+## 21.3 Liability Periods
+
+### 21.3.1 Complaint Periods
+
+| Work Category | Complaint Period | Notes |
+|--------------|-----------------|-------|
+| General services | 3 years | From completion |
+| Construction/real property | 10 years | From completion |
+| Materials | 3 years | From delivery |
+| Hidden defects | Discovery + 2 months | Within overall period |
+
+### 21.3.2 Comparison with AB 04/ABT 06
+
+| Aspect | Konsumenttjänstlagen | AB 04/ABT 06 |
+|--------|---------------------|--------------|
+| Liability period | 10 years | 5 years + 5 years (10 total) |
+| Automatic application | Yes (consumers) | Must be agreed |
+| Price protection | 15% over estimate | Per contract |
+| Right to cancel | Yes (with compensation) | Per contract |
+
+## 21.4 Consumer Rights
+
+### 21.4.1 Right to Rectification
+
+When defects are discovered:
+1. Contractor has right/duty to rectify
+2. Consumer can demand rectification
+3. If not rectified: price reduction or cancellation
+
+### 21.4.2 Right to Compensation
+
+Consumers can claim compensation for:
+- Direct damages from defects
+- Costs of alternative contractor
+- Loss of use
+- Personal injury (limited)
+
+## 21.5 Dispute Resolution
+
+### 21.5.1 National Board for Consumer Disputes (ARN)
+
+| Service | Cost | Binding? |
+|---------|------|----------|
+| Filing complaint | Free | No (advisory) |
+| Review process | 4-12 months | |
+| Appeal | Not available | |
+
+### 21.5.2 Court Proceedings
+
+| Forum | Threshold | Typical Cost |
+|-------|-----------|--------------|
+| Tingsrätt | Any amount | 25,000-100,000 SEK |
+| Small claims | < 25,175 SEK | Simplified |
+
+## 21.6 Cost Implications for Projects
+
+### 21.6.1 Price Quotations
+
+| Type | Meaning | Risk Allocation |
+|------|---------|-----------------|
+| Fast pris | Fixed price | Contractor bears risk |
+| Rikpris | Approximate | 15% flexibility |
+| Löpande räkning | Time & materials | Consumer bears risk |
+
+### 21.6.2 Typical Insurance Impacts
+
+- Consumer projects often require higher insurance
+- Additional premium: 0.5-2% of project value
+- 10-year coverage recommended
+
+---
+
+# 22. AFS - WORK ENVIRONMENT REGULATIONS
+
+## 22.1 Overview
+
+**Full Name:** Arbetsmiljöverkets författningssamling (Swedish Work Environment Authority Statute Book)
+**Publisher:** Arbetsmiljöverket (Swedish Work Environment Authority)
+**Key Regulations:** AFS 2023:3 (Design and building work environment coordination)
+**Scope:** All construction work, including residential
+
+## 22.2 Key Regulations for Villa Construction
+
+### 22.2.1 AFS 2023:3 - Design and Building Work Environment
+
+This regulation replaced the earlier AFS 1999:3 and establishes requirements for:
+- Work environment coordination
+- Health and safety planning
+- Risk assessment
+
+### 22.2.2 Roles and Responsibilities
+
+| Role | Swedish Term | Responsibility |
+|------|-------------|----------------|
+| Client | Byggherre | Overall work environment responsibility |
+| BAS-P | BAS för planering | Design phase coordination |
+| BAS-U | BAS för utförande | Construction phase coordination |
+| Contractor | Entreprenör | Daily safety management |
+
+## 22.3 Work Environment Plan Requirements
+
+### 22.3.1 When Required
+
+A Work Environment Plan (Arbetsmiljöplan) is required when:
+- Work will take >30 days with >20 workers simultaneously
+- Total work exceeds 500 person-days
+- Any of the following high-risk work is performed:
+  - Work at heights >2 meters
+  - Excavation >2 meters deep
+  - Heavy lifting
+  - Demolition of load-bearing structures
+
+### 22.3.2 Villa Construction Considerations
+
+| Work Type | Typically Triggers Plan | Risk Level |
+|-----------|------------------------|------------|
+| Foundation excavation | Yes (if >2m deep) | Medium-High |
+| Roof work | Yes (always >2m) | High |
+| Scaffolding | Yes | Medium |
+| Electrical work | Depends | Medium |
+
+## 22.4 Fall Protection Requirements
+
+### 22.4.1 Height Requirements
+
+| Working Height | Protection Required |
+|----------------|-------------------|
+| < 2 meters | Risk assessment only |
+| ≥ 2 meters | Fall protection mandatory |
+| Roof work | Always required |
+| Scaffolding | Railings at all levels |
+
+### 22.4.2 Cost of Compliance
+
+| Safety Item | Cost Range | Duration |
+|-------------|-----------|----------|
+| Scaffolding rental | 15,000-40,000 SEK | Per month |
+| Safety railings | 5,000-15,000 SEK | Per villa |
+| Fall arrest systems | 2,000-5,000 SEK | Per worker |
+| Safety coordinator (BAS-U) | 10,000-25,000 SEK | Per project |
+
+## 22.5 Notification Requirements
+
+### 22.5.1 Pre-Construction Notification
+
+Required when:
+- Project duration >30 days with >20 workers simultaneously
+- Project exceeds 500 person-days
+
+### 22.5.2 Notification Contents
+
+- Client and BAS contact information
+- Project location and scope
+- Start and expected completion dates
+- Number of contractors involved
+
+## 22.6 Inspections and Penalties
+
+### 22.6.1 Arbetsmiljöverket Inspections
+
+| Aspect | Typical Finding | Penalty |
+|--------|-----------------|---------|
+| Missing fall protection | Work stoppage | 50,000-200,000 SEK |
+| No work environment plan | Warning + plan required | 30,000-100,000 SEK |
+| Missing BAS-U | Administrative fine | 10,000-50,000 SEK |
+
+### 22.6.2 Typical Villa Construction Focus Areas
+
+- Roof work without railings
+- Unprotected floor openings
+- Improper scaffolding
+- Electrical safety
+
+## 22.7 Cost Implications
+
+### 22.7.1 Safety Overhead
+
+| Project Size | Safety Cost | % of Total |
+|--------------|-------------|------------|
+| Small villa (<150 m²) | 30,000-60,000 SEK | 1.5-2.5% |
+| Medium villa (150-250 m²) | 50,000-100,000 SEK | 2-3% |
+| Large villa (>250 m²) | 80,000-150,000 SEK | 2-3.5% |
+
+---
+
+# 23. ALM - ACCESSIBILITY FOR LIMITED MOBILITY
+
+## 23.1 Overview
+
+**Full Name:** Tillgänglighet och användbarhet för personer med nedsatt rörelse- eller orienteringsförmåga
+**Regulation:** BFS 2011:5 (Boverkets föreskrifter och allmänna råd om tillgänglighet och användbarhet för personer med nedsatt rörelse- eller orienteringsförmåga)
+**Scope:** Public places and certain residential entrances
+**Related:** BBR Chapter 3, HIN (BFS 2011:13)
+
+## 23.2 Relationship to HIN and BBR
+
+### 23.2.1 Regulatory Framework
+
+| Regulation | Applies To | Key Focus |
+|------------|-----------|-----------|
+| BBR Chapter 3 | All new buildings | General accessibility in dwellings |
+| ALM (BFS 2011:5) | Public areas | Accessibility in public places |
+| HIN (BFS 2011:13) | Existing buildings | Removal of simple barriers |
+
+### 23.2.2 For Villa Construction
+
+ALM primarily affects:
+- Shared entrance areas in multi-unit buildings
+- Garages and parking areas
+- Public access paths
+
+## 23.3 Technical Requirements
+
+### 23.3.1 Path and Passage Requirements
+
+| Element | Requirement | Notes |
+|---------|-------------|-------|
+| Minimum path width | 1.5 meters | For wheelchair turning |
+| Maximum cross slope | 2% | |
+| Maximum longitudinal slope | 5% | 8% max with resting platforms |
+| Resting platform frequency | Every 6-10 m on slopes | |
+
+### 23.3.2 Level Differences
+
+| Situation | Maximum | Notes |
+|-----------|---------|-------|
+| Thresholds | 15 mm | 25 mm with chamfered edge |
+| Steps | Not allowed | Must have ramp alternative |
+| Surface changes | Detectable | Contrast or texture |
+
+## 23.4 Parking Requirements
+
+### 23.4.1 Accessible Parking Spaces
+
+| Total Spaces | Accessible Required | Size |
+|--------------|-------------------|------|
+| 1-25 | 1 | 3.6 x 5.0 m |
+| 26-50 | 2 | |
+| 51-100 | 3 | |
+| >100 | 3% | |
+
+### 23.4.2 Garage Considerations for Villas
+
+| Element | Standard | Accessible |
+|---------|----------|------------|
+| Door width | 2.4 m | 2.7 m+ |
+| Clear space beside car | 0.6 m | 1.2 m |
+| Threshold | Any | Max 15 mm |
+
+## 23.5 Signage and Orientation
+
+### 23.5.1 Wayfinding Requirements
+
+| Element | Requirement |
+|---------|-------------|
+| Signs | Contrast minimum 0.40 NCS |
+| Text height | Related to viewing distance |
+| Tactile information | At decision points |
+| Lighting | Min 100 lux at floor |
+
+### 23.5.2 Tactile Warning Surfaces
+
+Required at:
+- Platform edges
+- Stair approaches
+- Level changes
+- Pedestrian crossings
+
+## 23.6 Cost Implications
+
+### 23.6.1 Typical Accessibility Costs
+
+| Feature | Standard Cost | Accessible Cost | Premium |
+|---------|--------------|-----------------|---------|
+| Entrance path (10m) | 15,000 SEK | 25,000 SEK | +67% |
+| Garage door | 15,000 SEK | 22,000 SEK | +47% |
+| Parking space | 5,000 SEK | 12,000 SEK | +140% |
+| Signage package | 2,000 SEK | 8,000 SEK | +300% |
+
+### 23.6.2 When ALM Applies to Villas
+
+In most cases, ALM requirements are minimal for single-family villas. However, they apply when:
+- Villa has shared access with other properties
+- Development includes common parking areas
+- There are public-facing elements
+- Municipality requires accessibility in development permits
+
+---
+
+# 24. CROSS-REFERENCE MATRIX
+
+## 24.1 Regulation Interactions
 
 This matrix shows how regulations interact for different building elements:
 
@@ -2563,7 +3124,7 @@ This matrix shows how regulations interact for different building elements:
 
 ---
 
-## 19.2 Compliance Documentation
+## 24.2 Compliance Documentation
 
 | Regulation | Documentation Required | Retention |
 |------------|----------------------|-----------|
@@ -2581,9 +3142,9 @@ This matrix shows how regulations interact for different building elements:
 
 ---
 
-# 20. COMPLIANCE CHECKLISTS
+# 25. COMPLIANCE CHECKLISTS
 
-## 20.1 Pre-Construction Checklist
+## 25.1 Pre-Construction Checklist
 
 | Item | Regulation | Verified |
 |------|------------|----------|
@@ -2597,7 +3158,7 @@ This matrix shows how regulations interact for different building elements:
 | Fire safety plan | BBR 5 | ☐ |
 | Accessibility review | BBR 3 | ☐ |
 
-## 20.2 Foundation Checklist
+## 25.2 Foundation Checklist
 
 | Item | Regulation | Verified |
 |------|------------|----------|
@@ -2608,7 +3169,7 @@ This matrix shows how regulations interact for different building elements:
 | Drainage system | BBR 6:1 | ☐ |
 | Concrete specification | AMA K | ☐ |
 
-## 20.3 Wet Room Checklist
+## 25.3 Wet Room Checklist
 
 | Item | Regulation | Verified |
 |------|------------|----------|
@@ -2622,7 +3183,7 @@ This matrix shows how regulations interact for different building elements:
 | Electrical zones | SS 436 | ☐ |
 | Accessibility dimensions | BBR 3 | ☐ |
 
-## 20.4 Electrical Checklist
+## 25.4 Electrical Checklist
 
 | Item | Regulation | Verified |
 |------|------------|----------|
@@ -2634,7 +3195,7 @@ This matrix shows how regulations interact for different building elements:
 | Testing complete | SS 436 | ☐ |
 | Documentation | ELSÄK-FS | ☐ |
 
-## 20.5 Completion Checklist
+## 25.5 Completion Checklist
 
 | Item | Regulation | Verified |
 |------|------------|----------|
@@ -2650,9 +3211,9 @@ This matrix shows how regulations interact for different building elements:
 
 ---
 
-# 21. GLOSSARY OF SWEDISH TERMS
+# 26. GLOSSARY OF SWEDISH TERMS
 
-## 21.1 Building Terms
+## 26.1 Building Terms
 
 | Swedish | English | Definition |
 |---------|---------|------------|

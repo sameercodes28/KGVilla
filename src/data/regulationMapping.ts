@@ -13,24 +13,45 @@ export interface RegulationRef {
 }
 
 // Complete regulation definitions with colors for display
+// Total: 22 Swedish building regulations tracked
 export const REGULATION_COLORS: Record<string, { color: string; bgColor: string; borderColor: string }> = {
+    // Primary Building Regulations
     'bbr-2025': { color: 'text-green-700', bgColor: 'bg-green-50', borderColor: 'border-green-200' },
-    'saker-vatten': { color: 'text-blue-700', bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
-    'abt-06': { color: 'text-purple-700', bgColor: 'bg-purple-50', borderColor: 'border-purple-200' },
-    'ss-21054': { color: 'text-amber-700', bgColor: 'bg-amber-50', borderColor: 'border-amber-200' },
-    'ama-hus': { color: 'text-orange-700', bgColor: 'bg-orange-50', borderColor: 'border-orange-200' },
-    'ss-436': { color: 'text-yellow-700', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200' },
     'pbl': { color: 'text-slate-700', bgColor: 'bg-slate-100', borderColor: 'border-slate-300' },
     'eks': { color: 'text-red-700', bgColor: 'bg-red-50', borderColor: 'border-red-200' },
-    'ovk': { color: 'text-cyan-700', bgColor: 'bg-cyan-50', borderColor: 'border-cyan-200' },
-    'ss-25267': { color: 'text-indigo-700', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200' },
-    'energidek': { color: 'text-emerald-700', bgColor: 'bg-emerald-50', borderColor: 'border-emerald-200' },
-    'elsak-fs': { color: 'text-rose-700', bgColor: 'bg-rose-50', borderColor: 'border-rose-200' },
-    'radon': { color: 'text-gray-700', bgColor: 'bg-gray-100', borderColor: 'border-gray-300' },
-    'ce-cpr': { color: 'text-blue-800', bgColor: 'bg-blue-100', borderColor: 'border-blue-300' },
-    'hin': { color: 'text-teal-700', bgColor: 'bg-teal-50', borderColor: 'border-teal-200' },
+
+    // Water & Wet Room Standards
+    'saker-vatten': { color: 'text-blue-700', bgColor: 'bg-blue-50', borderColor: 'border-blue-200' },
     'bbv': { color: 'text-sky-700', bgColor: 'bg-sky-50', borderColor: 'border-sky-200' },
     'gvk': { color: 'text-violet-700', bgColor: 'bg-violet-50', borderColor: 'border-violet-200' },
+
+    // Electrical Standards
+    'ss-436': { color: 'text-yellow-700', bgColor: 'bg-yellow-50', borderColor: 'border-yellow-200' },
+    'elsak-fs': { color: 'text-rose-700', bgColor: 'bg-rose-50', borderColor: 'border-rose-200' },
+
+    // Construction Standards
+    'ama-hus': { color: 'text-orange-700', bgColor: 'bg-orange-50', borderColor: 'border-orange-200' },
+    'abt-06': { color: 'text-purple-700', bgColor: 'bg-purple-50', borderColor: 'border-purple-200' },
+    'ab-04': { color: 'text-fuchsia-700', bgColor: 'bg-fuchsia-50', borderColor: 'border-fuchsia-200' },
+    'ce-cpr': { color: 'text-blue-800', bgColor: 'bg-blue-100', borderColor: 'border-blue-300' },
+
+    // Environmental & Energy
+    'energidek': { color: 'text-emerald-700', bgColor: 'bg-emerald-50', borderColor: 'border-emerald-200' },
+    'klimatdek': { color: 'text-lime-700', bgColor: 'bg-lime-50', borderColor: 'border-lime-200' },
+    'ss-21054': { color: 'text-amber-700', bgColor: 'bg-amber-50', borderColor: 'border-amber-200' },
+    'radon': { color: 'text-gray-700', bgColor: 'bg-gray-100', borderColor: 'border-gray-300' },
+
+    // Acoustic & Comfort
+    'ss-25267': { color: 'text-indigo-700', bgColor: 'bg-indigo-50', borderColor: 'border-indigo-200' },
+    'ovk': { color: 'text-cyan-700', bgColor: 'bg-cyan-50', borderColor: 'border-cyan-200' },
+
+    // Accessibility
+    'hin': { color: 'text-teal-700', bgColor: 'bg-teal-50', borderColor: 'border-teal-200' },
+    'alm': { color: 'text-pink-700', bgColor: 'bg-pink-50', borderColor: 'border-pink-200' },
+
+    // Consumer & Safety
+    'konsument': { color: 'text-stone-700', bgColor: 'bg-stone-100', borderColor: 'border-stone-300' },
+    'afs': { color: 'text-red-800', bgColor: 'bg-red-100', borderColor: 'border-red-300' },
 };
 
 /**
@@ -56,9 +77,9 @@ export const ITEM_REGULATIONS: Record<string, RegulationRef[]> = {
     // WET ROOM WALLS
     'wall-wet': [
         { id: 'saker-vatten', name: 'Säker Vatten', section: '2021:1', requirement: 'Certified waterproofing system' },
+        { id: 'gvk', name: 'GVK', requirement: 'Wetroom flooring certification' },
         { id: 'bbv', name: 'BBV', requirement: 'Tile adhesion & grouting standards' },
         { id: 'bbr-2025', name: 'BBR 2025', section: 'BBR 6:5', requirement: 'Moisture protection' },
-        { id: 'ama-hus', name: 'AMA Hus', section: 'MBE', requirement: 'Wet room tile work specifications' },
         { id: 'hin', name: 'HIN', requirement: 'Accessible bathroom dimensions' },
     ],
 
@@ -171,11 +192,14 @@ export const ITEM_REGULATIONS: Record<string, RegulationRef[]> = {
     'soft-bas': [
         { id: 'pbl', name: 'PBL', section: 'Ch. 10', requirement: 'BAS-P/U coordination required' },
         { id: 'abt-06', name: 'ABT 06', section: 'Ch. 4', requirement: 'Contractor responsibilities' },
+        { id: 'ab-04', name: 'AB 04', section: 'Ch. 3', requirement: 'General contract terms' },
+        { id: 'afs', name: 'AFS', section: '2023:3', requirement: 'Work environment plan' },
     ],
 
     // SOFT COSTS - LCA
     'soft-lca': [
-        { id: 'pbl', name: 'PBL', section: '2022:1', requirement: 'Climate declaration mandatory' },
+        { id: 'klimatdek', name: 'Klimatdek.', section: 'BFS 2021:7', requirement: 'Mandatory since Jan 2022' },
+        { id: 'pbl', name: 'PBL', section: '2022:1', requirement: 'Climate declaration required' },
         { id: 'bbr-2025', name: 'BBR 2025', section: 'BBR 9:9', requirement: 'CO2 reporting requirements' },
     ],
 
@@ -189,6 +213,7 @@ export const ITEM_REGULATIONS: Record<string, RegulationRef[]> = {
     'soft-ka': [
         { id: 'pbl', name: 'PBL', section: 'Ch. 10', requirement: 'Certified inspector required' },
         { id: 'abt-06', name: 'ABT 06', section: 'Ch. 6', requirement: 'Inspection protocol' },
+        { id: 'konsument', name: 'Kons.tjänst', section: 'SFS 1985:716', requirement: '10 year liability period' },
     ],
 };
 
@@ -321,7 +346,34 @@ export const KEYWORD_REGULATIONS: Record<string, RegulationRef[]> = {
         { id: 'pbl', name: 'PBL', requirement: 'Certified inspector' },
     ],
     'klimatdeklaration': [
+        { id: 'klimatdek', name: 'Klimatdek.', requirement: 'CO2 declaration' },
         { id: 'pbl', name: 'PBL', section: '2022:1', requirement: 'Mandatory LCA' },
+    ],
+    'lca': [
+        { id: 'klimatdek', name: 'Klimatdek.', requirement: 'Lifecycle assessment' },
+    ],
+    'entreprenör': [
+        { id: 'abt-06', name: 'ABT 06', requirement: 'Contract terms' },
+        { id: 'ab-04', name: 'AB 04', requirement: 'General conditions' },
+        { id: 'konsument', name: 'Kons.tjänst', requirement: '10 year liability' },
+    ],
+    'avtal': [
+        { id: 'abt-06', name: 'ABT 06', requirement: 'Contract terms' },
+        { id: 'ab-04', name: 'AB 04', requirement: 'General conditions' },
+    ],
+    'arbetsmiljö': [
+        { id: 'afs', name: 'AFS', section: '2023:3', requirement: 'Work environment' },
+    ],
+    'säkerhet': [
+        { id: 'afs', name: 'AFS', requirement: 'Safety requirements' },
+    ],
+    'handikapp': [
+        { id: 'hin', name: 'HIN', requirement: 'Barrier removal' },
+        { id: 'alm', name: 'ALM', section: 'BFS 2011:5', requirement: 'Mobility access' },
+    ],
+    'rullstol': [
+        { id: 'hin', name: 'HIN', requirement: 'Wheelchair access' },
+        { id: 'alm', name: 'ALM', requirement: 'Accessibility' },
     ],
 };
 
