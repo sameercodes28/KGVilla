@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, ShieldCheck, CheckCircle2, Scale, Ruler, Hammer, Zap, FileText, Building2, Droplets } from 'lucide-react';
+import { X, ShieldCheck, CheckCircle2, Scale, Ruler, Hammer, Zap, FileText, Building2, Droplets, Wind, Volume2, Leaf, AlertTriangle, BadgeCheck, Accessibility } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Regulation {
@@ -164,6 +164,175 @@ const REGULATIONS: Regulation[] = [
             'Roof truss load calculations',
             'Safety factors for residential buildings'
         ]
+    },
+    {
+        id: 'ovk',
+        name: 'OVK',
+        fullName: 'Obligatorisk Ventilationskontroll',
+        icon: Wind,
+        color: 'text-cyan-700',
+        bgColor: 'bg-cyan-50',
+        borderColor: 'border-cyan-200',
+        description: 'Mandatory ventilation inspection ensuring indoor air quality and proper air exchange rates in buildings.',
+        importance: 'Required before occupancy. Poor ventilation causes health issues and moisture damage. Must be recertified every 3-6 years.',
+        whatWeUse: [
+            'Air flow requirements per room type',
+            'Kitchen exhaust minimum 10 l/s',
+            'Bathroom exhaust minimum 15 l/s',
+            'Supply air requirements 0.35 l/s per m²',
+            'Heat recovery efficiency targets (FTX systems)'
+        ],
+        link: 'https://www.boverket.se/sv/byggande/halsa-och-inomhusmiljo/ventilation/ovk/'
+    },
+    {
+        id: 'ss-25267',
+        name: 'SS 25267',
+        fullName: 'Sound Classification of Dwellings',
+        icon: Volume2,
+        color: 'text-indigo-700',
+        bgColor: 'bg-indigo-50',
+        borderColor: 'border-indigo-200',
+        description: 'Swedish standard for acoustic performance in residential buildings, defining sound classes A-D for different quality levels.',
+        importance: 'Class C is minimum for new construction. Sound complaints are among the most common defects in new homes.',
+        whatWeUse: [
+            'Airborne sound insulation between dwellings (R\'w ≥ 53 dB)',
+            'Impact sound levels (L\'n,w ≤ 56 dB)',
+            'Facade sound insulation requirements',
+            'Installation noise limits (≤ 30 dB)',
+            'Room acoustic requirements'
+        ]
+    },
+    {
+        id: 'energidek',
+        name: 'Energidek.',
+        fullName: 'Energideklaration',
+        icon: Leaf,
+        color: 'text-emerald-700',
+        bgColor: 'bg-emerald-50',
+        borderColor: 'border-emerald-200',
+        description: 'Mandatory energy performance certificate showing building energy use and rating (A-G scale).',
+        importance: 'Required within 2 years of construction. Must be presented when selling or renting. Valid for 10 years.',
+        whatWeUse: [
+            'Primary energy calculation (EP_pet)',
+            'Energy class determination (A-G)',
+            'U-value requirements for envelope',
+            'Heating system efficiency ratings',
+            'Recommended improvement measures'
+        ],
+        link: 'https://www.boverket.se/sv/byggande/energideklaration/'
+    },
+    {
+        id: 'elsak-fs',
+        name: 'ELSÄK-FS',
+        fullName: 'Elsäkerhetsverkets Föreskrifter',
+        icon: AlertTriangle,
+        color: 'text-rose-700',
+        bgColor: 'bg-rose-50',
+        borderColor: 'border-rose-200',
+        description: 'Electrical safety regulations from Swedish Electrical Safety Authority covering installation requirements and safety standards.',
+        importance: 'All electrical work must be performed by certified electricians. Non-compliance can void insurance and cause serious safety hazards.',
+        whatWeUse: [
+            'ELSÄK-FS 2022:3 - Installation requirements',
+            'Certification requirements for installers',
+            'Ground fault protection (30 mA RCD)',
+            'Wet room electrical safety zones',
+            'Inspection and documentation requirements'
+        ],
+        link: 'https://www.elsakerhetsverket.se/'
+    },
+    {
+        id: 'radon',
+        name: 'Radon',
+        fullName: 'Radonskydd (BBR 6:23)',
+        icon: AlertTriangle,
+        color: 'text-gray-700',
+        bgColor: 'bg-gray-100',
+        borderColor: 'border-gray-300',
+        description: 'Protection requirements against radon gas, a radioactive gas from bedrock that causes lung cancer.',
+        importance: 'Sweden has high radon levels in many areas. New buildings must be radon-safe with levels below 200 Bq/m³.',
+        whatWeUse: [
+            'Maximum indoor radon level 200 Bq/m³',
+            'Radon membrane in foundation (radonspärr)',
+            'Sub-slab ventilation requirements',
+            'Blue concrete identification and remediation',
+            'Post-construction radon measurement'
+        ],
+        link: 'https://www.stralsakerhetsmyndigheten.se/radon/'
+    },
+    {
+        id: 'ce-cpr',
+        name: 'CE/CPR',
+        fullName: 'Construction Products Regulation',
+        icon: BadgeCheck,
+        color: 'text-blue-800',
+        bgColor: 'bg-blue-100',
+        borderColor: 'border-blue-300',
+        description: 'EU regulation requiring CE marking on construction products, ensuring they meet declared performance standards.',
+        importance: 'All structural and fire safety products must be CE marked. Documentation (DoP) required for building inspection.',
+        whatWeUse: [
+            'CE marking verification for structural products',
+            'Declaration of Performance (DoP) documentation',
+            'Fire classification (reaction to fire, resistance)',
+            'Load-bearing capacity declarations',
+            'Thermal performance declarations'
+        ]
+    },
+    {
+        id: 'hin',
+        name: 'HIN',
+        fullName: 'Hindersfrihetslagen (Accessibility)',
+        icon: Accessibility,
+        color: 'text-teal-700',
+        bgColor: 'bg-teal-50',
+        borderColor: 'border-teal-200',
+        description: 'Accessibility requirements ensuring buildings are usable by people with disabilities, integrated into BBR and PBL.',
+        importance: 'Mandatory for all new construction. Affects door widths, thresholds, bathroom layout, and approach paths.',
+        whatWeUse: [
+            'Door width minimum 80 cm clear opening',
+            'Threshold maximum 15 mm height',
+            'Accessible bathroom requirements',
+            'Ramp gradients maximum 1:12',
+            'Maneuvering space requirements (1.5m turning circle)'
+        ],
+        link: 'https://www.boverket.se/sv/byggande/tillganglighet/'
+    },
+    {
+        id: 'bbv',
+        name: 'BBV',
+        fullName: 'Byggkeramikrådets Branschregler för Våtrum',
+        icon: Droplets,
+        color: 'text-sky-700',
+        bgColor: 'bg-sky-50',
+        borderColor: 'border-sky-200',
+        description: 'Industry standard for ceramic tile installation in wet rooms, complementing Säker Vatten with tile-specific requirements.',
+        importance: 'Required for warranty coverage. Specifies exact methods for tile adhesion, grouting, and movement joints.',
+        whatWeUse: [
+            'Tile adhesive specifications (thin-bed method)',
+            'Movement joint placement requirements',
+            'Fall requirements toward floor drain',
+            'Edge and corner sealing methods',
+            'Certified installer requirements'
+        ],
+        link: 'https://www.bfrv.se/'
+    },
+    {
+        id: 'gvk',
+        name: 'GVK',
+        fullName: 'Golvbranschens Våtrumskontroll',
+        icon: CheckCircle2,
+        color: 'text-violet-700',
+        bgColor: 'bg-violet-50',
+        borderColor: 'border-violet-200',
+        description: 'Quality assurance system for floor installations in wet rooms, ensuring proper waterproofing under vinyl and similar flooring.',
+        importance: 'Certification required for insurance coverage when using vinyl flooring in wet rooms instead of tiles.',
+        whatWeUse: [
+            'Vinyl flooring waterproofing requirements',
+            'Substrate preparation standards',
+            'Welded seam requirements',
+            'Edge sealing specifications',
+            'GVK-certified installer requirement'
+        ],
+        link: 'https://www.gfrv.se/'
     }
 ];
 
