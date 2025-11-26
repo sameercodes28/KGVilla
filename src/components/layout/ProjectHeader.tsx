@@ -15,14 +15,16 @@ interface ProjectHeaderProps {
     title?: string;
     subtitle?: string;
     syncState?: SyncState;
+    hideProposalButton?: boolean;
 }
 
-export function ProjectHeader({ 
-    currentProjectId, 
+export function ProjectHeader({
+    currentProjectId,
     showBackButton = false,
     title,
     subtitle,
-    syncState
+    syncState,
+    hideProposalButton = false
 }: ProjectHeaderProps) {
     const { projects } = useProjects();
     const { t } = useTranslation();
@@ -114,8 +116,8 @@ export function ProjectHeader({
                         )}
                     </div>
                     
-                    {currentProjectId && (
-                         <Link 
+                    {currentProjectId && !hideProposalButton && (
+                         <Link
                             href={`/qto/customer?project=${currentProjectId}`}
                             className="hidden md:flex items-center text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors text-xs font-bold"
                         >

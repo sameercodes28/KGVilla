@@ -133,6 +133,7 @@ function ChatContent() {
                 subtitle={t('chat.subtitle')}
                 showBackButton
                 syncState={syncState}
+                hideProposalButton
             />
 
             {/* Project Context Card */}
@@ -240,7 +241,7 @@ function ChatContent() {
                                                 <span>{item.totalCost?.toLocaleString('sv-SE')} kr</span>
                                             </div>
                                             <div className="flex justify-between text-slate-500 text-xs mt-1">
-                                                <span>{item.quantity} {item.unit}</span>
+                                                <span>{Number(item.quantity).toFixed(1)} {item.unit}</span>
                                                 <span>{item.phase}</span>
                                             </div>
                                             {/* AI Reasoning "Thought Bubble" */}

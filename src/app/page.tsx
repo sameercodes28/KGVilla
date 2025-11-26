@@ -150,7 +150,7 @@ export default function Home() {
                 <span className="text-blue-600">Swedish Villas.</span>
             </h1>
             <p className="text-base text-slate-500 max-w-2xl mx-auto leading-relaxed mb-6">
-                Instantly analyze blueprints against <strong>BBR 2025</strong> regulations and current market rates. Generate compliant, professional quotes in seconds.
+                Instantly analyze blueprints against <strong>18 Swedish building regulations</strong> including BBR, Säker Vatten, EKS, and more. Generate compliant, professional quotes in seconds.
             </p>
 
             {/* Regulation Badges - Clickable with explanations */}
@@ -366,7 +366,7 @@ export default function Home() {
                             </div>
                         </div>
                         <h3 className="text-xl font-bold text-slate-900 mb-2">Analyzing Blueprint...</h3>
-                        <p className="text-sm text-slate-500">Checking compliance with BBR 2025 & Säker Vatten.</p>
+                        <p className="text-sm text-slate-500">Checking compliance with 18 Swedish building standards.</p>
                     </div>
                 )}
                 

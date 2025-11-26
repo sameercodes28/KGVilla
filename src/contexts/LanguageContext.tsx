@@ -140,6 +140,7 @@ const dictionary: Record<string, DictionaryEntry> = {
     'phase.plumbing': { en: 'Plumbing & HVAC', sv: 'VVS & Värme' },
     'phase.interior': { en: 'Interior & Kitchen', sv: 'Invändigt & Kök' },
     'phase.completion': { en: 'Completion & Admin', sv: 'Slutförande & Administration' },
+    'phase.admin': { en: 'Administrative Costs', sv: 'Administrativa kostnader' },
     // Cost Card
     'card.qty': { en: 'Qty:', sv: 'Antal:' },
     'card.price': { en: 'Price:', sv: 'Pris:' },
@@ -151,6 +152,7 @@ const dictionary: Record<string, DictionaryEntry> = {
     'card.guideline': { en: 'Guideline', sv: 'Riktlinje' },
     'card.custom': { en: 'Custom', sv: 'Egen' },
     'card.edited': { en: 'Edited', sv: 'Ändrad' },
+    'card.regulations': { en: 'Applicable Regulations', sv: 'Tillämpliga Regelverk' },
 
     // Total Summary
     'summary.title': { en: 'Total Estimated Cost', sv: 'Total Beräknad Kostnad' },

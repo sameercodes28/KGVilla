@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { CostItem } from '@/types';
-import { ChevronDown, Info, Edit2, Save, X, Calculator, BookOpen } from 'lucide-react';
+import { ChevronDown, Info, Edit2, Save, X, Calculator, BookOpen, ShieldCheck } from 'lucide-react';
+import { getItemRegulations, REGULATION_COLORS, RegulationRef } from '@/data/regulationMapping';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
 
@@ -112,6 +113,13 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
     
     const translatedName = t(nameKey) !== nameKey ? t(nameKey) : item.elementName;
     const translatedDesc = t(descKey) !== descKey ? t(descKey) : item.description;
+
+    // Get applicable regulations for this item
+    const applicableRegulations = getItemRegulations({
+        id: item.id,
+        elementName: item.elementName,
+        phase: item.phase
+    });
 
     return (
         <div
@@ -302,6 +310,46 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                             </div>
                         )}
                     </div>
+
+                    {/* Applicable Regulations */}
+                    {applicableRegulations.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-slate-100">
+                            <div className="flex items-center text-slate-600 mb-3">
+                                <ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
+                                <span className="text-xs font-bold uppercase tracking-wide">{t('card.regulations') || 'Applicable Regulations'}</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {applicableRegulations.map((reg: RegulationRef) => {
+                                    const colors = REGULATION_COLORS[reg.id] || { color: 'text-slate-700', bgColor: 'bg-slate-50', borderColor: 'border-slate-200' };
+                                    return (
+                                        <div
+                                            key={reg.id}
+                                            className={cn(
+                                                "group relative px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all cursor-help",
+                                                colors.bgColor,
+                                                colors.borderColor,
+                                                colors.color,
+                                                "hover:shadow-sm"
+                                            )}
+                                            title={`${reg.name}${reg.section ? ` (${reg.section})` : ''}: ${reg.requirement || ''}`}
+                                        >
+                                            <span className="font-semibold">{reg.name}</span>
+                                            {reg.section && (
+                                                <span className="ml-1 opacity-70">{reg.section}</span>
+                                            )}
+                                            {/* Tooltip on hover */}
+                                            {reg.requirement && (
+                                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 shadow-lg">
+                                                    {reg.requirement}
+                                                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
