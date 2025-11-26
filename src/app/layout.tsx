@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { BottomNav } from "@/components/layout/BottomNav";
+import packageJson from "../../package.json";
 
 // Premium font configuration
 const inter = Inter({
@@ -36,7 +37,7 @@ export default function RootLayout({
           </main>
           <BottomNav />
           <div className="fixed bottom-1 right-1 z-[60] text-[10px] font-mono text-emerald-600 opacity-80 hover:opacity-100 pointer-events-none select-none font-bold">
-            v1.2.0
+            v{packageJson.version}
           </div>
         </LanguageProvider>
       </body>
