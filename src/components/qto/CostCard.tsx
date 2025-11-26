@@ -28,9 +28,10 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
     const totalCost = unitPrice * quantity;
 
     // Check if item has been ACTUALLY customized (values differ from original)
+    // Note: null/undefined both mean "not customized" - only truthy values count
     const hasCustomValues = (
-        (item.customUnitPrice !== undefined && item.customUnitPrice !== item.unitPrice) ||
-        (item.customQuantity !== undefined && item.customQuantity !== item.quantity)
+        (item.customUnitPrice != null && item.customUnitPrice !== item.unitPrice) ||
+        (item.customQuantity != null && item.customQuantity !== item.quantity)
     );
 
     const handleSave = (e: React.MouseEvent) => {
