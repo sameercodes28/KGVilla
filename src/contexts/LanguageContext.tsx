@@ -196,6 +196,8 @@ const dictionary: Record<string, DictionaryEntry> = {
     'report.contact': { en: 'Contact Builder', sv: 'Kontakta Byggare' },
     'report.generated': { en: 'Generated with', sv: 'Genererad med' },
     'report.disclaimer': { en: 'This quote is an estimate based on AI analysis. Final pricing may vary based on site conditions and material specifications.', sv: 'Denna offert är en uppskattning baserad på AI-analys. Slutligt pris kan variera beroende på platsförhållanden och materialspecifikationer.' },
+    'report.floor_plan': { en: 'Your Floor Plan', sv: 'Din Planritning' },
+    'report.floor_plan_desc': { en: 'The analyzed floor plan used to generate this quote', sv: 'Den analyserade planritningen som använts för att generera denna offert' },
 
     // Total Summary
     'summary.title': { en: 'Total Estimated Cost', sv: 'Total Beräknad Kostnad' },

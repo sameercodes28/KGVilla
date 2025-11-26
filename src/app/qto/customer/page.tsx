@@ -134,63 +134,95 @@ function PhaseBreakdown({ phase, totalCost, t }: PhaseBreakdownProps) {
                         {phase.items.map((item, idx) => {
                             const itemRegs = getItemRegulations(item);
                             const isDisabled = item.disabled === true;
-                            const hasCustomPrice = item.customUnitPrice !== undefined || item.customQuantity !== undefined;
+                            // Only show "Custom" if user actually changed values from originals
+                            const hasCustomPrice = (
+                                (item.customUnitPrice !== undefined && item.customUnitPrice !== item.unitPrice) ||
+                                (item.customQuantity !== undefined && item.customQuantity !== item.quantity)
+                            );
 
                             return (
                                 <div
                                     key={item.id || idx}
                                     className={cn(
-                                        "px-6 py-4 flex items-start justify-between",
-                                        isDisabled && "bg-slate-50 opacity-60"
+                                        "px-6 py-5 border-l-4",
+                                        isDisabled ? "bg-slate-50 opacity-60 border-l-slate-300" : "border-l-transparent hover:border-l-blue-400 hover:bg-slate-50/50"
                                     )}
                                 >
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <span className={cn(
-                                                "font-medium",
-                                                isDisabled ? "text-slate-400 line-through" : "text-slate-900"
-                                            )}>
-                                                {item.elementName}
-                                            </span>
-                                            {isDisabled && (
-                                                <span className="px-2 py-0.5 bg-slate-200 text-slate-500 rounded text-xs">
-                                                    Excluded
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1 min-w-0">
+                                            {/* Item Name & Badges */}
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <span className={cn(
+                                                    "font-semibold text-base",
+                                                    isDisabled ? "text-slate-400 line-through" : "text-slate-900"
+                                                )}>
+                                                    {item.elementName}
                                                 </span>
+                                                {isDisabled && (
+                                                    <span className="px-2 py-0.5 bg-slate-200 text-slate-500 rounded text-xs font-medium">
+                                                        Excluded
+                                                    </span>
+                                                )}
+                                                {hasCustomPrice && !isDisabled && (
+                                                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                                                        Modified
+                                                    </span>
+                                                )}
+                                                {item.isUserAdded && (
+                                                    <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">
+                                                        Added by you
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Item Description */}
+                                            {item.description && (
+                                                <p className="text-sm text-slate-600 mt-1 leading-relaxed">
+                                                    {item.description}
+                                                </p>
                                             )}
-                                            {hasCustomPrice && !isDisabled && (
-                                                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs">
-                                                    Custom
-                                                </span>
-                                            )}
-                                            {item.isUserAdded && (
-                                                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs">
-                                                    Added
-                                                </span>
+
+                                            {/* Quantity & Price */}
+                                            <p className="text-sm text-slate-400 mt-2 font-mono">
+                                                {Number(item.quantity).toFixed(1)} {item.unit} × {Math.round(item.unitPrice).toLocaleString('sv-SE')} kr/{item.unit}
+                                            </p>
+
+                                            {/* Item Regulations with Explanations */}
+                                            {itemRegs.length > 0 && (
+                                                <div className="mt-3 space-y-1.5">
+                                                    {itemRegs.slice(0, 3).map(reg => {
+                                                        const regColors = REGULATION_COLORS[reg.id] || { bgColor: 'bg-slate-100', color: 'text-slate-700' };
+                                                        return (
+                                                            <div key={reg.id} className="flex items-start gap-2">
+                                                                <span className={cn(
+                                                                    "px-2 py-0.5 rounded text-xs font-semibold whitespace-nowrap mt-0.5",
+                                                                    regColors.bgColor, regColors.color
+                                                                )}>
+                                                                    {reg.name}
+                                                                </span>
+                                                                {reg.requirement && (
+                                                                    <span className="text-xs text-slate-500 leading-relaxed">
+                                                                        {reg.section && <span className="font-medium">{reg.section}: </span>}
+                                                                        {reg.requirement}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
                                             )}
                                         </div>
-                                        <p className="text-sm text-slate-500 mt-0.5">
-                                            {Number(item.quantity).toFixed(1)} {item.unit} × {Math.round(item.unitPrice).toLocaleString('sv-SE')} kr
-                                        </p>
-                                        {/* Item Regulations */}
-                                        {itemRegs.length > 0 && (
-                                            <div className="flex flex-wrap gap-1 mt-2">
-                                                {itemRegs.slice(0, 3).map(reg => (
-                                                    <span
-                                                        key={reg.id}
-                                                        className="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded text-[10px] font-medium"
-                                                    >
-                                                        {reg.name}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
+
+                                        {/* Price */}
+                                        <div className="text-right">
+                                            <span className={cn(
+                                                "text-lg font-mono font-bold whitespace-nowrap",
+                                                isDisabled ? "text-slate-400 line-through" : "text-slate-900"
+                                            )}>
+                                                {Math.round(item.totalCost).toLocaleString('sv-SE')} kr
+                                            </span>
+                                        </div>
                                     </div>
-                                    <span className={cn(
-                                        "font-mono font-bold whitespace-nowrap ml-4",
-                                        isDisabled ? "text-slate-400 line-through" : "text-slate-900"
-                                    )}>
-                                        {Math.round(item.totalCost).toLocaleString('sv-SE')} kr
-                                    </span>
                                 </div>
                             );
                         })}
@@ -251,8 +283,12 @@ function CustomerViewContent() {
     const decisionStats = useMemo(() => {
         const excludedItems = items.filter(i => i.disabled);
         const customItems = items.filter(i => i.isUserAdded);
+        // Only count as "custom pricing" if the values were actually changed from originals
         const customPricing = items.filter(i =>
-            !i.isUserAdded && (i.customUnitPrice !== undefined || i.customQuantity !== undefined)
+            !i.isUserAdded && !i.disabled && (
+                (i.customUnitPrice !== undefined && i.customUnitPrice !== i.unitPrice) ||
+                (i.customQuantity !== undefined && i.customQuantity !== i.quantity)
+            )
         );
         return { excludedItems, customItems, customPricing };
     }, [items]);
@@ -285,12 +321,7 @@ function CustomerViewContent() {
             {/* Hero Section */}
             <div className="relative min-h-[50vh] bg-slate-900 flex items-center justify-center overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-900/90 to-slate-900/95 z-10" />
-                {floorPlanUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={floorPlanUrl} alt="Floor Plan" className="absolute inset-0 w-full h-full object-cover opacity-20 blur-sm scale-105" />
-                ) : (
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]" />
-                )}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]" />
 
                 <div className="relative z-20 text-center text-white px-6 max-w-4xl mx-auto py-20">
                     <div className="inline-flex items-center px-4 py-2 rounded-full border border-white/20 bg-white/10 backdrop-blur text-sm font-medium mb-6">
@@ -313,8 +344,54 @@ function CustomerViewContent() {
                 <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-slate-50 z-20" />
             </div>
 
+            {/* Floor Plan Section - Prominent Display */}
+            {floorPlanUrl && (
+                <div className="bg-white py-12">
+                    <div className="max-w-5xl mx-auto px-6">
+                        <div className="text-center mb-8">
+                            <h2 className="text-2xl font-bold text-slate-900 mb-2">{t('report.floor_plan')}</h2>
+                            <p className="text-slate-500">{t('report.floor_plan_desc')}</p>
+                        </div>
+                        <div className="relative bg-slate-100 rounded-2xl overflow-hidden shadow-lg border border-slate-200">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={floorPlanUrl}
+                                alt="Floor Plan"
+                                className="w-full h-auto max-h-[600px] object-contain"
+                            />
+                            {/* Area overlay */}
+                            <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur rounded-xl px-4 py-3 shadow-lg">
+                                <div className="flex items-center gap-6 text-sm">
+                                    {boa && boa > 0 && (
+                                        <div>
+                                            <span className="text-slate-500">BOA:</span>
+                                            <span className="ml-2 font-mono font-bold text-slate-900">{boa} m²</span>
+                                        </div>
+                                    )}
+                                    {biarea && biarea > 0 && (
+                                        <div>
+                                            <span className="text-slate-500">Biarea:</span>
+                                            <span className="ml-2 font-mono font-bold text-slate-900">{biarea} m²</span>
+                                        </div>
+                                    )}
+                                    {totalArea && totalArea > 0 && (
+                                        <div>
+                                            <span className="text-slate-500">{t('report.total_area')}:</span>
+                                            <span className="ml-2 font-mono font-bold text-slate-900">{totalArea} m²</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Key Metrics Cards */}
-            <div className="max-w-5xl mx-auto px-6 -mt-8 relative z-30">
+            <div className={cn(
+                "max-w-5xl mx-auto px-6 relative z-30",
+                floorPlanUrl ? "py-8" : "-mt-8"
+            )}>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="bg-white rounded-2xl p-5 shadow-lg border border-slate-100">
                         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t('report.cost_per_sqm')}</div>
