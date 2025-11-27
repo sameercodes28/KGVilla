@@ -101,6 +101,7 @@ class ChatRequest(BaseModel):
 class ExplainRequest(BaseModel):
     item: CostItem = Field(..., description="Cost item to explain")
     context: dict = Field(default={}, description="Floor plan context (room, dimensions, boa, biarea)")
+    language: str = Field(default="en", description="Language for explanation (en or sv)")
 
 # --- Routes ---
 @app.get("/")
@@ -312,6 +313,7 @@ async def explain_cost_item(request: Request, body: ExplainRequest, api_key: str
     """
     Generate a detailed narrative explanation for a cost item.
     Returns flowing prose covering WHY, HOW, WHAT, and REGULATIONS.
+    Supports both English (en) and Swedish (sv) languages.
     """
-    logger.info(f"Generating explanation for: {body.item.elementName}")
-    return await generate_narrative_explanation(body.item, body.context)
+    logger.info(f"Generating explanation for: {body.item.elementName} (language: {body.language})")
+    return await generate_narrative_explanation(body.item, body.context, body.language)

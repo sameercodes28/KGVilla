@@ -136,20 +136,68 @@ async def analyze_image_with_gemini(image_bytes: bytes, mime_type: str) -> Dict:
         logger.error(f"Error calling Gemini: {e}")
         return {"items": [], "totalArea": 0}
 
-async def generate_narrative_explanation(item: CostItem, context: Dict) -> Dict:
+async def generate_narrative_explanation(item: CostItem, context: Dict, language: str = "en") -> Dict:
     """
     Generate a detailed narrative explanation for a cost item.
     Returns flowing prose covering WHY, HOW, WHAT, and REGULATIONS.
+    Supports both English (en) and Swedish (sv) languages.
     """
     if not _vertex_available:
         logger.error("Vertex AI unavailable for narrative generation")
-        return {"narrative": "AI Service unavailable. Unable to generate detailed explanation."}
+        error_msg = "AI-tjänsten är inte tillgänglig. Kan inte generera detaljerad förklaring." if language == "sv" else "AI Service unavailable. Unable to generate detailed explanation."
+        return {"narrative": error_msg}
 
     # Extract context data
     room = context.get("room", "Unknown room")
     dimensions = context.get("dimensions", "Not specified")
     boa = context.get("boa", 0)
     biarea = context.get("biarea", 0)
+
+    # Language-specific prompt sections
+    if language == "sv":
+        language_instruction = "SKRIV FÖRKLARINGEN PÅ SVENSKA med denna exakta struktur:"
+        section_headers = {
+            "calculation": "## Så räknade vi ut detta",
+            "calculation_intro": "[1-2 meningar som förklarar mätningsmetoden]",
+            "calculation_label": "**Beräkning:**",
+            "materials_header": "## Vad som ingår i priset",
+            "materials_label": "**Material:**",
+            "labor_label": "**Arbetskostnad:**",
+            "regulations_header": "## Tillämpliga regler",
+            "compliance_note": "[1 mening om vikten av regelefterlevnad]"
+        }
+        format_instructions = """
+FORMAT KRAV:
+- Använd markdown-rubriker (##) för sektioner
+- Använd punktlistor (- ) för listor
+- Använd blockcitat (> ) för att markera regler - detta är VIKTIGT
+- Använd **fetstil** för nyckeltermer
+- Skriv helt på svenska
+- Håll det kortfattat - cirka 250-350 ord totalt
+- Gör det läsbart - någon ska kunna förstå huvudpunkterna på 10 sekunder
+"""
+    else:
+        language_instruction = "WRITE AN EXPLANATION (IN ENGLISH) WITH THIS EXACT STRUCTURE:"
+        section_headers = {
+            "calculation": "## How We Calculated This",
+            "calculation_intro": "[1-2 sentences explaining the measurement approach]",
+            "calculation_label": "**Calculation:**",
+            "materials_header": "## What's Included in the Price",
+            "materials_label": "**Materials:**",
+            "labor_label": "**Labor:**",
+            "regulations_header": "## Applicable Regulations",
+            "compliance_note": "[1 sentence about compliance importance]"
+        }
+        format_instructions = """
+FORMAT REQUIREMENTS:
+- Use markdown headers (##) for sections
+- Use bullet points (- ) for lists
+- Use blockquotes (> ) to highlight regulations - this is IMPORTANT
+- Use **bold** for key terms
+- Include Swedish terms with English in parentheses where helpful
+- Keep it concise - approximately 250-350 words total
+- Make it scannable - someone should grasp key points in 10 seconds
+"""
 
     prompt = f"""
 You are a Swedish construction expert writing a detailed explanation of a cost item
@@ -174,45 +222,37 @@ FLOOR PLAN CONTEXT:
 - Total BOA: {boa} m²
 - Total Biarea: {biarea} m²
 
-WRITE AN EXPLANATION (IN ENGLISH) WITH THIS EXACT STRUCTURE:
+{language_instruction}
 
-## How We Calculated This
-[1-2 sentences explaining the measurement approach]
+{section_headers['calculation']}
+{section_headers['calculation_intro']}
 
-**Calculation:**
-- [Step 1 of calculation]
-- [Step 2 if applicable]
-- Total: [final quantity with unit]
+{section_headers['calculation_label']}
+- [Step 1 of calculation / Steg 1 i beräkningen]
+- [Step 2 if applicable / Steg 2 om tillämpligt]
+- Total: [final quantity with unit / slutlig kvantitet med enhet]
 
-## What's Included in the Price
+{section_headers['materials_header']}
 
-**Materials:**
-- [Material 1] - [purpose]
-- [Material 2] - [purpose]
+{section_headers['materials_label']}
+- [Material 1] - [purpose / syfte]
+- [Material 2] - [purpose / syfte]
 - [etc.]
 
-**Labor:**
-- [Description of work involved]
-- [Any certifications required]
+{section_headers['labor_label']}
+- [Description of work involved / Beskrivning av arbetet]
+- [Any certifications required / Eventuella certifieringar som krävs]
 
-## Applicable Regulations
+{section_headers['regulations_header']}
 
-> **[Regulation Code]** - [Brief description of requirement]
+> **[Regulation Code / Regelkod]** - [Brief description of requirement / Kort beskrivning av kravet]
 
-> **[Another Regulation]** - [Brief description]
+> **[Another Regulation / En annan regel]** - [Brief description / Kort beskrivning]
 
-[1 sentence about compliance importance]
+{section_headers['compliance_note']}
 
 ---
-
-FORMAT REQUIREMENTS:
-- Use markdown headers (##) for sections
-- Use bullet points (- ) for lists
-- Use blockquotes (> ) to highlight regulations - this is IMPORTANT
-- Use **bold** for key terms
-- Include Swedish terms with English in parentheses where helpful
-- Keep it concise - approximately 250-350 words total
-- Make it scannable - someone should grasp key points in 10 seconds
+{format_instructions}
 
 Return a JSON object with this structure:
 {{
@@ -244,13 +284,21 @@ Return a JSON object with this structure:
 
         result = json.loads(text_response)
 
-        # Add disclaimer
-        disclaimer = (
-            "\n\n---\n\n**Prisuppskattning / Price Estimate:** "
-            "This estimate is based on Swedish market rates for 2025, compiled from "
-            "industry sources including Wikells Sektionsfakta and SCB Byggkostnadsindex. "
-            "JB Villan should verify all prices against their actual vendor quotes."
-        )
+        # Add language-specific disclaimer
+        if language == "sv":
+            disclaimer = (
+                "\n\n---\n\n**Prisuppskattning:** "
+                "Denna uppskattning baseras på svenska marknadspriser för 2025, "
+                "sammanställda från branschkällor inklusive Wikells Sektionsfakta och SCB Byggkostnadsindex. "
+                "JB Villan bör verifiera alla priser mot sina faktiska leverantörsofferter."
+            )
+        else:
+            disclaimer = (
+                "\n\n---\n\n**Price Estimate:** "
+                "This estimate is based on Swedish market rates for 2025, compiled from "
+                "industry sources including Wikells Sektionsfakta and SCB Byggkostnadsindex. "
+                "JB Villan should verify all prices against their actual vendor quotes."
+            )
 
         if "narrative" in result:
             result["narrative"] += disclaimer

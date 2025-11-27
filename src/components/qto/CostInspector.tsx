@@ -36,19 +36,19 @@ interface NarrativeResponse {
 // Cache for narratives (24-hour TTL)
 const CACHE_TTL = 24 * 60 * 60 * 1000;
 
-function getCacheKey(itemId: string): string {
-    return `kgvilla_narrative_${itemId}`;
+function getCacheKey(itemId: string, language: string): string {
+    return `kgvilla_narrative_${itemId}_${language}`;
 }
 
-function getCachedNarrative(itemId: string): NarrativeResponse | null {
+function getCachedNarrative(itemId: string, language: string): NarrativeResponse | null {
     try {
-        const cached = localStorage.getItem(getCacheKey(itemId));
+        const cached = localStorage.getItem(getCacheKey(itemId, language));
         if (cached) {
             const { data, timestamp } = JSON.parse(cached);
             if (Date.now() - timestamp < CACHE_TTL) {
                 return data;
             }
-            localStorage.removeItem(getCacheKey(itemId));
+            localStorage.removeItem(getCacheKey(itemId, language));
         }
     } catch (e) {
         logger.warn('CostInspector', 'Cache read error', e);
@@ -56,9 +56,9 @@ function getCachedNarrative(itemId: string): NarrativeResponse | null {
     return null;
 }
 
-function setCachedNarrative(itemId: string, data: NarrativeResponse): void {
+function setCachedNarrative(itemId: string, language: string, data: NarrativeResponse): void {
     try {
-        localStorage.setItem(getCacheKey(itemId), JSON.stringify({
+        localStorage.setItem(getCacheKey(itemId, language), JSON.stringify({
             data,
             timestamp: Date.now()
         }));
@@ -113,7 +113,7 @@ function Section({
 }
 
 export function CostInspector({ item, onClose, context = {} }: CostInspectorProps) {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const [narrative, setNarrative] = useState<NarrativeResponse | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -158,7 +158,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
         if (!item) return;
 
         if (!forceRefresh) {
-            const cached = getCachedNarrative(item.id);
+            const cached = getCachedNarrative(item.id, language);
             if (cached) {
                 setNarrative(cached);
                 setIsLoading(false);
@@ -178,18 +178,21 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                     boa: context.boa || 0,
                     biarea: context.biarea || 0,
                     totalArea: context.totalArea || 0
-                }
+                },
+                language: language // Pass current language for AI explanations
             });
 
             setNarrative(response);
-            setCachedNarrative(item.id, response);
+            setCachedNarrative(item.id, language, response);
         } catch (e) {
             logger.error('CostInspector', 'Failed to fetch narrative', e);
-            setError('Unable to generate AI explanation. Showing available data.');
+            setError(language === 'sv'
+                ? 'Kunde inte generera AI-förklaring. Visar tillgänglig data.'
+                : 'Unable to generate AI explanation. Showing available data.');
         } finally {
             setIsLoading(false);
         }
-    }, [item, context]);
+    }, [item, context, language]);
 
     useEffect(() => {
         if (item) {
