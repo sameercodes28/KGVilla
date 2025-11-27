@@ -1240,7 +1240,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
     wet_room_details = []       # For underfloor heating, wet walls
     standard_room_details = []  # For standard walls
     bedroom_details = []        # For wardrobes
-    all_room_details = []       # For flooring totals
+    bathroom_details = []       # For WC, basins, showers, drains
+    all_room_details = []       # For flooring totals, ceiling, radiators
 
     for room in rooms:
         category = room["category"]
@@ -1258,17 +1259,24 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
 
         # Flooring
         floor_price = PRICING["flooring"].get(category, 450)
+        floor_type = 'Tile' if category in ['bathroom', 'laundry', 'kitchen', 'entry'] else 'Parquet'
         items.append(CostItem(
             id=f"interior-floor-{name.lower().replace(' ', '-')}",
             phase="interior",
             elementName=f"Flooring - {name}",
-            description=f"{'Tile' if category in ['bathroom', 'laundry', 'kitchen', 'entry'] else 'Parquet'} flooring",
+            description=f"{floor_type} flooring",
             quantity=area,
             unit="m²",
             unitPrice=floor_price,
-            totalCost=area * floor_price,
+            totalCost=round(area * floor_price),
             confidenceScore=1.0,
-            guidelineReference="SS 21054 - BOA"
+            guidelineReference="SS 21054 - BOA",
+            quantityBreakdown=QuantityBreakdown(
+                items=[QuantityBreakdownItem(name=name, value=area, unit="m²", category=category)],
+                total=area,
+                unit="m²",
+                calculationMethod=f"Floor area from {name} ({category})"
+            )
         ))
 
         # Calculate wall area per room: perimeter * ceiling height
@@ -1299,6 +1307,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         # Track bedrooms for wardrobe count
         if category == "bedroom":
             bedroom_details.append(QuantityBreakdownItem(
+                name=name,
+                value=1,
+                unit="st",
+                category=category
+            ))
+
+        # Track bathrooms for WC, basins, showers, etc.
+        if category == "bathroom":
+            bathroom_details.append(QuantityBreakdownItem(
                 name=name,
                 value=1,
                 unit="st",
@@ -1359,9 +1376,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=bathroom_count,
             unit="st",
             unitPrice=PRICING["wc_unit"],
-            totalCost=bathroom_count * PRICING["wc_unit"],
+            totalCost=round(bathroom_count * PRICING["wc_unit"]),
             confidenceScore=1.0,
-            guidelineReference="Säker Vatten"
+            guidelineReference="Säker Vatten",
+            quantityBreakdown=QuantityBreakdown(
+                items=bathroom_details,
+                total=bathroom_count,
+                unit="st",
+                calculationMethod="1 WC per bathroom"
+            )
         ))
         items.append(CostItem(
             id="plumbing-basin",
@@ -1371,9 +1394,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=bathroom_count,
             unit="st",
             unitPrice=PRICING["washbasin_unit"],
-            totalCost=bathroom_count * PRICING["washbasin_unit"],
+            totalCost=round(bathroom_count * PRICING["washbasin_unit"]),
             confidenceScore=1.0,
-            guidelineReference="Säker Vatten"
+            guidelineReference="Säker Vatten",
+            quantityBreakdown=QuantityBreakdown(
+                items=bathroom_details,
+                total=bathroom_count,
+                unit="st",
+                calculationMethod="1 washbasin per bathroom"
+            )
         ))
 
     # Kitchen
@@ -1403,9 +1432,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=boyta,
             unit="m²",
             unitPrice=PRICING["ceiling"]["standard"],
-            totalCost=boyta * PRICING["ceiling"]["standard"],
+            totalCost=round(boyta * PRICING["ceiling"]["standard"]),
             confidenceScore=0.9,
-            guidelineReference="AMA Hus"
+            guidelineReference="AMA Hus",
+            quantityBreakdown=QuantityBreakdown(
+                items=all_room_details,
+                total=boyta,
+                unit="m²",
+                calculationMethod="Sum of all room floor areas (BOA)"
+            )
         ))
 
     # --- WINDOWS & DOORS ---
@@ -1420,9 +1455,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=window_area,
             unit="m²",
             unitPrice=PRICING["window_per_m2"],
-            totalCost=window_area * PRICING["window_per_m2"],
+            totalCost=round(window_area * PRICING["window_per_m2"]),
             confidenceScore=0.8,
-            guidelineReference="BBR 9 - Energy"
+            guidelineReference="BBR 9 - Energy",
+            quantityBreakdown=QuantityBreakdown(
+                items=[QuantityBreakdownItem(name="BOA (15%)", value=boyta, unit="m²", category="living")],
+                total=window_area,
+                unit="m²",
+                calculationMethod=f"15% of BOA ({boyta:.1f} m² × 0.15 = {window_area:.1f} m²)"
+            )
         ))
 
         # Exterior door
@@ -1457,6 +1498,9 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
 
         # Interior doors (estimate: 1 per room + 2 extra)
         door_count = room_count + 2
+        # Build door breakdown from all rooms + 2 extra
+        door_breakdown_items = [QuantityBreakdownItem(name=r["name"], value=1, unit="st", category=r["category"]) for r in rooms]
+        door_breakdown_items.append(QuantityBreakdownItem(name="Extra doors", value=2, unit="st", category="utility"))
         items.append(CostItem(
             id="interior-doors",
             phase="interior",
@@ -1465,9 +1509,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=door_count,
             unit="st",
             unitPrice=PRICING["interior_door"],
-            totalCost=door_count * PRICING["interior_door"],
+            totalCost=round(door_count * PRICING["interior_door"]),
             confidenceScore=0.8,
-            guidelineReference="AMA Hus"
+            guidelineReference="AMA Hus",
+            quantityBreakdown=QuantityBreakdown(
+                items=door_breakdown_items,
+                total=door_count,
+                unit="st",
+                calculationMethod=f"1 door per room ({room_count}) + 2 extra = {door_count}"
+            )
         ))
 
     # --- HVAC & VENTILATION ---
@@ -1508,6 +1558,7 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             ))
 
         # Radiators (estimate: 1 per room)
+        radiator_breakdown = [QuantityBreakdownItem(name=r["name"], value=1, unit="st", category=r["category"]) for r in rooms]
         items.append(CostItem(
             id="hvac-radiators",
             phase="plumbing",
@@ -1516,9 +1567,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=room_count,
             unit="st",
             unitPrice=PRICING["radiator"],
-            totalCost=room_count * PRICING["radiator"],
+            totalCost=round(room_count * PRICING["radiator"]),
             confidenceScore=0.8,
-            guidelineReference="BBR"
+            guidelineReference="BBR",
+            quantityBreakdown=QuantityBreakdown(
+                items=radiator_breakdown,
+                total=room_count,
+                unit="st",
+                calculationMethod="1 radiator per room"
+            )
         ))
 
         # FTX Ventilation
@@ -1572,9 +1629,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=bathroom_count,
             unit="st",
             unitPrice=PRICING["shower_unit"],
-            totalCost=bathroom_count * PRICING["shower_unit"],
+            totalCost=round(bathroom_count * PRICING["shower_unit"]),
             confidenceScore=1.0,
-            guidelineReference="Säker Vatten"
+            guidelineReference="Säker Vatten",
+            quantityBreakdown=QuantityBreakdown(
+                items=bathroom_details,
+                total=bathroom_count,
+                unit="st",
+                calculationMethod="1 shower per bathroom"
+            )
         ))
 
         items.append(CostItem(
@@ -1585,9 +1648,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=bathroom_count,
             unit="st",
             unitPrice=PRICING["floor_drain"],
-            totalCost=bathroom_count * PRICING["floor_drain"],
+            totalCost=round(bathroom_count * PRICING["floor_drain"]),
             confidenceScore=1.0,
-            guidelineReference="Säker Vatten"
+            guidelineReference="Säker Vatten",
+            quantityBreakdown=QuantityBreakdown(
+                items=bathroom_details,
+                total=bathroom_count,
+                unit="st",
+                calculationMethod="1 floor drain per bathroom"
+            )
         ))
 
         # Bathroom accessories
@@ -1599,9 +1668,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=bathroom_count,
             unit="st",
             unitPrice=PRICING["bathroom_accessories"],
-            totalCost=bathroom_count * PRICING["bathroom_accessories"],
+            totalCost=round(bathroom_count * PRICING["bathroom_accessories"]),
             confidenceScore=0.9,
-            guidelineReference="AMA Hus"
+            guidelineReference="AMA Hus",
+            quantityBreakdown=QuantityBreakdown(
+                items=bathroom_details,
+                total=bathroom_count,
+                unit="st",
+                calculationMethod="1 set per bathroom"
+            )
         ))
 
     # Wardrobes (for bedrooms)
@@ -1615,9 +1690,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=bedroom_count,
             unit="st",
             unitPrice=PRICING["wardrobe_per_bedroom"],
-            totalCost=bedroom_count * PRICING["wardrobe_per_bedroom"],
+            totalCost=round(bedroom_count * PRICING["wardrobe_per_bedroom"]),
             confidenceScore=0.85,
-            guidelineReference="AMA Hus"
+            guidelineReference="AMA Hus",
+            quantityBreakdown=QuantityBreakdown(
+                items=bedroom_details,
+                total=bedroom_count,
+                unit="st",
+                calculationMethod="1 wardrobe per bedroom"
+            )
         ))
 
     # --- ELECTRICAL (estimate based on room count) ---
@@ -1636,6 +1717,7 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
     ))
 
     socket_count = room_count * 6  # Average 6 sockets per room
+    electrical_breakdown = [QuantityBreakdownItem(name=r["name"], value=6, unit="st", category=r["category"]) for r in rooms]
     items.append(CostItem(
         id="electrical-sockets",
         phase="electrical",
@@ -1644,9 +1726,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         quantity=socket_count,
         unit="st",
         unitPrice=PRICING["socket"],
-        totalCost=socket_count * PRICING["socket"],
+        totalCost=round(socket_count * PRICING["socket"]),
         confidenceScore=0.7,
-        guidelineReference="SS 436 40 00"
+        guidelineReference="SS 436 40 00",
+        quantityBreakdown=QuantityBreakdown(
+            items=electrical_breakdown,
+            total=socket_count,
+            unit="st",
+            calculationMethod=f"~6 electrical points per room × {room_count} rooms"
+        )
     ))
 
     # Lighting fixtures
