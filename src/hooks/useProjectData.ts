@@ -178,7 +178,24 @@ export function useProjectData(projectId?: string) {
         }
         setSyncState(prev => ({ ...prev, status: 'pending' }));
 
-        // 2. API Save
+        // 2. Update estimatedCost in project metadata
+        try {
+            const estimatedCost = newItems
+                .filter(item => !item.disabled)
+                .reduce((sum, item) => sum + (item.totalCost || 0), 0);
+            const storedProjects = localStorage.getItem('kgvilla_projects');
+            if (storedProjects) {
+                const projects: Project[] = JSON.parse(storedProjects);
+                const updatedProjects = projects.map(p =>
+                    p.id === projectId ? { ...p, estimatedCost } : p
+                );
+                localStorage.setItem('kgvilla_projects', JSON.stringify(updatedProjects));
+            }
+        } catch (e) {
+            logger.warn('useProjectData', 'Failed to sync estimatedCost', e);
+        }
+
+        // 3. API Save
         try {
             await apiClient.post(`/projects/${projectId}/items`, newItems);
             setSyncState({ status: 'synced', lastSyncedAt: new Date(), errorMessage: null });
@@ -311,6 +328,9 @@ export function useProjectData(projectId?: string) {
                 setBiarea(response.biarea);
             }
 
+            // Calculate estimated cost from items
+            const estimatedCost = itemsWithProjectId.reduce((sum, item) => sum + (item.totalCost || 0), 0);
+
             // Persist to localStorage projects
             try {
                 const storedProjects = localStorage.getItem('kgvilla_projects');
@@ -322,13 +342,15 @@ export function useProjectData(projectId?: string) {
                             totalArea: response.totalArea,
                             boa: response.boa,
                             biarea: response.biarea,
+                            estimatedCost,
                         } : p
                     );
                     localStorage.setItem('kgvilla_projects', JSON.stringify(updatedProjects));
-                    logger.info('useProjectData', 'Persisted area data to project', {
+                    logger.info('useProjectData', 'Persisted area and cost data to project', {
                         totalArea: response.totalArea,
                         boa: response.boa,
-                        biarea: response.biarea
+                        biarea: response.biarea,
+                        estimatedCost
                     });
                 }
             } catch (e) {
