@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 40" fill="none">
+  <!-- JB Villan Logo - House Icon with Text -->
+  <g>
+    <!-- House Icon -->
+    <path d="M6 18L16 8L26 18V30H6V18Z" fill="#B91C1C"/>
+    <path d="M16 4L30 18H2L16 4Z" fill="#DC2626"/>
+    <!-- Chimney -->
+    <rect x="20" y="10" width="4" height="6" fill="#991B1B"/>
+    <!-- Door -->
+    <rect x="13" y="22" width="6" height="8" fill="#7F1D1D"/>
+    <!-- Windows -->
+    <rect x="8" y="20" width="4" height="4" fill="#FEE2E2"/>
+    <rect x="20" y="20" width="4" height="4" fill="#FEE2E2"/>
+  </g>
+  <!-- Text: JB Villan -->
+  <text x="34" y="26" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="800" fill="#1E293B">
+    JB Villan
+  </text>
+  <!-- Tagline -->
+  <text x="34" y="35" font-family="Inter, system-ui, sans-serif" font-size="6" font-weight="500" fill="#64748B">
+    Kalkyl
+  </text>
+</svg>

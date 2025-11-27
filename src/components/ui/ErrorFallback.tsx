@@ -40,9 +40,9 @@ export function ErrorFallback({ error, reset }: ErrorFallbackProps) {
             <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100 text-center">
 
                 {/* Fun Header */}
-                <div className="bg-gradient-to-b from-blue-50 to-white p-10 pb-6">
-                    <div className="mx-auto w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6 animate-bounce shadow-sm">
-                        <Wind className="h-10 w-10 text-blue-600" />
+                <div className="bg-gradient-to-b from-red-50 to-white p-10 pb-6">
+                    <div className="mx-auto w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6 animate-bounce shadow-sm">
+                        <Wind className="h-10 w-10 text-red-600" />
                     </div>
                     <h2 className="text-3xl font-bold text-slate-900 mb-3 tracking-tight">{t('error.title')}</h2>
                     <p className="text-slate-500 text-lg leading-relaxed">
@@ -55,7 +55,7 @@ export function ErrorFallback({ error, reset }: ErrorFallbackProps) {
                     <div className="flex flex-col gap-3">
                         <button
                             onClick={reset}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-blue-200 transition-all active:scale-95 flex items-center justify-center"
+                            className="w-full bg-red-600 hover:bg-red-700 text-white py-3.5 rounded-2xl font-bold shadow-lg shadow-red-200 transition-all active:scale-95 flex items-center justify-center"
                         >
                             <RefreshCcw className="h-5 w-5 mr-2" />
                             {t('error.retry')}

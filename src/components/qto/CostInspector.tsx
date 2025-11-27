@@ -118,19 +118,32 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
     const [isVisible, setIsVisible] = useState(false);
     const [displayedItem, setDisplayedItem] = useState<CostItem | null>(null);
 
+    // Track component mount
+    useEffect(() => {
+        logger.trackMount('CostInspector');
+        return () => logger.trackUnmount('CostInspector');
+    }, []);
+
     // Handle open/close animations to prevent DOM removal race conditions
     useEffect(() => {
         if (item) {
+            logger.info('CostInspector', 'Opening inspector', {
+                itemId: item.id,
+                elementName: item.elementName
+            });
             setDisplayedItem(item);
             // Small delay to ensure DOM is ready before animating in
             requestAnimationFrame(() => {
                 setIsVisible(true);
+                logger.debug('CostInspector', 'Animation started (visible)');
             });
         } else {
+            logger.debug('CostInspector', 'Closing inspector');
             setIsVisible(false);
             // Keep displayedItem during close animation, clear after animation ends
             const timer = setTimeout(() => {
                 setDisplayedItem(null);
+                logger.debug('CostInspector', 'Displayed item cleared');
             }, 300); // Match animation duration
             return () => clearTimeout(timer);
         }

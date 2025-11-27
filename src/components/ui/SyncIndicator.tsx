@@ -24,7 +24,7 @@ export function SyncIndicator({ syncState, className }: SyncIndicatorProps) {
                 </div>
             )}
             {status === 'pending' && (
-                <div className="flex items-center text-blue-600">
+                <div className="flex items-center text-red-600">
                     <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
                     <span>{t('sync.saving')}</span>
                 </div>

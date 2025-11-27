@@ -101,7 +101,7 @@ function ChatContent() {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-slate-600">{t('chat.loading')}</p>
                 </div>
             </div>
@@ -113,12 +113,12 @@ function ChatContent() {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
                 <div className="text-center max-w-md p-6">
-                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Bot className="w-8 h-8 text-blue-500" />
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Bot className="w-8 h-8 text-red-500" />
                     </div>
                     <h2 className="text-xl font-bold text-slate-900 mb-2">{t('chat.no_projects')}</h2>
                     <p className="text-slate-600 mb-4">{t('chat.create_first')}</p>
-                    <Link href="/" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700">
+                    <Link href="/" className="inline-block px-6 py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700">
                         {t('common.go_home')}
                     </Link>
                 </div>
@@ -178,7 +178,7 @@ function ChatContent() {
                         <div className={cn(
                             "flex flex-col max-w-[85%] md:max-w-[75%] rounded-2xl p-5 text-base leading-relaxed shadow-sm",
                             msg.role === 'user'
-                                ? "bg-blue-600 text-white rounded-br-sm"
+                                ? "bg-red-600 text-white rounded-br-sm"
                                 : "bg-white border border-slate-200 text-slate-800 rounded-bl-sm"
                         )}>
                             {/* AI Label */}
@@ -204,9 +204,9 @@ function ChatContent() {
 
                             {/* Scenario Proposal Card */}
                             {msg.scenario && (
-                                <div className="mt-4 bg-white rounded-xl border-2 border-blue-100 overflow-hidden shadow-sm">
-                                    <div className="bg-blue-50 p-4 border-b border-blue-100">
-                                        <h4 className="font-bold text-blue-900 text-sm uppercase tracking-wide mb-1">Scenario Proposal</h4>
+                                <div className="mt-4 bg-white rounded-xl border-2 border-red-100 overflow-hidden shadow-sm">
+                                    <div className="bg-red-50 p-4 border-b border-red-100">
+                                        <h4 className="font-bold text-red-900 text-sm uppercase tracking-wide mb-1">Scenario Proposal</h4>
                                         <h3 className="text-lg font-bold text-slate-900">{msg.scenario.title}</h3>
                                     </div>
                                     <div className="p-4">
@@ -224,7 +224,7 @@ function ChatContent() {
 
                                         <button
                                             onClick={() => handleApplyScenario(msg.scenario!)}
-                                            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm"
+                                            className="w-full py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-sm transition-colors shadow-sm"
                                         >
                                             {t('chat.apply_scenario')}
                                         </button>
@@ -282,8 +282,8 @@ function ChatContent() {
                 <div className="max-w-3xl mx-auto">
                     {/* Selected File Preview */}
                     {selectedFile && (
-                        <div className="mb-2 mx-2 inline-flex items-center bg-white px-3 py-1.5 rounded-lg shadow-sm border border-blue-100 animate-in slide-in-from-bottom-2">
-                            <span className="text-xs font-medium text-blue-600 mr-2">{selectedFile.name}</span>
+                        <div className="mb-2 mx-2 inline-flex items-center bg-white px-3 py-1.5 rounded-lg shadow-sm border border-red-100 animate-in slide-in-from-bottom-2">
+                            <span className="text-xs font-medium text-red-600 mr-2">{selectedFile.name}</span>
                             <button onClick={() => setSelectedFile(null)} className="text-slate-400 hover:text-red-500">
                                 <X className="h-3 w-3" />
                             </button>
@@ -322,7 +322,7 @@ function ChatContent() {
                         <button
                             onClick={handleSend}
                             disabled={(!input.trim() && !selectedFile) || isTyping}
-                            className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95"
+                            className="p-3 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95"
                         >
                             <Send className="h-5 w-5" />
                         </button>

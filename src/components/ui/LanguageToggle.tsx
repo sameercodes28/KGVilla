@@ -15,7 +15,7 @@ export function LanguageToggle() {
                     className={cn(
                         "px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center space-x-1.5",
                         language === 'en'
-                            ? "bg-blue-600 text-white shadow-sm"
+                            ? "bg-red-600 text-white shadow-sm"
                             : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                     )}
                 >
@@ -27,7 +27,7 @@ export function LanguageToggle() {
                     className={cn(
                         "px-4 py-2 rounded-full text-xs font-bold transition-all flex items-center space-x-1.5",
                         language === 'sv'
-                            ? "bg-blue-600 text-white shadow-sm"
+                            ? "bg-red-600 text-white shadow-sm"
                             : "text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                     )}
                 >

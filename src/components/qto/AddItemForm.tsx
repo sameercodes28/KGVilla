@@ -74,7 +74,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
         return (
             <button
                 onClick={() => setIsAddingItem(true)}
-                className="w-full py-4 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-medium hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center justify-center space-x-2"
+                className="w-full py-4 border-2 border-dashed border-slate-300 rounded-xl text-slate-500 font-medium hover:border-red-500 hover:text-red-600 transition-colors flex items-center justify-center space-x-2"
             >
                 <Plus className="w-5 h-5" />
                 <span>{t('qto.add_custom_item')}</span>
@@ -90,7 +90,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
                     <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.item_name')}</label>
                     <input
                         type="text"
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-red-500 outline-none"
                         placeholder={t('form.placeholder')}
                         value={newItemData.elementName}
                         onChange={handleNameChange}
@@ -122,7 +122,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
                         type="number"
                         min="0"
                         step="1"
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-red-500 outline-none"
                         value={Math.round(newItemData.unitPrice || 0)}
                         onChange={e => setNewItemData({ ...newItemData, unitPrice: Math.round(Number(e.target.value)) })}
                     />
@@ -133,7 +133,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
                         type="number"
                         min="0.01"
                         step="0.01"
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-red-500 outline-none"
                         value={newItemData.quantity}
                         onChange={e => setNewItemData({ ...newItemData, quantity: Number(e.target.value) })}
                     />
@@ -141,7 +141,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
                 <div className="col-span-2">
                     <label className="block text-xs font-medium text-slate-500 mb-1">{t('qto.phase')}</label>
                     <select
-                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-red-500 outline-none bg-white"
                         value={newItemData.phase}
                         onChange={e => setNewItemData({ ...newItemData, phase: e.target.value as ConstructionPhase })}
                     >
@@ -159,7 +159,7 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
             <div className="flex space-x-3 pt-2">
                 <button
                     onClick={handleSubmit}
-                    className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    className="flex-1 bg-red-600 text-white py-2 rounded-lg font-medium hover:bg-red-700 transition-colors"
                 >
                     {t('qto.btn_add')}
                 </button>

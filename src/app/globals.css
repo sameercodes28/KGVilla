@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+/* JB Villan Brand Colors */
+:root {
+  --jb-red: #B91C1C;           /* Primary red - matches JB Villan brand */
+  --jb-red-light: #DC2626;     /* Lighter red for hover states */
+  --jb-red-dark: #991B1B;      /* Darker red for active states */
+  --jb-red-50: #FEF2F2;        /* Very light red background */
+  --jb-red-100: #FEE2E2;       /* Light red background */
+  --jb-red-200: #FECACA;       /* Light red for borders */
+  --jb-navy: #1E293B;          /* Dark navy for text */
+}
+
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

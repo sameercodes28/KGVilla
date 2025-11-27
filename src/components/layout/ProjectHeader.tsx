@@ -99,7 +99,7 @@ export function ProjectHeader({
                                             onClick={() => setIsDropdownOpen(false)}
                                             className={cn(
                                                 "block w-full text-left px-4 py-3 text-sm hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0",
-                                                currentProjectId === p.id ? "bg-blue-50 text-blue-700 font-semibold" : "text-slate-700"
+                                                currentProjectId === p.id ? "bg-red-50 text-red-700 font-semibold" : "text-slate-700"
                                             )}
                                         >
                                             {p.name}
@@ -108,7 +108,7 @@ export function ProjectHeader({
                                     ))}
                                 </div>
                                 <div className="p-2 bg-slate-50 border-t border-slate-100">
-                                    <Link href="/" className="block text-center text-xs font-bold text-blue-600 hover:underline py-1">
+                                    <Link href="/" className="block text-center text-xs font-bold text-red-600 hover:underline py-1">
                                         {t('header.create_new')}
                                     </Link>
                                 </div>
@@ -119,7 +119,7 @@ export function ProjectHeader({
                     {currentProjectId && !hideProposalButton && (
                          <Link
                             href={`/qto/customer?project=${currentProjectId}`}
-                            className="hidden md:flex items-center text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors text-xs font-bold"
+                            className="hidden md:flex items-center text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition-colors text-xs font-bold"
                         >
                             <Presentation className="h-3.5 w-3.5 mr-1.5" />
                             {t('report.quote')}

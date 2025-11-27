@@ -41,7 +41,7 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
         return (
             <div className="flex h-screen items-center justify-center bg-slate-50">
                 <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-slate-600">{t('split.loading')}</p>
                 </div>
             </div>
@@ -62,7 +62,7 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
                     <p className="text-slate-600 mb-4">{error}</p>
                     <button
                         onClick={() => window.location.reload()}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                     >
                         {t('common.try_again')}
                     </button>
@@ -87,7 +87,7 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
                 <div className="w-1/2 h-full overflow-hidden border-r border-slate-200 bg-slate-900 relative">
                     {isAnalyzing && (
                         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm text-white">
-                            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                            <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mb-4"></div>
                             <p className="text-lg font-bold">{t('split.analyzing')}</p>
                             <p className="text-sm text-slate-400">{t('split.identifying')}</p>
                         </div>

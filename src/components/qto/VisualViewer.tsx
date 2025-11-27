@@ -80,7 +80,7 @@ export function VisualViewer({ floorPlanUrl, onUpload, highlightedItem }: Visual
                     /* Empty State / Upload */
                     <div className="flex flex-col items-center justify-center p-12 max-w-md text-center">
                         <div className="w-20 h-20 bg-slate-800 rounded-3xl flex items-center justify-center mb-6">
-                            <UploadCloud className="h-10 w-10 text-blue-500" />
+                            <UploadCloud className="h-10 w-10 text-red-500" />
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-2">{t('viewer.upload_title')}</h3>
                         <p className="text-slate-400 mb-8">
@@ -97,7 +97,7 @@ export function VisualViewer({ floorPlanUrl, onUpload, highlightedItem }: Visual
 
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 hover:scale-105"
+                            className="px-8 py-4 bg-red-600 hover:bg-red-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-red-500/20 hover:scale-105"
                         >
                             {t('viewer.select_file')}
                         </button>
@@ -113,7 +113,7 @@ export function VisualViewer({ floorPlanUrl, onUpload, highlightedItem }: Visual
                         <p className="text-sm text-slate-300">{hasPlan ? t('viewer.ready_analysis') : t('viewer.upload_start')}</p>
                     </div>
                     {highlightedItem ? (
-                        <div className="bg-blue-600 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider">
+                        <div className="bg-red-600 px-3 py-1 rounded text-xs font-bold uppercase tracking-wider">
                             {t('viewer.validating')} {highlightedItem.name}
                         </div>
                     ) : (

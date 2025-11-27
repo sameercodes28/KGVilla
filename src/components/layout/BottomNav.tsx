@@ -22,10 +22,10 @@ export function BottomNav() {
                     href="/" 
                     className={cn(
                         "flex flex-col items-center p-2 rounded-xl transition-all duration-300",
-                        isActive('/') ? "text-blue-600 scale-105" : "text-slate-400 hover:text-slate-600"
+                        isActive('/') ? "text-red-600 scale-105" : "text-slate-400 hover:text-slate-600"
                     )}
                 >
-                    <Home className={cn("h-6 w-6 mb-1", isActive('/') && "fill-blue-600/10")} />
+                    <Home className={cn("h-6 w-6 mb-1", isActive('/') && "fill-red-600/10")} />
                     <span className="text-[10px] font-medium tracking-wide">{t('nav.home')}</span>
                 </Link>
 
@@ -33,10 +33,10 @@ export function BottomNav() {
                     href="/qto" 
                     className={cn(
                         "flex flex-col items-center p-2 rounded-xl transition-all duration-300",
-                        isActive('/qto') && !pathname.includes('/chat') ? "text-blue-600 scale-105" : "text-slate-400 hover:text-slate-600"
+                        isActive('/qto') && !pathname.includes('/chat') ? "text-red-600 scale-105" : "text-slate-400 hover:text-slate-600"
                     )}
                 >
-                    <FileText className={cn("h-6 w-6 mb-1", isActive('/qto') && !pathname.includes('/chat') && "fill-blue-600/10")} />
+                    <FileText className={cn("h-6 w-6 mb-1", isActive('/qto') && !pathname.includes('/chat') && "fill-red-600/10")} />
                     <span className="text-[10px] font-medium tracking-wide">{t('nav.project_view')}</span>
                 </Link>
 
