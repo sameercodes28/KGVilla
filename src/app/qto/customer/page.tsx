@@ -6,10 +6,10 @@ import { useProjectData } from '@/hooks/useProjectData';
 import { useTranslation } from '@/contexts/LanguageContext';
 import {
     MapPin, ShieldCheck, FileText, ArrowRight, ArrowLeft,
-    ChevronDown, ChevronUp, Scale, Home, Ruler,
-    CheckCircle2, AlertCircle, Sparkles, Download,
+    ChevronDown, ChevronUp, Scale, Ruler,
+    CheckCircle2, Sparkles, Download,
     Phone, Building2, Hammer, Zap, Droplets, PaintBucket,
-    ClipboardCheck, Eye, EyeOff, Plus, Minus
+    ClipboardCheck, EyeOff, Plus
 } from 'lucide-react';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import Link from 'next/link';
@@ -17,6 +17,9 @@ import { CostItem } from '@/types';
 import { getItemRegulations, RegulationRef, REGULATION_COLORS } from '@/data/regulationMapping';
 import { cn } from '@/lib/utils';
 import { ContractScope } from '@/components/qto/ContractScope';
+
+// Phase order constant (moved outside component for useMemo stability)
+const PHASE_ORDER = ['ground', 'structure', 'electrical', 'plumbing', 'interior', 'completion', 'admin'];
 
 // Phase Icons mapping
 const PHASE_ICONS: Record<string, React.ElementType> = {
@@ -124,7 +127,7 @@ function PhaseBreakdown({ phase, totalCost, t }: PhaseBreakdownProps) {
                             })}
                             {phaseRegulations.length > 6 && (
                                 <span className="px-2 py-1 bg-slate-200 text-slate-600 rounded text-xs font-medium">
-                                    +{phaseRegulations.length - 6} more
+                                    +{phaseRegulations.length - 6} {t('report.more')}
                                 </span>
                             )}
                         </div>
@@ -161,17 +164,17 @@ function PhaseBreakdown({ phase, totalCost, t }: PhaseBreakdownProps) {
                                                 </span>
                                                 {isDisabled && (
                                                     <span className="px-2 py-0.5 bg-slate-200 text-slate-500 rounded text-xs font-medium">
-                                                        Excluded
+                                                        {t('report.excluded_badge')}
                                                     </span>
                                                 )}
                                                 {hasCustomPrice && !isDisabled && (
                                                     <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
-                                                        Modified
+                                                        {t('report.modified_badge')}
                                                     </span>
                                                 )}
                                                 {item.isUserAdded && (
                                                     <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">
-                                                        Added by you
+                                                        {t('report.added_by_you')}
                                                     </span>
                                                 )}
                                             </div>
@@ -231,7 +234,7 @@ function PhaseBreakdown({ phase, totalCost, t }: PhaseBreakdownProps) {
 
                     {/* Phase Total */}
                     <div className={cn("px-6 py-4 flex justify-between items-center", colors.light)}>
-                        <span className={cn("font-semibold", colors.text)}>{phase.label} Total</span>
+                        <span className={cn("font-semibold", colors.text)}>{phase.label} {t('report.total')}</span>
                         <span className={cn("text-xl font-mono font-bold", colors.text)}>
                             {Math.round(phase.total).toLocaleString('sv-SE')} kr
                         </span>
@@ -252,9 +255,8 @@ function CustomerViewContent() {
     const costPerSqm = totalArea && totalArea > 0 ? Math.round(totalCost / totalArea) : 0;
 
     // Group items by phase
-    const phases = ['ground', 'structure', 'electrical', 'plumbing', 'interior', 'completion', 'admin'];
     const phaseData = useMemo(() => {
-        return phases
+        return PHASE_ORDER
             .map(phase => ({
                 id: phase,
                 label: t(`phase.${phase}`),
@@ -409,13 +411,13 @@ function CustomerViewContent() {
                     <div className="bg-white rounded-2xl p-5 shadow-lg border border-slate-100">
                         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t('report.regulations_count')}</div>
                         <div className="text-2xl font-mono font-bold text-slate-900">
-                            {allRegulations.length} <span className="text-sm text-slate-400">regler</span>
+                            {allRegulations.length} <span className="text-sm text-slate-400">{t('common.regulations')}</span>
                         </div>
                     </div>
                     <div className="bg-white rounded-2xl p-5 shadow-lg border border-slate-100">
                         <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">{t('report.items_count')}</div>
                         <div className="text-2xl font-mono font-bold text-slate-900">
-                            {items.filter(i => !i.disabled).length} <span className="text-sm text-slate-400">poster</span>
+                            {items.filter(i => !i.disabled).length} <span className="text-sm text-slate-400">{t('common.items')}</span>
                         </div>
                     </div>
                 </div>
@@ -508,7 +510,7 @@ function CustomerViewContent() {
                                 >
                                     <div className={cn("text-sm font-bold mb-1", colors.color)}>{reg.name}</div>
                                     <div className="text-xs text-slate-500">
-                                        {count} {count === 1 ? 'item' : 'items'} affected
+                                        {count} {count === 1 ? t('report.item_affected') : t('report.items_affected')}
                                     </div>
                                     {reg.requirement && (
                                         <div className="text-xs text-slate-400 mt-2 line-clamp-2">{reg.requirement}</div>
@@ -520,7 +522,7 @@ function CustomerViewContent() {
 
                     {allRegulations.length > 12 && (
                         <p className="text-center text-sm text-slate-500 mt-6">
-                            + {allRegulations.length - 12} more regulations applied
+                            + {allRegulations.length - 12} {t('report.more_regulations')}
                         </p>
                     )}
                 </div>
