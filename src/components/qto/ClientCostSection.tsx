@@ -74,11 +74,8 @@ export function ClientCostSection({ onInspectItem }: ClientCostSectionProps) {
                 <div className="mb-4 p-3 bg-amber-100 rounded-xl border border-amber-200 flex items-start gap-3">
                     <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div>
-                        <div className="text-sm font-semibold text-amber-800">These are YOUR costs, not JB Villan&apos;s</div>
-                        <div className="text-xs text-amber-700 mt-1">
-                            These fees are paid directly by you to government agencies, utilities, and service providers.
-                            They are NOT included in the contractor&apos;s turnkey price above.
-                        </div>
+                        <div className="text-sm font-semibold text-amber-800">{t('client.warning_title')}</div>
+                        <div className="text-xs text-amber-700 mt-1">{t('client.warning_desc')}</div>
                     </div>
                 </div>
 

@@ -254,7 +254,9 @@ export default function Home() {
                 {t('dash.hero_title')} <br/>
                 <span className="text-red-600">{t('dash.hero_subtitle')}</span>
             </h1>
-            <p className="text-base text-slate-500 max-w-2xl mx-auto leading-relaxed mb-6" dangerouslySetInnerHTML={{ __html: t('dash.hero_desc') }} />
+            <p className="text-base text-slate-500 max-w-2xl mx-auto leading-relaxed mb-6">
+                {t('dash.hero_desc_1')} <strong>{t('dash.hero_desc_highlight')}</strong> {t('dash.hero_desc_2')}
+            </p>
 
             {/* Regulation Badges - Clickable with explanations */}
             <RegulationBadges />

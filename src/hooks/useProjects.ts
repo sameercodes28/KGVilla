@@ -37,9 +37,12 @@ export function useProjects() {
     useEffect(() => {
         if (!isHydrated) return;
 
+        let isCancelled = false;
+
         const fetchFromApi = async () => {
             try {
                 const data = await apiClient.get<Project[]>('/projects');
+                if (isCancelled) return; // Don't update state if unmounted
                 if (Array.isArray(data) && data.length > 0) {
                     setProjects(data);
                     // Update LocalStorage with fresh data
@@ -47,12 +50,17 @@ export function useProjects() {
                     logger.info('useProjects', 'Synced with API', { count: data.length });
                 }
             } catch (err) {
+                if (isCancelled) return;
                 logger.warn('useProjects', 'API unavailable, using local data', err);
                 // Do not overwrite state if API fails, keep local data
             }
         };
 
         fetchFromApi();
+
+        return () => {
+            isCancelled = true;
+        };
     }, [isHydrated]);
 
     const saveToLocal = (newProjects: Project[]) => {

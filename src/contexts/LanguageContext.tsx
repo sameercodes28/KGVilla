@@ -158,7 +158,9 @@ const dictionary: Record<string, DictionaryEntry> = {
     'dash.smart_intelligence': { en: 'Smart Construction Intelligence', sv: 'Smart Byggintelligens' },
     'dash.hero_title': { en: 'Precision Pricing for', sv: 'Precisionsprissättning för' },
     'dash.hero_subtitle': { en: 'Swedish Villas.', sv: 'Svenska Villor.' },
-    'dash.hero_desc': { en: 'Instantly analyze blueprints against <strong>22 Swedish building regulations</strong> including BBR, Säker Vatten, EKS, and more. Generate compliant, professional quotes in seconds.', sv: 'Analysera ritningar direkt mot <strong>22 svenska byggregler</strong> inklusive BBR, Säker Vatten, EKS och fler. Generera regelenliga, professionella offerter på sekunder.' },
+    'dash.hero_desc_1': { en: 'Instantly analyze blueprints against', sv: 'Analysera ritningar direkt mot' },
+    'dash.hero_desc_highlight': { en: '22 Swedish building regulations', sv: '22 svenska byggregler' },
+    'dash.hero_desc_2': { en: 'including BBR, Säker Vatten, EKS, and more. Generate compliant, professional quotes in seconds.', sv: 'inklusive BBR, Säker Vatten, EKS och fler. Generera regelenliga, professionella offerter på sekunder.' },
     'dash.recent_activity': { en: 'Recent Activity', sv: 'Senaste Aktivitet' },
     'dash.search_placeholder': { en: 'Search projects...', sv: 'Sök projekt...' },
     'dash.start_blueprint': { en: 'Start from a blueprint', sv: 'Börja från en ritning' },
@@ -211,6 +213,8 @@ const dictionary: Record<string, DictionaryEntry> = {
     'client.title': { en: 'Client Costs (Byggherrekostnader)', sv: 'Byggherrekostnader' },
     'client.desc': { en: 'Fees, permits, and connections paid directly by you.', sv: 'Avgifter, lov och anslutningar som betalas direkt av dig.' },
     'client.est_total': { en: 'Est. Total', sv: 'Est. Totalt' },
+    'client.warning_title': { en: "These are YOUR costs, not JB Villan's", sv: 'Det här är DINA kostnader, inte JB Villans' },
+    'client.warning_desc': { en: "These fees are paid directly by you to government agencies, utilities, and service providers. They are NOT included in the contractor's turnkey price above.", sv: 'Dessa avgifter betalas direkt av dig till myndigheter, energibolag och tjänsteleverantörer. De ingår INTE i entreprenörens nyckelfärdiga pris ovan.' },
 
     // Client Costs Items
     'cost.lagfart': { en: 'Title Deed (Lagfart)', sv: 'Lagfart' },
