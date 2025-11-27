@@ -289,6 +289,38 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                             </p>
                         )}
 
+                        {/* Quantity Breakdown - Shows individual room contributions */}
+                        {item.quantityBreakdown && item.quantityBreakdown.items.length > 0 && (
+                            <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                <p className="text-xs font-medium text-slate-600 uppercase mb-2">
+                                    {item.quantityBreakdown.calculationMethod || 'Room Breakdown'}
+                                </p>
+                                <div className="space-y-1.5">
+                                    {item.quantityBreakdown.items.map((breakdownItem, i) => (
+                                        <div key={i} className="flex items-center justify-between text-sm">
+                                            <span className="text-slate-700">
+                                                {breakdownItem.name}
+                                                {breakdownItem.category && (
+                                                    <span className="ml-1 text-xs text-slate-400">
+                                                        ({breakdownItem.category})
+                                                    </span>
+                                                )}
+                                            </span>
+                                            <span className="font-mono text-slate-900">
+                                                {breakdownItem.value.toFixed(1)} {breakdownItem.unit}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-2 pt-2 border-t border-slate-200 flex justify-between text-sm font-medium">
+                                    <span className="text-slate-700">Total</span>
+                                    <span className="font-mono text-blue-700">
+                                        {item.quantityBreakdown.total.toFixed(1)} {item.quantityBreakdown.unit}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Show the actual measurement */}
                         <div className="mt-3 p-3 bg-blue-100/50 rounded-lg">
                             <div className="flex items-center justify-between">

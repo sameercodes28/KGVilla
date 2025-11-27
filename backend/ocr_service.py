@@ -9,7 +9,7 @@ import re
 import math
 import logging
 from typing import List, Dict, Tuple
-from models import CostItem
+from models import CostItem, QuantityBreakdown, QuantityBreakdownItem
 
 logger = logging.getLogger(__name__)
 
@@ -1236,10 +1236,25 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
     total_wet_wall_area = 0
     total_standard_wall_area = 0
 
+    # Track room details for quantity breakdowns
+    wet_room_details = []       # For underfloor heating, wet walls
+    standard_room_details = []  # For standard walls
+    bedroom_details = []        # For wardrobes
+    all_room_details = []       # For flooring totals
+
     for room in rooms:
         category = room["category"]
         area = room["area"]
         name = room["name"]
+
+        # Track all rooms for potential breakdown use
+        room_detail = QuantityBreakdownItem(
+            name=name,
+            value=area,
+            unit="m²",
+            category=category
+        )
+        all_room_details.append(room_detail)
 
         # Flooring
         floor_price = PRICING["flooring"].get(category, 450)
@@ -1265,9 +1280,30 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         if category in ["bathroom", "laundry"]:
             wet_room_area += area
             total_wet_wall_area += room_wall_area
+            wet_room_details.append(QuantityBreakdownItem(
+                name=name,
+                value=area,
+                unit="m²",
+                category=category
+            ))
         else:
             standard_room_area += area
             total_standard_wall_area += room_wall_area
+            standard_room_details.append(QuantityBreakdownItem(
+                name=name,
+                value=area,
+                unit="m²",
+                category=category
+            ))
+
+        # Track bedrooms for wardrobe count
+        if category == "bedroom":
+            bedroom_details.append(QuantityBreakdownItem(
+                name=name,
+                value=1,
+                unit="st",
+                category=category
+            ))
 
     # Wet room walls (Säker Vatten compliant - ~3x standard cost)
     if total_wet_wall_area > 0:
@@ -1279,9 +1315,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=total_wet_wall_area,
             unit="m²",
             unitPrice=PRICING["walls"]["wet_room"],
-            totalCost=total_wet_wall_area * PRICING["walls"]["wet_room"],
+            totalCost=round(total_wet_wall_area * PRICING["walls"]["wet_room"]),
             confidenceScore=0.85,
-            guidelineReference="Säker Vatten 2021:2, BBV 21:1, BBR 6:5"
+            guidelineReference="Säker Vatten 2021:2, BBV 21:1, BBR 6:5",
+            quantityBreakdown=QuantityBreakdown(
+                items=wet_room_details,
+                total=wet_room_area,
+                unit="m²",
+                calculationMethod="Wall area = perimeter × 2.5m height for each wet room"
+            )
         ))
 
     # Standard room walls
@@ -1290,13 +1332,19 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             id="interior-standard-walls",
             phase="interior",
             elementName="Standard Room Walls",
-            description=f"Gypsum with paint finish - {total_standard_wall_area:.0f} m²",
+            description=f"Gypsum with paint finish - {total_standard_wall_area:.1f} m²",
             quantity=total_standard_wall_area,
             unit="m²",
             unitPrice=PRICING["walls"]["standard"],
-            totalCost=total_standard_wall_area * PRICING["walls"]["standard"],
+            totalCost=round(total_standard_wall_area * PRICING["walls"]["standard"]),
             confidenceScore=0.85,
-            guidelineReference="AMA Hus"
+            guidelineReference="AMA Hus",
+            quantityBreakdown=QuantityBreakdown(
+                items=standard_room_details,
+                total=standard_room_area,
+                unit="m²",
+                calculationMethod="Wall area = perimeter × 2.5m height for each standard room"
+            )
         ))
 
     # --- PLUMBING ---
@@ -1444,13 +1492,19 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 id="hvac-underfloor",
                 phase="plumbing",
                 elementName="Underfloor Heating (Wet Rooms)",
-                description=f"Electric/water underfloor heating - {wet_room_area:.0f} m²",
+                description=f"Electric/water underfloor heating - {wet_room_area:.1f} m²",
                 quantity=wet_room_area,
                 unit="m²",
                 unitPrice=PRICING["underfloor_heating_per_m2"],
-                totalCost=wet_room_area * PRICING["underfloor_heating_per_m2"],
+                totalCost=round(wet_room_area * PRICING["underfloor_heating_per_m2"]),
                 confidenceScore=0.9,
-                guidelineReference="Säker Vatten"
+                guidelineReference="Säker Vatten",
+                quantityBreakdown=QuantityBreakdown(
+                    items=wet_room_details,
+                    total=wet_room_area,
+                    unit="m²",
+                    calculationMethod="Sum of wet room (bathroom + laundry) floor areas"
+                )
             ))
 
         # Radiators (estimate: 1 per room)

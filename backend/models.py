@@ -14,6 +14,20 @@ class Option(BaseModel):
     description: Optional[str] = None
     priceModifier: float
 
+class QuantityBreakdownItem(BaseModel):
+    """A single item contributing to a quantity total (e.g., a room)."""
+    name: str                          # e.g., "WC/D1", "TVÄTT"
+    value: float                       # e.g., 3.1, 7.8
+    unit: str                          # e.g., "m²"
+    category: Optional[str] = None     # e.g., "bathroom", "laundry"
+
+class QuantityBreakdown(BaseModel):
+    """Shows how a quantity was calculated from individual components."""
+    items: List[QuantityBreakdownItem] = []
+    total: float
+    unit: str
+    calculationMethod: Optional[str] = None  # e.g., "Sum of wet room floor areas"
+
 class CostBreakdown(BaseModel):
     material: Optional[float] = 0
     labor: Optional[float] = 0
@@ -48,6 +62,9 @@ class CostItem(BaseModel):
     
     # Detailed Cost Breakdown (Explainability)
     breakdown: Optional[CostBreakdown] = None
+
+    # Quantity Breakdown (shows which rooms/components contribute to total)
+    quantityBreakdown: Optional[QuantityBreakdown] = None
     
     # Interactive Data
     options: Optional[List[Option]] = None

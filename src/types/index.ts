@@ -62,6 +62,20 @@ export interface CostBreakdown {
   source: string;
 }
 
+export interface QuantityBreakdownItem {
+  name: string;        // e.g., "WC/D1", "TVÄTT"
+  value: number;       // e.g., 3.1, 7.8
+  unit: string;        // e.g., "m²"
+  category?: string;   // e.g., "bathroom", "laundry"
+}
+
+export interface QuantityBreakdown {
+  items: QuantityBreakdownItem[];
+  total: number;
+  unit: string;
+  calculationMethod?: string;  // e.g., "Sum of wet room floor areas"
+}
+
 export interface CostItem {
   id: string;
   projectId: string;
@@ -83,6 +97,9 @@ export interface CostItem {
   
   // Detailed Breakdown (Explainability)
   breakdown?: CostBreakdown;
+
+  // Quantity Breakdown (shows which rooms/components contribute to total)
+  quantityBreakdown?: QuantityBreakdown;
 
   options?: {
     id: string;
