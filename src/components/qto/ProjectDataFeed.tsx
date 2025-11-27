@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { ClientCostSection } from './ClientCostSection';
 import { PhaseSection } from './PhaseSection';
 import { TotalSummary } from './TotalSummary';
 import { AddItemForm } from './AddItemForm';
 import { useProjectContext } from '@/contexts/ProjectDataContext';
+import { TrendingUp } from 'lucide-react';
 
 export function ProjectDataFeed() {
     const { t } = useTranslation();
@@ -33,6 +34,26 @@ export function ProjectDataFeed() {
     ];
 
     const otherItems = items.filter(i => !phases.some(p => p.id === i.phase));
+
+    // Calculate total savings from prefab efficiency
+    const prefabSavings = useMemo(() => {
+        return items.reduce((total, item) => {
+            if (item.prefabDiscount) {
+                return total + item.prefabDiscount.savingsAmount;
+            }
+            return total;
+        }, 0);
+    }, [items]);
+
+    // Calculate what a general contractor would charge
+    const generalContractorTotal = useMemo(() => {
+        return items.reduce((total, item) => {
+            if (item.prefabDiscount) {
+                return total + item.prefabDiscount.generalContractorPrice;
+            }
+            return total + item.totalCost;
+        }, 0);
+    }, [items]);
 
     if (!project) {
         return <div className="p-8 text-center text-slate-500">{t('common.loading_project')}</div>;
@@ -64,8 +85,6 @@ export function ProjectDataFeed() {
                         </p>
                     </div>
                 </header>
-
-                <ClientCostSection onInspectItem={setInspectingItem} />
 
                 {/* Phases View */}
                 <div className="space-y-6">
@@ -104,8 +123,44 @@ export function ProjectDataFeed() {
                     <AddItemForm onAdd={addItem} phases={phases} />
                 </div>
 
+                {/* Contractor Total (JB Villan price) */}
                 <div className="mt-12">
                     <TotalSummary totalCost={totalCost} area={totalArea || 0} boa={boa} biarea={biarea} />
+                </div>
+
+                {/* General Contractor Comparison */}
+                {prefabSavings > 0 && (
+                    <div className="mt-6 p-4 bg-green-50 rounded-xl border border-green-200">
+                        <div className="flex items-start gap-3">
+                            <div className="p-2 bg-green-100 rounded-lg">
+                                <TrendingUp className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div className="flex-1">
+                                <h4 className="font-semibold text-green-800">JB Villan Prefab Advantage</h4>
+                                <p className="text-sm text-green-700 mt-1">
+                                    A general contractor would charge approximately{' '}
+                                    <span className="font-bold font-mono">{Math.round(generalContractorTotal).toLocaleString('sv-SE')} kr</span>{' '}
+                                    for this build based on 2025 market rates.
+                                </p>
+                                <div className="mt-3 flex items-center gap-4">
+                                    <div className="text-sm">
+                                        <span className="text-green-600">You save:</span>{' '}
+                                        <span className="font-bold font-mono text-green-700">
+                                            {Math.round(prefabSavings).toLocaleString('sv-SE')} kr
+                                        </span>
+                                    </div>
+                                    <div className="text-xs px-2 py-1 bg-green-200 text-green-800 rounded-full font-semibold">
+                                        {Math.round((prefabSavings / generalContractorTotal) * 100)}% savings
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Client Costs Section - MOVED TO BOTTOM */}
+                <div className="mt-12">
+                    <ClientCostSection onInspectItem={setInspectingItem} />
                 </div>
             </div>
         </div>

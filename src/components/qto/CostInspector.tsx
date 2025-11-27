@@ -4,12 +4,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
     X, Loader2, BookOpen, AlertCircle, RefreshCw,
     Calculator, Ruler, FileText, CheckCircle,
-    Lightbulb, ChevronDown, ChevronUp, Scale
+    Lightbulb, ChevronDown, ChevronUp, Scale, Factory, TrendingDown
 } from 'lucide-react';
 import { CostItem } from '@/types';
 import { apiClient } from '@/lib/apiClient';
 import { logger } from '@/lib/logger';
-import { getItemRegulations, RegulationRef, REGULATION_COLORS } from '@/data/regulationMapping';
+import { getItemRegulations, REGULATION_COLORS } from '@/data/regulationMapping';
 import { cn } from '@/lib/utils';
 
 interface CostInspectorProps {
@@ -406,6 +406,78 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                     Price source: {item.breakdown.source}
                                 </p>
                             )}
+                        </div>
+                    </Section>
+                )}
+
+                {/* JB Villan Prefab Efficiency Section */}
+                {item.prefabDiscount && (
+                    <Section title="JB Villan Prefab Efficiency" icon={Factory} color="green">
+                        <div className="space-y-4">
+                            {/* Price Comparison */}
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                                    <p className="text-xs text-red-600 uppercase font-medium mb-1">General Contractor</p>
+                                    <p className="text-lg font-mono font-bold text-red-700 line-through">
+                                        {Math.round(item.prefabDiscount.generalContractorPrice).toLocaleString('sv-SE')} kr
+                                    </p>
+                                    <p className="text-[10px] text-red-500 mt-0.5">2025 market rate</p>
+                                </div>
+                                <div className="p-3 bg-green-100 rounded-lg border border-green-300">
+                                    <p className="text-xs text-green-700 uppercase font-medium mb-1">JB Villan Price</p>
+                                    <p className="text-lg font-mono font-bold text-green-800">
+                                        {Math.round(item.prefabDiscount.jbVillanPrice).toLocaleString('sv-SE')} kr
+                                    </p>
+                                    <p className="text-[10px] text-green-600 mt-0.5">Factory-optimized</p>
+                                </div>
+                            </div>
+
+                            {/* Savings Highlight */}
+                            <div className="p-4 bg-gradient-to-r from-green-100 to-emerald-100 rounded-xl border border-green-300">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-2 bg-green-200 rounded-full">
+                                            <TrendingDown className="h-5 w-5 text-green-700" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-green-700 font-medium uppercase">Your Savings</p>
+                                            <p className="text-2xl font-mono font-bold text-green-800">
+                                                {Math.round(item.prefabDiscount.savingsAmount).toLocaleString('sv-SE')} kr
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="px-3 py-1.5 bg-green-700 text-white text-lg font-bold rounded-full">
+                                        -{item.prefabDiscount.savingsPercent}%
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Why It's Cheaper */}
+                            <div className="p-3 bg-white rounded-lg border border-slate-200">
+                                <p className="text-xs font-medium text-slate-600 uppercase mb-2 flex items-center gap-1">
+                                    <Factory className="h-3 w-3" />
+                                    Why JB Villan is cheaper
+                                </p>
+                                <p className="text-sm text-slate-700 leading-relaxed">
+                                    {item.prefabDiscount.reason}
+                                </p>
+                            </div>
+
+                            {/* Additional Context */}
+                            <div className="text-xs text-slate-500 space-y-1 pt-2 border-t border-slate-200">
+                                <p className="flex items-center gap-1">
+                                    <CheckCircle className="h-3 w-3 text-green-500" />
+                                    Factory manufacturing reduces waste and labor costs
+                                </p>
+                                <p className="flex items-center gap-1">
+                                    <CheckCircle className="h-3 w-3 text-green-500" />
+                                    Bulk purchasing power for materials
+                                </p>
+                                <p className="flex items-center gap-1">
+                                    <CheckCircle className="h-3 w-3 text-green-500" />
+                                    Standardized processes increase efficiency
+                                </p>
+                            </div>
                         </div>
                     </Section>
                 )}

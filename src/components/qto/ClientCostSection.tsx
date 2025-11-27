@@ -1,5 +1,5 @@
 import { clientCosts } from '@/data/projectData';
-import { Info } from 'lucide-react';
+import { Info, AlertTriangle } from 'lucide-react';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { CostItem } from '@/types';
 import { CollapsibleSection } from '@/components/ui/CollapsibleSection';
@@ -58,29 +58,41 @@ export function ClientCostSection({ onInspectItem }: ClientCostSectionProps) {
 
     const TotalDisplay = (
         <div className="text-right">
-            <div className="text-lg font-bold text-slate-900 font-mono">{Math.round(totalClientCost).toLocaleString('sv-SE')} kr</div>
-            <div className="text-[10px] text-slate-400 uppercase tracking-wider font-medium">{t('client.est_total')}</div>
+            <div className="text-lg font-bold text-amber-800 font-mono">{Math.round(totalClientCost).toLocaleString('sv-SE')} kr</div>
+            <div className="text-[10px] text-amber-600 uppercase tracking-wider font-medium">{t('client.est_total')}</div>
         </div>
     );
 
     return (
-        <div className="mb-8">
-            <CollapsibleSection 
-                title={t('client.title')} 
-                subtitle={t('client.desc')} 
+        <div className="mb-8 bg-amber-50 rounded-2xl border-2 border-amber-200 p-1">
+            <CollapsibleSection
+                title={t('client.title')}
+                subtitle={t('client.desc')}
                 rightContent={TotalDisplay}
             >
+                {/* Warning notice */}
+                <div className="mb-4 p-3 bg-amber-100 rounded-xl border border-amber-200 flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                        <div className="text-sm font-semibold text-amber-800">These are YOUR costs, not JB Villan&apos;s</div>
+                        <div className="text-xs text-amber-700 mt-1">
+                            These fees are paid directly by you to government agencies, utilities, and service providers.
+                            They are NOT included in the contractor&apos;s turnkey price above.
+                        </div>
+                    </div>
+                </div>
+
                 {clientCosts.map((item) => {
                     const key = getTranslationKey(item.id);
                     const title = t(`cost.${key}`) !== `cost.${key}` ? t(`cost.${key}`) : item.name;
                     const desc = t(`cost.${key}_desc`) !== `cost.${key}_desc` ? t(`cost.${key}_desc`) : item.description;
 
                     return (
-                        <div key={item.id} className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-100 shadow-sm group hover:border-blue-200 transition-all">
+                        <div key={item.id} className="flex items-center justify-between bg-white p-4 rounded-xl border border-amber-100 shadow-sm group hover:border-amber-300 transition-all">
                             <div className="flex items-start space-x-3">
-                                <button 
+                                <button
                                     onClick={() => handleInspect(item, title, desc)}
-                                    className="mt-1 p-1 bg-blue-50 rounded text-blue-600 hover:bg-blue-100 hover:scale-110 transition-all"
+                                    className="mt-1 p-1 bg-amber-50 rounded text-amber-600 hover:bg-amber-100 hover:scale-110 transition-all"
                                     title="View Fee Details"
                                 >
                                     <Info className="h-4 w-4" />
@@ -90,7 +102,7 @@ export function ClientCostSection({ onInspectItem }: ClientCostSectionProps) {
                                     <div className="text-xs text-slate-500">{desc}</div>
                                 </div>
                             </div>
-                            <div className="font-mono font-medium text-slate-700">
+                            <div className="font-mono font-medium text-amber-700">
                                 {Math.round(item.cost).toLocaleString('sv-SE')} kr
                             </div>
                         </div>

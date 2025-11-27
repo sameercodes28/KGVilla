@@ -35,6 +35,14 @@ class CostBreakdown(BaseModel):
     components: Optional[List[str]] = []
     source: Optional[str] = "Generic Market Rate 2025"
 
+class PrefabDiscount(BaseModel):
+    """Shows JB Villan prefab efficiency discount vs general contractor pricing."""
+    generalContractorPrice: float     # What a general contractor would charge
+    jbVillanPrice: float              # JB Villan's prefab-efficient price
+    savingsAmount: float              # generalContractorPrice - jbVillanPrice
+    savingsPercent: int               # Percentage saved
+    reason: str                       # Why prefab is cheaper
+
 class CostItem(BaseModel):
     """
     Represents a single line item in the Project Cost Breakdown.
@@ -80,6 +88,9 @@ class CostItem(BaseModel):
     customQuantity: Optional[float] = None
     isUserAdded: Optional[bool] = False
     userNotes: Optional[str] = None
+
+    # JB Villan Prefab Efficiency
+    prefabDiscount: Optional[PrefabDiscount] = None  # If present, item has prefab efficiency
 
 class Scenario(BaseModel):
     title: str

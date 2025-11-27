@@ -9,7 +9,7 @@ import re
 import math
 import logging
 from typing import List, Dict, Tuple
-from models import CostItem, QuantityBreakdown, QuantityBreakdownItem
+from models import CostItem, QuantityBreakdown, QuantityBreakdownItem, PrefabDiscount
 
 logger = logging.getLogger(__name__)
 
@@ -180,6 +180,61 @@ PRICING = {
     "bygglov": 40000,        # Building permit
     "project_mgmt": 60000,
 }
+
+# --- JB Villan Prefab Efficiency Pricing ---
+# JB Villan manufactures prefab walls/roof in their factory, resulting in:
+# - Lower material costs (bulk purchasing, optimized cuts)
+# - Less on-site labor (factory assembly)
+# - Reduced waste and contingency needs
+PREFAB_PRICING = {
+    # Structure items with prefab efficiency
+    "exterior_wall_per_m2": {
+        "general_contractor": 3800,
+        "jb_villan": 2800,
+        "savings_pct": 26,
+        "reason": "Factory-manufactured wall panels with optimized material cuts"
+    },
+    "roof_per_m2": {
+        "general_contractor": 2200,
+        "jb_villan": 1800,
+        "savings_pct": 18,
+        "reason": "Pre-assembled roof trusses from factory"
+    },
+    "foundation_per_m2": {
+        "general_contractor": 3500,
+        "jb_villan": 3200,
+        "savings_pct": 9,
+        "reason": "Standardized slab design with efficient formwork"
+    },
+    "interior_wall_per_m2": {
+        "general_contractor": 1450,
+        "jb_villan": 1200,
+        "savings_pct": 17,
+        "reason": "Pre-cut studs and panels from factory"
+    },
+    "site_overhead_pct": {
+        "general_contractor": 0.05,
+        "jb_villan": 0.03,
+        "savings_pct": 40,
+        "reason": "Less on-site time = lower scaffolding/container costs"
+    },
+    "contingency_pct": {
+        "general_contractor": 0.10,
+        "jb_villan": 0.06,
+        "savings_pct": 40,
+        "reason": "Standardized designs = fewer unknowns and lower risk"
+    },
+}
+
+# Items that get JB Villan prefab efficiency badge
+PREFAB_ITEMS = [
+    "Exterior Walls",
+    "Roof Structure",
+    "Foundation",
+    "Interior Walls",
+    "Site Overhead",
+    "Contingency",
+]
 
 
 def classify_room(room_name: str) -> str:
@@ -1122,16 +1177,20 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             )
         ))
 
-        # Foundation
+        # Foundation - JB Villan prefab pricing
+        foundation_gc_price = PREFAB_PRICING["foundation_per_m2"]["general_contractor"]
+        foundation_jb_price = PREFAB_PRICING["foundation_per_m2"]["jb_villan"]
+        foundation_gc_total = round(byggyta * foundation_gc_price)
+        foundation_jb_total = round(byggyta * foundation_jb_price)
         items.append(CostItem(
             id="ground-foundation",
             phase="ground",
             elementName="Foundation (Platta på mark)",
-            description=f"Insulated slab on grade with 300mm EPS under, 100mm edge insulation. Includes reinforcement mesh, radon barrier, and underfloor heating pipes preparation. Rate: 3,500 kr/m² based on 2025 market rates.",
+            description=f"Insulated slab on grade with 300mm EPS under, 100mm edge insulation. Includes reinforcement mesh, radon barrier, and underfloor heating pipes preparation. JB Villan prefab efficiency: standardized slab design.",
             quantity=byggyta,
             unit="m²",
-            unitPrice=PRICING["foundation_per_m2"],
-            totalCost=round(byggyta * PRICING["foundation_per_m2"]),
+            unitPrice=foundation_jb_price,
+            totalCost=foundation_jb_total,
             confidenceScore=1.0,
             guidelineReference="BBR 6:1, SS 21054",
             quantityBreakdown=QuantityBreakdown(
@@ -1139,6 +1198,13 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=byggyta,
                 unit="m²",
                 calculationMethod=f"Building footprint: BOA ({boyta:.1f}) + Biarea ({biarea:.1f}) + walls"
+            ),
+            prefabDiscount=PrefabDiscount(
+                generalContractorPrice=foundation_gc_total,
+                jbVillanPrice=foundation_jb_total,
+                savingsAmount=foundation_gc_total - foundation_jb_total,
+                savingsPercent=PREFAB_PRICING["foundation_per_m2"]["savings_pct"],
+                reason=PREFAB_PRICING["foundation_per_m2"]["reason"]
             )
         ))
 
@@ -1165,16 +1231,20 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
 
     # --- STRUCTURE ---
     if byggyta > 0:
-        # Roof
+        # Roof - JB Villan prefab pricing
+        roof_gc_price = PREFAB_PRICING["roof_per_m2"]["general_contractor"]
+        roof_jb_price = PREFAB_PRICING["roof_per_m2"]["jb_villan"]
+        roof_gc_total = round(byggyta * roof_gc_price)
+        roof_jb_total = round(byggyta * roof_jb_price)
         items.append(CostItem(
             id=f"structure-roof",
             phase="structure",
             elementName="Roof Structure & Covering",
-            description=f"Pitched roof with tiles - {byggyta:.1f} m²",
+            description=f"Pitched roof with tiles - {byggyta:.1f} m². JB Villan prefab efficiency: pre-assembled roof trusses from factory.",
             quantity=byggyta,
             unit="m²",
-            unitPrice=PRICING["roof_per_m2"],
-            totalCost=round(byggyta * PRICING["roof_per_m2"]),
+            unitPrice=roof_jb_price,
+            totalCost=roof_jb_total,
             confidenceScore=1.0,
             guidelineReference="AMA Hus",
             quantityBreakdown=QuantityBreakdown(
@@ -1182,21 +1252,32 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=byggyta,
                 unit="m²",
                 calculationMethod=f"Roof covers building footprint: {byggyta:.1f} m²"
+            ),
+            prefabDiscount=PrefabDiscount(
+                generalContractorPrice=roof_gc_total,
+                jbVillanPrice=roof_jb_total,
+                savingsAmount=roof_gc_total - roof_jb_total,
+                savingsPercent=PREFAB_PRICING["roof_per_m2"]["savings_pct"],
+                reason=PREFAB_PRICING["roof_per_m2"]["reason"]
             )
         ))
 
-        # Exterior walls (estimate perimeter from area)
+        # Exterior walls - JB Villan prefab pricing
         perimeter = (byggyta ** 0.5) * 4 * 1.2  # Rough estimate
         wall_area = perimeter * 2.5  # 2.5m height
+        ext_wall_gc_price = PREFAB_PRICING["exterior_wall_per_m2"]["general_contractor"]
+        ext_wall_jb_price = PREFAB_PRICING["exterior_wall_per_m2"]["jb_villan"]
+        ext_wall_gc_total = round(wall_area * ext_wall_gc_price)
+        ext_wall_jb_total = round(wall_area * ext_wall_jb_price)
         items.append(CostItem(
             id="structure-ext-walls",
             phase="structure",
             elementName="Exterior Walls (260mm Energy)",
-            description=f"Timber frame 45x220mm + 45x45mm service layer. Mineral wool insulation U-value ≤0.18 W/m²K per BBR 9. Includes vapor barrier, wind barrier, and gypsum interior. Wall area estimated from building perimeter × 2.5m height.",
+            description=f"Timber frame 45x220mm + 45x45mm service layer. Mineral wool insulation U-value ≤0.18 W/m²K per BBR 9. JB Villan prefab efficiency: factory-manufactured wall panels.",
             quantity=wall_area,
             unit="m²",
-            unitPrice=PRICING["exterior_wall_per_m2"],
-            totalCost=round(wall_area * PRICING["exterior_wall_per_m2"]),
+            unitPrice=ext_wall_jb_price,
+            totalCost=ext_wall_jb_total,
             confidenceScore=0.8,
             guidelineReference="BBR 9:4, AMA Hus",
             quantityBreakdown=QuantityBreakdown(
@@ -1207,6 +1288,13 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=wall_area,
                 unit="m²",
                 calculationMethod=f"Perimeter ({perimeter:.1f} m) × height (2.5 m) = {wall_area:.1f} m²"
+            ),
+            prefabDiscount=PrefabDiscount(
+                generalContractorPrice=ext_wall_gc_total,
+                jbVillanPrice=ext_wall_jb_total,
+                savingsAmount=ext_wall_gc_total - ext_wall_jb_total,
+                savingsPercent=PREFAB_PRICING["exterior_wall_per_m2"]["savings_pct"],
+                reason=PREFAB_PRICING["exterior_wall_per_m2"]["reason"]
             )
         ))
 
@@ -1430,17 +1518,21 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             )
         ))
 
-    # Standard room walls
+    # Standard room walls - JB Villan prefab pricing
     if total_standard_wall_area > 0:
+        int_wall_gc_price = PREFAB_PRICING["interior_wall_per_m2"]["general_contractor"]
+        int_wall_jb_price = PREFAB_PRICING["interior_wall_per_m2"]["jb_villan"]
+        int_wall_gc_total = round(total_standard_wall_area * int_wall_gc_price)
+        int_wall_jb_total = round(total_standard_wall_area * int_wall_jb_price)
         items.append(CostItem(
             id="interior-standard-walls",
             phase="interior",
             elementName="Standard Room Walls",
-            description=f"Gypsum with paint finish - {total_standard_wall_area:.1f} m²",
+            description=f"Gypsum with paint finish - {total_standard_wall_area:.1f} m². JB Villan prefab efficiency: pre-cut studs and panels.",
             quantity=total_standard_wall_area,
             unit="m²",
-            unitPrice=PRICING["walls"]["standard"],
-            totalCost=round(total_standard_wall_area * PRICING["walls"]["standard"]),
+            unitPrice=int_wall_jb_price,
+            totalCost=int_wall_jb_total,
             confidenceScore=0.85,
             guidelineReference="AMA Hus",
             quantityBreakdown=QuantityBreakdown(
@@ -1448,6 +1540,13 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=standard_room_area,
                 unit="m²",
                 calculationMethod="Wall area = perimeter × 2.5m height for each standard room"
+            ),
+            prefabDiscount=PrefabDiscount(
+                generalContractorPrice=int_wall_gc_total,
+                jbVillanPrice=int_wall_jb_total,
+                savingsAmount=int_wall_gc_total - int_wall_jb_total,
+                savingsPercent=PREFAB_PRICING["interior_wall_per_m2"]["savings_pct"],
+                reason=PREFAB_PRICING["interior_wall_per_m2"]["reason"]
             )
         ))
 
@@ -1992,38 +2091,58 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         guidelineReference="AML"
     ))
 
-    # --- SITE OVERHEAD & CONTINGENCY ---
+    # --- SITE OVERHEAD & CONTINGENCY (JB Villan prefab pricing) ---
     # Calculate subtotal for percentage-based costs
     subtotal = sum(item.totalCost for item in items)
 
-    # Site overhead (scaffolding, containers, waste removal)
-    site_overhead = subtotal * PRICING["site_overhead_pct"]
+    # Site overhead - JB Villan prefab pricing
+    overhead_gc_pct = PREFAB_PRICING["site_overhead_pct"]["general_contractor"]
+    overhead_jb_pct = PREFAB_PRICING["site_overhead_pct"]["jb_villan"]
+    site_overhead_gc = round(subtotal * overhead_gc_pct)
+    site_overhead_jb = round(subtotal * overhead_jb_pct)
     items.append(CostItem(
         id="admin-site-overhead",
         phase="admin",
         elementName="Site Overhead",
-        description="Scaffolding, containers, waste removal (5%)",
+        description=f"Scaffolding, containers, waste removal ({int(overhead_jb_pct*100)}%). JB Villan prefab efficiency: less on-site time.",
         quantity=1,
         unit="st",
-        unitPrice=site_overhead,
-        totalCost=site_overhead,
+        unitPrice=site_overhead_jb,
+        totalCost=site_overhead_jb,
         confidenceScore=1.0,
-        guidelineReference="Industry Standard"
+        guidelineReference="Industry Standard",
+        prefabDiscount=PrefabDiscount(
+            generalContractorPrice=site_overhead_gc,
+            jbVillanPrice=site_overhead_jb,
+            savingsAmount=site_overhead_gc - site_overhead_jb,
+            savingsPercent=PREFAB_PRICING["site_overhead_pct"]["savings_pct"],
+            reason=PREFAB_PRICING["site_overhead_pct"]["reason"]
+        )
     ))
 
-    # Contingency (risk margin)
-    contingency = subtotal * PRICING["contingency_pct"]
+    # Contingency - JB Villan prefab pricing
+    contingency_gc_pct = PREFAB_PRICING["contingency_pct"]["general_contractor"]
+    contingency_jb_pct = PREFAB_PRICING["contingency_pct"]["jb_villan"]
+    contingency_gc = round(subtotal * contingency_gc_pct)
+    contingency_jb = round(subtotal * contingency_jb_pct)
     items.append(CostItem(
         id="admin-contingency",
         phase="admin",
         elementName="Contingency",
-        description="Risk margin and unforeseen costs (10%)",
+        description=f"Risk margin and unforeseen costs ({int(contingency_jb_pct*100)}%). JB Villan prefab efficiency: standardized designs = lower risk.",
         quantity=1,
         unit="st",
-        unitPrice=contingency,
-        totalCost=contingency,
+        unitPrice=contingency_jb,
+        totalCost=contingency_jb,
         confidenceScore=1.0,
-        guidelineReference="ABT 06"
+        guidelineReference="ABT 06",
+        prefabDiscount=PrefabDiscount(
+            generalContractorPrice=contingency_gc,
+            jbVillanPrice=contingency_jb,
+            savingsAmount=contingency_gc - contingency_jb,
+            savingsPercent=PREFAB_PRICING["contingency_pct"]["savings_pct"],
+            reason=PREFAB_PRICING["contingency_pct"]["reason"]
+        )
     ))
 
     return items

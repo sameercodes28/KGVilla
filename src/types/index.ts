@@ -76,6 +76,14 @@ export interface QuantityBreakdown {
   calculationMethod?: string;  // e.g., "Sum of wet room floor areas"
 }
 
+export interface PrefabDiscount {
+  generalContractorPrice: number;   // What a general contractor would charge
+  jbVillanPrice: number;            // JB Villan's prefab-efficient price
+  savingsAmount: number;            // generalContractorPrice - jbVillanPrice
+  savingsPercent: number;           // Percentage saved
+  reason: string;                   // Why prefab is cheaper
+}
+
 export interface CostItem {
   id: string;
   projectId: string;
@@ -121,6 +129,9 @@ export interface CostItem {
   isUserAdded?: boolean;
   userNotes?: string;
   disabled?: boolean; // When true, item is excluded from total cost calculation
+
+  // JB Villan Prefab Efficiency
+  prefabDiscount?: PrefabDiscount; // If present, item has prefab efficiency savings
 }
 
 export interface Room {

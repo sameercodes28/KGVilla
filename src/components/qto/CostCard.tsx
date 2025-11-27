@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { CostItem } from '@/types';
-import { ChevronDown, Info, Edit2, Save, X, Calculator, BookOpen, ShieldCheck, ToggleLeft, ToggleRight } from 'lucide-react';
+import { ChevronDown, Info, Edit2, Save, X, Calculator, BookOpen, ShieldCheck, ToggleLeft, ToggleRight, Factory, TrendingDown } from 'lucide-react';
 import { getItemRegulations, REGULATION_COLORS, RegulationRef } from '@/data/regulationMapping';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
@@ -190,6 +190,12 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                             {hasCustomValues && !item.isUserAdded && !isDisabled && (
                                 <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold uppercase rounded">{t('card.edited')}</span>
                             )}
+                            {item.prefabDiscount && !isDisabled && (
+                                <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded flex items-center gap-1">
+                                    <Factory className="h-3 w-3" />
+                                    Prefab
+                                </span>
+                            )}
                         </div>
                         <div className="flex items-center space-x-2 mt-1">
                             <p className="text-sm text-slate-500">{translatedDesc}</p>
@@ -320,6 +326,44 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                             </div>
                         </div>
                     </div>
+
+                    {/* JB Villan Prefab Efficiency */}
+                    {item.prefabDiscount && (
+                        <div className="mb-4 p-3 bg-green-50 rounded-xl border border-green-200">
+                            <div className="flex items-center text-green-700 mb-2">
+                                <Factory className="h-3.5 w-3.5 mr-1.5" />
+                                <span className="text-xs font-bold uppercase tracking-wide">JB Villan Prefab Efficiency</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <div className="text-slate-500 text-xs mb-0.5">General Contractor Price</div>
+                                    <div className="font-mono text-slate-400 line-through">
+                                        {Math.round(item.prefabDiscount.generalContractorPrice).toLocaleString('sv-SE')} kr
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="text-slate-500 text-xs mb-0.5">JB Villan Price</div>
+                                    <div className="font-mono font-semibold text-green-700">
+                                        {Math.round(item.prefabDiscount.jbVillanPrice).toLocaleString('sv-SE')} kr
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-green-200 flex items-center justify-between">
+                                <div className="flex items-center gap-1.5 text-green-700">
+                                    <TrendingDown className="h-3.5 w-3.5" />
+                                    <span className="text-xs font-medium">
+                                        You save: <span className="font-bold font-mono">{Math.round(item.prefabDiscount.savingsAmount).toLocaleString('sv-SE')} kr</span>
+                                    </span>
+                                    <span className="px-1.5 py-0.5 bg-green-200 text-green-800 text-[10px] font-bold rounded-full">
+                                        -{item.prefabDiscount.savingsPercent}%
+                                    </span>
+                                </div>
+                            </div>
+                            <p className="mt-2 text-xs text-green-700 leading-relaxed">
+                                {item.prefabDiscount.reason}
+                            </p>
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                         {/* Calculation Logic */}
