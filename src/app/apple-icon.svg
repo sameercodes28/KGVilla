@@ -1,0 +1,15 @@
+<svg viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="180" height="180" rx="40" fill="#FEF2F2"/>
+  <!-- House body -->
+  <path d="M36 86L90 40L144 86V144H36V86Z" fill="#B91C1C"/>
+  <!-- Roof -->
+  <path d="M90 28L156 86H24L90 28Z" fill="#DC2626"/>
+  <!-- Chimney -->
+  <rect x="120" y="50" width="16" height="24" fill="#991B1B"/>
+  <!-- Door -->
+  <rect x="75" y="104" width="30" height="40" fill="#7F1D1D" rx="4"/>
+  <!-- Windows -->
+  <rect x="46" y="96" width="22" height="22" fill="#FEE2E2" rx="2"/>
+  <rect x="112" y="96" width="22" height="22" fill="#FEE2E2" rx="2"/>
+</svg>

@@ -239,13 +239,26 @@ export default function Home() {
       <main className="max-w-6xl mx-auto pt-12 px-6 pb-20 relative z-10">
         {/* Hero Section */}
         <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            {/* JB Villan Logo */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-                src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/jb-villan-logo.svg`}
-                alt="JB Villan Kalkyl"
-                className="h-12 mx-auto mb-6"
-            />
+            {/* JB Villan Logo - Inline SVG for reliability */}
+            <div className="flex items-center justify-center gap-3 mb-6">
+                <svg viewBox="0 0 32 32" className="h-10 w-10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    {/* House body */}
+                    <path d="M4 14L16 4L28 14V28H4V14Z" fill="#B91C1C"/>
+                    {/* Roof */}
+                    <path d="M16 2L30 14H2L16 2Z" fill="#DC2626"/>
+                    {/* Chimney */}
+                    <rect x="22" y="8" width="4" height="6" fill="#991B1B"/>
+                    {/* Door */}
+                    <rect x="13" y="18" width="6" height="10" fill="#7F1D1D" rx="1"/>
+                    {/* Windows */}
+                    <rect x="6" y="16" width="5" height="5" fill="#FEE2E2" rx="0.5"/>
+                    <rect x="21" y="16" width="5" height="5" fill="#FEE2E2" rx="0.5"/>
+                </svg>
+                <div className="text-left">
+                    <div className="text-xl font-extrabold text-slate-800 leading-tight">JB Villan</div>
+                    <div className="text-xs font-medium text-slate-500 -mt-0.5">Kalkyl</div>
+                </div>
+            </div>
             <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/80 backdrop-blur border border-red-100 text-red-700 text-[10px] font-bold uppercase tracking-wide mb-4 shadow-sm">
                 <Sparkles className="w-3 h-3 mr-2 text-red-500" />
                 {t('dash.smart_intelligence')}
