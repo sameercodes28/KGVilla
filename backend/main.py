@@ -245,7 +245,7 @@ async def analyze_drawing(request: Request, file: UploadFile = File(...), api_ke
 
     # 2. Read content
     contents = await file.read()
-    
+
     # 3. Validate Size
     if len(contents) > MAX_FILE_SIZE:
         raise HTTPException(
@@ -264,6 +264,42 @@ async def analyze_drawing(request: Request, file: UploadFile = File(...), api_ke
         result = await analyze_image_with_gemini(contents, file.content_type)
 
     return result
+
+
+@app.post("/debug-ocr")
+@limiter.limit("10/minute")
+async def debug_ocr(request: Request, file: UploadFile = File(...), api_key: str = Depends(get_api_key)):
+    """Debug endpoint to see raw OCR text blocks from Document AI."""
+    if file.content_type not in ALLOWED_CONTENT_TYPES:
+        raise HTTPException(status_code=400, detail=f"Invalid file type")
+
+    contents = await file.read()
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail="File too large")
+
+    # Get raw text blocks
+    from ocr_service import extract_text_with_bounding_boxes
+    full_text, text_blocks = extract_text_with_bounding_boxes(contents, file.content_type)
+
+    # Filter to show potential area values (anything with numbers)
+    import re
+    area_candidates = []
+    for block in text_blocks:
+        text = block["text"]
+        # Check if it contains numbers that could be areas
+        if re.search(r'\d', text):
+            area_candidates.append({
+                "text": text,
+                "x": round(block["x"], 3),
+                "y": round(block["y"], 3),
+                "level": block.get("level", "?")
+            })
+
+    return {
+        "total_blocks": len(text_blocks),
+        "area_candidates": sorted(area_candidates, key=lambda x: x["y"]),
+        "full_text_preview": full_text[:2000] if full_text else ""
+    }
 
 @app.post("/chat", response_model=ChatResponse)
 @limiter.limit("20/minute")
