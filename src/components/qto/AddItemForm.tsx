@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { CostItem, ConstructionPhase } from '@/types';
@@ -46,8 +46,11 @@ export function AddItemForm({ onAdd, phases }: AddItemFormProps) {
         if (error) setError(null);
     };
 
-    const filteredSuggestions = CATALOG_ITEMS.filter(item => 
-        item.label.toLowerCase().includes(newItemData.elementName?.toLowerCase() || '')
+    const filteredSuggestions = useMemo(() =>
+        CATALOG_ITEMS.filter(item =>
+            item.label.toLowerCase().includes(newItemData.elementName?.toLowerCase() || '')
+        ),
+        [newItemData.elementName]
     );
 
     const handleSubmit = () => {

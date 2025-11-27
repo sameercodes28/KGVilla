@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState, Suspense } from 'react';
 import { Send, Bot, Paperclip, X, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { useChat, Scenario } from '@/hooks/useChat';
 import { useProjects } from '@/hooks/useProjects';
@@ -81,7 +82,7 @@ function ChatContent() {
         scenario.items.forEach((item) => {
             addItem(item);
         });
-        console.log(`Applied scenario: ${scenario.title}`);
+        logger.info('ChatPage', `Applied scenario: ${scenario.title}`);
     };
 
     // Handle file selection from the hidden input
