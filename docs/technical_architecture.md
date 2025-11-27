@@ -1,22 +1,25 @@
 # KGVilla Technical Architecture
 
+> **Version 1.5.1** | Last updated: November 2024
+
 ## 1. System Overview (Hybrid Offline/Cloud)
 
-KGVilla uses a **Resilient Hybrid Architecture**. The frontend is designed to be "LocalStorage-First," ensuring immediate interactivity and offline capability, while the backend provides heavy AI computation and centralized persistence when available.
+KGVilla uses a **Resilient Hybrid Architecture**. The frontend is designed to be "LocalStorage-First," ensuring immediate interactivity and offline capability, while the backend provides deterministic OCR-based cost estimation and centralized persistence.
 
-### 1.1 Frontend (Next.js 15)
-*   **Framework:** Next.js App Router (React Server Components + Client Components).
+### 1.1 Frontend (Next.js 16)
+*   **Framework:** Next.js 16 App Router with React 19 (Server Components + Client Components).
 *   **State Management:**
     *   **Local Persistence:** `useProjects` and `useProjectData` hooks automatically load from `localStorage` on mount.
     *   **Context API:** `ProjectDataContext` eliminates prop drilling, sharing state between the `VisualViewer` and `ProjectDataFeed`.
 *   **API Abstraction:** `src/lib/apiClient.ts` creates a unified interface for all HTTP requests, handling authentication headers and error logging.
-*   **UI Library:** Tailwind CSS with a custom "Split Layout" for maximum data density.
+*   **UI Library:** Tailwind CSS 4 with a custom "Split Layout" for maximum data density.
 
 ### 1.2 Backend (Python FastAPI)
 *   **Service:** FastAPI application running in Docker (Google Cloud Run).
-*   **Resilience:** Includes startup probes (`/` endpoint) to report the status of dependent services (Firestore, Vertex AI) without crashing the container.
-*   **AI Engine:** Google Vertex AI (Gemini 2.0 Flash) for multimodal analysis and narrative explanations.
+*   **OCR Engine:** Google Document AI for deterministic text extraction from floor plans.
+*   **AI Engine:** Google Vertex AI (Gemini 2.0 Flash) for AI chat consultant and fallback analysis.
 *   **Database:** Google Cloud Firestore (NoSQL) for project and cost item storage.
+*   **Resilience:** Includes startup probes (`/` endpoint) to report the status of dependent services without crashing.
 
 ---
 
@@ -35,8 +38,10 @@ The fundamental unit of the application, representing a specific construction el
 *   `quantity`: 150
 *   `unit`: "m2"
 *   `breakdown`: { material: 500, labor: 200, formula: "..." }
+*   `quantityBreakdown`: Array of room contributions (e.g., "Sovrum 1: 11.9 m²")
 *   `confidenceScore`: 0.0 - 1.0 (AI Confidence)
 *   `guidelineReference`: "BBR 6:62" (Traceability to regulations)
+*   `prefabDiscount`: JB Villan vs General Contractor pricing comparison (see Section 6)
 
 ### 2.3 Swedish Knowledge Base
 The AI is grounded in a set of Markdown documents in `backend/standards/` that define the ground truth:
@@ -77,11 +82,11 @@ The side panel for deep-diving into pricing logic.
 
 ---
 
-## 5. Analysis Pipeline (Deterministic OCR)
+## 4. Analysis Pipeline (Deterministic OCR)
 
 KGVilla uses a **deterministic analysis pipeline** based on Document AI OCR, not AI-generated estimates. This ensures consistent, accurate pricing.
 
-### 5.1 Pipeline Architecture
+### 4.1 Pipeline Architecture
 
 ```
 Floor Plan Image (PNG/PDF)
@@ -97,13 +102,13 @@ Floor Plan Image (PNG/PDF)
 Deterministic Quote (same input = same output)
 ```
 
-### 5.2 Why Deterministic?
+### 4.2 Why Deterministic?
 
 - **Consistency:** Same floor plan always produces same price
 - **Accuracy:** Uses architect's own calculated areas (not AI estimates)
 - **Auditability:** Every cost traces to a specific m² rate and regulation
 
-### 5.3 Data Extraction
+### 4.3 Data Extraction
 
 The OCR extracts printed annotations from JB Villan drawings:
 
@@ -114,7 +119,7 @@ The OCR extracts printed annotations from JB Villan drawings:
 | Summary areas | "BOYTA: 130.7m²" | Total living area |
 | Building footprint | "BYGGYTA: 187.3m²" | Foundation, roof costs |
 
-### 5.4 Pricing Calculation
+### 4.4 Pricing Calculation
 
 Costs are calculated using fixed rates from `SWEDISH_CONSTRUCTION_KNOWLEDGE_BASE.md`:
 
@@ -125,11 +130,11 @@ flooring_cost = room_area * rate        # Based on room type
 wet_room_cost = area * 4200 kr/m²       # Säker Vatten compliant
 ```
 
-### 5.5 Fallback Mode
+### 4.5 Fallback Mode
 
 If Document AI is unavailable, the system falls back to Gemini AI analysis (non-deterministic).
 
-### 5.6 Setup Requirements
+### 4.6 Setup Requirements
 
 **Environment Variables (Cloud Run):**
 ```bash
@@ -149,7 +154,7 @@ API_KEY=<your-api-key>
 
 ---
 
-## 6. Legacy: AI Analysis (Fallback)
+## 5. Legacy: AI Analysis (Fallback)
 
 *Only used if Document AI is unavailable.*
 
@@ -162,39 +167,89 @@ API_KEY=<your-api-key>
 
 ---
 
-## 7. Security & Compliance
+## 8. Security & Compliance
 
 *   **GDPR:** No personal data is stored in the AI prompts.
 *   **CORS:** Strictly configured for the frontend domain.
-*   **BBR 2025:** The AI's "Ground Truth" is updated via the `knowledge_base/` markdown files.
+*   **Rate Limiting:** API endpoints are rate-limited (20 req/min for analyze, 30 req/min for explain).
+*   **BBR 2025:** The pricing "Ground Truth" is maintained in `backend/standards/SWEDISH_CONSTRUCTION_KNOWLEDGE_BASE.md`.
 
 
 
 ---
 
-## 8. Future Improvements (JB Villan Integration)
+## 6. JB Villan Prefab Pricing
 
-For near-100% pricing accuracy, the following enhancements are planned:
+KGVilla is specifically optimized for JB Villan prefab houses. The pricing engine accounts for factory manufacturing efficiencies that make prefab construction ~12% cheaper than traditional general contractors.
 
-### 8.1 Computer Vision (Wall/Window Detection)
-- Use TensorFlow or Google Vision AI to detect wall lines, windows, and doors from the drawing
+### 6.1 Why Prefab is Cheaper
+
+| Component | General Contractor | JB Villan | Savings |
+|-----------|-------------------|-----------|---------|
+| Exterior Walls | 3,800 kr/m² | 2,800 kr/m² | 26% |
+| Roof | 2,200 kr/m² | 1,800 kr/m² | 18% |
+| Interior Walls | 1,200 kr/m² | 1,000 kr/m² | 17% |
+| Foundation | 2,400 kr/m² | 2,200 kr/m² | 9% |
+| Site Overhead | 10% | 5% | 50% |
+| Contingency | 8% | 5% | 37.5% |
+
+**Reasons for savings:**
+- Factory-manufactured wall panels with optimized material cuts
+- Pre-assembled roof trusses delivered ready to install
+- Weather-independent production
+- Standardized designs allow volume purchasing
+- Efficient just-in-time logistics
+
+### 6.2 PrefabDiscount Data Model
+
+```typescript
+interface PrefabDiscount {
+  generalContractorPrice: number;   // What a general contractor would charge
+  jbVillanPrice: number;            // JB Villan's prefab-efficient price
+  savingsAmount: number;            // generalContractorPrice - jbVillanPrice
+  savingsPercent: number;           // Percentage saved
+  reason: string;                   // Why prefab is cheaper
+}
+```
+
+### 6.3 UI Indicators
+
+- **Green "Prefab" badge:** Shown on cost items with factory efficiency
+- **Cost Inspector:** Detailed breakdown showing GC price vs JB price
+- **Bottom summary:** Total savings comparison vs general contractor
+
+### 6.4 Client Costs (Byggherrekostnader)
+
+These fees are paid directly by the homeowner and are NOT part of JB Villan's contract price:
+
+| Item | Typical Cost |
+|------|--------------|
+| Lagfart (property registration) | ~63,000 kr |
+| Pantbrev (mortgage deed) | ~42,000 kr |
+| Bygglov (building permit) | ~35,000 kr |
+| El-anslutning (electrical connection) | ~45,000 kr |
+| Kontrollansvarig (control supervisor) | ~25,000 kr |
+| **Total** | **~268,000 kr** |
+
+The UI clearly separates these client costs from the contractor price.
+
+---
+
+## 7. Future Improvements
+
+### 7.1 Computer Vision (Wall/Window Detection)
+- Use TensorFlow or Google Vision AI to detect wall lines, windows, and doors
 - Calculate actual wall lengths instead of estimating from room area
 - Count windows and doors accurately
 
-### 8.2 CAD/BIM Import
+### 7.2 CAD/BIM Import
 - Accept DWG/IFC files directly from JB Villan
 - Extract precise geometry: wall lengths, opening sizes, fixture counts
 - Eliminate estimation entirely
 
-### 8.3 User Validation Interface
+### 7.3 User Validation Interface
 - Present extracted values for user confirmation
 - Allow manual correction of room counts, areas, fixture quantities
-- Learn from corrections to improve future extractions
-
-### 8.4 JB Villan Partnership
-- Request structured data exports (JSON/XML) with precise measurements
-- Integrate with their quoting system for real-time pricing
-- Access their material specifications and supplier pricing
 
 ---
 

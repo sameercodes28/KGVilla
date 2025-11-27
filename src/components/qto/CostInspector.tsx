@@ -115,9 +115,29 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
     const [narrative, setNarrative] = useState<NarrativeResponse | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isVisible, setIsVisible] = useState(false);
+    const [displayedItem, setDisplayedItem] = useState<CostItem | null>(null);
+
+    // Handle open/close animations to prevent DOM removal race conditions
+    useEffect(() => {
+        if (item) {
+            setDisplayedItem(item);
+            // Small delay to ensure DOM is ready before animating in
+            requestAnimationFrame(() => {
+                setIsVisible(true);
+            });
+        } else {
+            setIsVisible(false);
+            // Keep displayedItem during close animation, clear after animation ends
+            const timer = setTimeout(() => {
+                setDisplayedItem(null);
+            }, 300); // Match animation duration
+            return () => clearTimeout(timer);
+        }
+    }, [item]);
 
     // Get regulations for this item from our mapping
-    const itemRegulations = item ? getItemRegulations(item) : [];
+    const itemRegulations = displayedItem ? getItemRegulations(displayedItem) : [];
 
     const fetchNarrative = useCallback(async (forceRefresh = false) => {
         if (!item) return;
@@ -165,20 +185,22 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
         }
     }, [item, fetchNarrative]);
 
-    if (!item) return null;
+    // Don't render anything if there's no item to display
+    if (!displayedItem) return null;
 
     // Generate calculation explanation from item data
     const getCalculationExplanation = () => {
         const explanations: string[] = [];
+        if (!displayedItem) return explanations;
 
         // Use calculationLogic if available
-        if (item.calculationLogic) {
-            explanations.push(item.calculationLogic);
+        if (displayedItem.calculationLogic) {
+            explanations.push(displayedItem.calculationLogic);
         }
 
         // Generate based on unit type
-        const qty = Number(item.quantity).toFixed(1);
-        const unit = item.unit;
+        const qty = Number(displayedItem.quantity).toFixed(1);
+        const unit = displayedItem.unit;
 
         if (unit === 'm2') {
             explanations.push(`Total area calculated: ${qty} m² based on floor plan measurements`);
@@ -192,8 +214,8 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
         }
 
         // Add breakdown formula if available
-        if (item.breakdown?.formula) {
-            explanations.push(`Formula: ${item.breakdown.formula}`);
+        if (displayedItem.breakdown?.formula) {
+            explanations.push(`Formula: ${displayedItem.breakdown.formula}`);
         }
 
         return explanations;
@@ -221,7 +243,12 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
     const calculationSteps = getCalculationExplanation();
 
     return (
-        <div className="fixed top-0 right-0 h-full w-[520px] bg-white z-[60] flex flex-col shadow-2xl border-l border-slate-200 animate-in slide-in-from-right duration-300">
+        <div
+            className={cn(
+                "fixed top-0 right-0 h-full w-[520px] bg-white z-[60] flex flex-col shadow-2xl border-l border-slate-200 transition-transform duration-300 ease-out",
+                isVisible ? "translate-x-0" : "translate-x-full"
+            )}
+        >
             {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-900 text-white">
                 <div className="flex items-center gap-3">
@@ -244,24 +271,24 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
 
             {/* Item Summary */}
             <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-5 border-b border-slate-200">
-                <h3 className="text-xl font-bold text-slate-900 mb-1">{item.elementName}</h3>
-                {item.description && (
-                    <p className="text-slate-600 text-sm mb-4 leading-relaxed">{item.description}</p>
+                <h3 className="text-xl font-bold text-slate-900 mb-1">{displayedItem.elementName}</h3>
+                {displayedItem.description && (
+                    <p className="text-slate-600 text-sm mb-4 leading-relaxed">{displayedItem.description}</p>
                 )}
                 <div className="flex items-end justify-between">
                     <div>
                         <span className="text-4xl font-mono font-bold text-slate-900">
-                            {Math.round(item.totalCost).toLocaleString('sv-SE')}
+                            {Math.round(displayedItem.totalCost).toLocaleString('sv-SE')}
                         </span>
                         <span className="text-lg text-slate-500 ml-1">kr</span>
                     </div>
                     <div className="text-right">
                         <div className="text-sm font-mono text-slate-600">
-                            {(Math.round(Number(item.quantity) * 10) / 10).toFixed(1)} {item.unit} × {Math.round(item.unitPrice).toLocaleString('sv-SE')} kr
+                            {(Math.round(Number(displayedItem.quantity) * 10) / 10).toFixed(1)} {displayedItem.unit} × {Math.round(displayedItem.unitPrice).toLocaleString('sv-SE')} kr
                         </div>
-                        {item.confidenceScore && (
+                        {displayedItem.confidenceScore && (
                             <div className="text-xs text-slate-400 mt-1">
-                                Confidence: {Math.round(item.confidenceScore * 100)}%
+                                Confidence: {Math.round(displayedItem.confidenceScore * 100)}%
                             </div>
                         )}
                     </div>
@@ -290,13 +317,13 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                         )}
 
                         {/* Quantity Breakdown - Shows individual room contributions */}
-                        {item.quantityBreakdown && item.quantityBreakdown.items.length > 0 && (
+                        {displayedItem.quantityBreakdown && displayedItem.quantityBreakdown.items.length > 0 && (
                             <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
                                 <p className="text-xs font-medium text-slate-600 uppercase mb-2">
-                                    {item.quantityBreakdown.calculationMethod || 'Room Breakdown'}
+                                    {displayedItem.quantityBreakdown.calculationMethod || 'Room Breakdown'}
                                 </p>
                                 <div className="space-y-1.5">
-                                    {item.quantityBreakdown.items.map((breakdownItem, i) => (
+                                    {displayedItem.quantityBreakdown.items.map((breakdownItem, i) => (
                                         <div key={i} className="flex items-center justify-between text-sm">
                                             <span className="text-slate-700">
                                                 {breakdownItem.name}
@@ -315,7 +342,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                 <div className="mt-2 pt-2 border-t border-slate-200 flex justify-between text-sm font-medium">
                                     <span className="text-slate-700">Total</span>
                                     <span className="font-mono text-blue-700">
-                                        {item.quantityBreakdown.total.toFixed(1)} {item.quantityBreakdown.unit}
+                                        {displayedItem.quantityBreakdown.total.toFixed(1)} {displayedItem.quantityBreakdown.unit}
                                     </span>
                                 </div>
                             </div>
@@ -326,7 +353,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-medium text-blue-800 uppercase">Result</span>
                                 <span className="font-mono font-bold text-blue-900">
-                                    {(Math.round(Number(item.quantity) * 10) / 10).toFixed(1)} {item.unit}
+                                    {(Math.round(Number(displayedItem.quantity) * 10) / 10).toFixed(1)} {displayedItem.unit}
                                 </span>
                             </div>
                         </div>
@@ -369,29 +396,29 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                 )}
 
                 {/* Price Breakdown Section */}
-                {item.breakdown && (
+                {displayedItem.breakdown && (
                     <Section title="Price Breakdown" icon={FileText} color="amber">
                         <div className="space-y-3">
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="p-3 bg-amber-100/50 rounded-lg">
                                     <p className="text-xs text-amber-600 uppercase font-medium mb-1">Materials</p>
                                     <p className="text-lg font-mono font-bold text-amber-900">
-                                        {Math.round(item.breakdown.material).toLocaleString('sv-SE')} kr
+                                        {Math.round(displayedItem.breakdown.material).toLocaleString('sv-SE')} kr
                                     </p>
                                 </div>
                                 <div className="p-3 bg-amber-100/50 rounded-lg">
                                     <p className="text-xs text-amber-600 uppercase font-medium mb-1">Labor</p>
                                     <p className="text-lg font-mono font-bold text-amber-900">
-                                        {Math.round(item.breakdown.labor).toLocaleString('sv-SE')} kr
+                                        {Math.round(displayedItem.breakdown.labor).toLocaleString('sv-SE')} kr
                                     </p>
                                 </div>
                             </div>
 
-                            {item.breakdown.components && item.breakdown.components.length > 0 && (
+                            {displayedItem.breakdown.components && displayedItem.breakdown.components.length > 0 && (
                                 <div className="mt-2">
                                     <p className="text-xs text-amber-700 font-medium mb-2">Includes:</p>
                                     <ul className="space-y-1">
-                                        {item.breakdown.components.map((comp, i) => (
+                                        {displayedItem.breakdown.components.map((comp, i) => (
                                             <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
                                                 <CheckCircle className="h-3 w-3 text-amber-500 flex-shrink-0" />
                                                 {comp}
@@ -401,9 +428,9 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                 </div>
                             )}
 
-                            {item.breakdown.source && (
+                            {displayedItem.breakdown.source && (
                                 <p className="text-xs text-slate-400 mt-2">
-                                    Price source: {item.breakdown.source}
+                                    Price source: {displayedItem.breakdown.source}
                                 </p>
                             )}
                         </div>
@@ -411,7 +438,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                 )}
 
                 {/* JB Villan Prefab Efficiency Section */}
-                {item.prefabDiscount && (
+                {displayedItem.prefabDiscount && (
                     <Section title="JB Villan Prefab Efficiency" icon={Factory} color="green">
                         <div className="space-y-4">
                             {/* Price Comparison */}
@@ -419,14 +446,14 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                 <div className="p-3 bg-red-50 rounded-lg border border-red-200">
                                     <p className="text-xs text-red-600 uppercase font-medium mb-1">General Contractor</p>
                                     <p className="text-lg font-mono font-bold text-red-700 line-through">
-                                        {Math.round(item.prefabDiscount.generalContractorPrice).toLocaleString('sv-SE')} kr
+                                        {Math.round(displayedItem.prefabDiscount.generalContractorPrice).toLocaleString('sv-SE')} kr
                                     </p>
                                     <p className="text-[10px] text-red-500 mt-0.5">2025 market rate</p>
                                 </div>
                                 <div className="p-3 bg-green-100 rounded-lg border border-green-300">
                                     <p className="text-xs text-green-700 uppercase font-medium mb-1">JB Villan Price</p>
                                     <p className="text-lg font-mono font-bold text-green-800">
-                                        {Math.round(item.prefabDiscount.jbVillanPrice).toLocaleString('sv-SE')} kr
+                                        {Math.round(displayedItem.prefabDiscount.jbVillanPrice).toLocaleString('sv-SE')} kr
                                     </p>
                                     <p className="text-[10px] text-green-600 mt-0.5">Factory-optimized</p>
                                 </div>
@@ -442,12 +469,12 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                         <div>
                                             <p className="text-xs text-green-700 font-medium uppercase">Your Savings</p>
                                             <p className="text-2xl font-mono font-bold text-green-800">
-                                                {Math.round(item.prefabDiscount.savingsAmount).toLocaleString('sv-SE')} kr
+                                                {Math.round(displayedItem.prefabDiscount.savingsAmount).toLocaleString('sv-SE')} kr
                                             </p>
                                         </div>
                                     </div>
                                     <div className="px-3 py-1.5 bg-green-700 text-white text-lg font-bold rounded-full">
-                                        -{item.prefabDiscount.savingsPercent}%
+                                        -{displayedItem.prefabDiscount.savingsPercent}%
                                     </div>
                                 </div>
                             </div>
@@ -459,7 +486,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                     Why JB Villan is cheaper
                                 </p>
                                 <p className="text-sm text-slate-700 leading-relaxed">
-                                    {item.prefabDiscount.reason}
+                                    {displayedItem.prefabDiscount.reason}
                                 </p>
                             </div>
 
@@ -535,10 +562,10 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                 )}
 
                 {/* Guideline Reference */}
-                {item.guidelineReference && (
+                {displayedItem.guidelineReference && (
                     <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
                         <p className="text-xs font-medium text-slate-500 uppercase mb-1">Reference Standard</p>
-                        <p className="text-sm text-slate-700">{item.guidelineReference}</p>
+                        <p className="text-sm text-slate-700">{displayedItem.guidelineReference}</p>
                     </div>
                 )}
 
