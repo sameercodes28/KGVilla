@@ -6,6 +6,7 @@ Extracts room data and calculates pricing from printed annotations.
 """
 import os
 import re
+import math
 import logging
 from typing import List, Dict, Tuple
 from models import CostItem
@@ -285,6 +286,266 @@ def extract_text_with_documentai(image_bytes: bytes, mime_type: str) -> str:
     except Exception as e:
         logger.error(f"Document AI error: {e}")
         return ""
+
+
+def extract_text_with_bounding_boxes(image_bytes: bytes, mime_type: str) -> Tuple[str, List[Dict]]:
+    """
+    Extract text WITH bounding box coordinates from Document AI.
+
+    Returns:
+        Tuple of (full_text, list of text blocks with coordinates)
+        Each block: {"text": str, "x": float, "y": float, "width": float, "height": float}
+    """
+    if not _documentai_available:
+        logger.error("Document AI not available")
+        return "", []
+
+    if not _processor_id:
+        logger.error("DOCUMENTAI_PROCESSOR_ID not configured")
+        return "", []
+
+    try:
+        client_options = {"api_endpoint": f"{LOCATION}-documentai.googleapis.com"}
+        client = documentai.DocumentProcessorServiceClient(client_options=client_options)
+        name = f"projects/{PROJECT_ID}/locations/{LOCATION}/processors/{_processor_id}"
+
+        raw_document = documentai.RawDocument(
+            content=image_bytes,
+            mime_type=mime_type
+        )
+
+        request = documentai.ProcessRequest(
+            name=name,
+            raw_document=raw_document
+        )
+
+        result = client.process_document(request=request)
+        document = result.document
+        full_text = document.text
+
+        # Extract text blocks with bounding boxes
+        text_blocks = []
+
+        # Process each page (typically just one for floor plans)
+        for page in document.pages:
+            # Extract from tokens (most granular level)
+            for token in page.tokens:
+                # Get text using text_anchor
+                text = ""
+                if token.layout.text_anchor.text_segments:
+                    for segment in token.layout.text_anchor.text_segments:
+                        start = int(segment.start_index) if segment.start_index else 0
+                        end = int(segment.end_index) if segment.end_index else 0
+                        text += full_text[start:end]
+
+                text = text.strip()
+                if not text:
+                    continue
+
+                # Get bounding box (normalized coordinates 0-1)
+                bbox = token.layout.bounding_poly
+                if bbox.normalized_vertices:
+                    vertices = bbox.normalized_vertices
+                    # Calculate center point and dimensions
+                    x_coords = [v.x for v in vertices]
+                    y_coords = [v.y for v in vertices]
+
+                    x_min, x_max = min(x_coords), max(x_coords)
+                    y_min, y_max = min(y_coords), max(y_coords)
+
+                    # Center point (normalized 0-1)
+                    center_x = (x_min + x_max) / 2
+                    center_y = (y_min + y_max) / 2
+
+                    text_blocks.append({
+                        "text": text,
+                        "x": center_x,
+                        "y": center_y,
+                        "x_min": x_min,
+                        "x_max": x_max,
+                        "y_min": y_min,
+                        "y_max": y_max,
+                    })
+
+        logger.info(f"Extracted {len(text_blocks)} text blocks with bounding boxes")
+        return full_text, text_blocks
+
+    except Exception as e:
+        logger.error(f"Document AI bounding box extraction error: {e}")
+        return "", []
+
+
+def parse_rooms_with_spatial_matching(text_blocks: List[Dict]) -> List[Dict]:
+    """
+    Parse rooms using 2D spatial matching of bounding boxes.
+
+    This solves the problem of adjacent rooms (like SOV2 and SOV3) getting
+    their areas swapped due to text extraction order.
+
+    Algorithm:
+    1. Identify all room name blocks
+    2. Identify all area value blocks
+    3. For each room, find the spatially closest area using Euclidean distance
+    """
+    rooms = []
+    seen_rooms = set()
+
+    # Room name patterns - must handle OCR variations
+    # Note: Patterns are checked in order, first match wins
+    # IMPORTANT: Document AI often tokenizes "SOV 1" as "SOV" alone, so we match "SOV" by itself
+    room_patterns = [
+        # Bedrooms - handle all variations including standalone SOV
+        r'^SOVRUM\s*\d*$', r'^SOV\s*\d+$', r'^SOV\d+$', r'^SOV$',  # SOV alone
+        r'^EV\.?\s*SOV', r'^EV\.\s*SOV',  # "EV. SOV" or "EV SOV"
+        # Living/Dining - MATPLATS must be explicit
+        r'^V\.?RUM$', r'^VARDAGSRUM$', r'^ALLRUM$', r'^MATPLATS$', r'^Room$',
+        # Kitchen (with variations)
+        r'^KÖK$', r'^KÖKVARDAGSRUM$', r'^KÖK/VARDAGSRUM$', r'^KOK$', r'^KÖK/MATPLATS$',
+        # Bathrooms - handle WC/D1, WC/D2, WCD1, WCD2, WC, etc.
+        r'^WC/D\d+$', r'^WCD\d+$', r'^WC/?D?\d*$', r'^WC/BAD$', r'^BAD$', r'^DUSCH',
+        # Laundry - handle combined rooms
+        r'^TVÄTT/GROVENTR', r'^GROVENTR[EÉ]/TVÄTT', r'^TVÄTT', r'^TVÄTTSTUGA$',
+        r'^GROVENTR[EÉ]?$', r'^TVATT$',
+        # Entry - explicit patterns for all variations
+        r'^ENTRÉ$', r'^ENTRE$', r'^ENTR$', r'^HALL$', r'^VINDFÅNG$',
+        # Closets - KLK1, KLK2, KLK 1, etc.
+        r'^KLK\s*\d*$', r'^KLK\d+$', r'^KLÄDKAMMARE$',
+        # Storage - handle combined GARAGE/FÖRRÅD
+        r'^GARAGE/FÖRRÅD$', r'^FÖRRÅD/GARAGE$', r'^FÖRRÅD$', r'^GARAGE$', r'^TEKNIK$',
+        # Outdoor
+        r'^ALTAN$', r'^UTEPLATS$', r'^TERRASS$',
+    ]
+
+    # Area patterns - multiple patterns to catch different OCR extraction styles
+    # Pattern 1: Full pattern like "8.3 m²" or "12.7m2"
+    area_pattern = r'^(\d{1,3}[.,/]\d)\s*m?[²³2]?$'
+    # Pattern 2: Just the number like "2.7" (m² might be separate token)
+    area_pattern_num_only = r'^(\d{1,2}[.,/]\d)$'
+
+    # Separate room blocks and area blocks
+    room_blocks = []
+    area_blocks = []
+
+    for block in text_blocks:
+        text = block["text"].upper().strip()
+
+        # Check if it's a room name
+        matched = False
+        for pattern in room_patterns:
+            if re.match(pattern, text, re.IGNORECASE):
+                room_blocks.append({
+                    "name": text,
+                    "x": block["x"],
+                    "y": block["y"],
+                    "category": classify_room(text),
+                })
+                matched = True
+                break
+
+        # Log potential room names that didn't match (for debugging)
+        if not matched and len(text) >= 3 and len(text) <= 12:
+            # Check if it looks like it could be a room name
+            if text.isalpha() or text.replace('/', '').replace('.', '').isalnum():
+                if text not in ['INV', 'GVF', 'BOA', 'BTA', 'BOYTA', 'BIYTA', 'TAK', 'PLANT', 'RYGG']:
+                    logger.debug(f"Unmatched potential room: '{text}' at ({block['x']:.3f}, {block['y']:.3f})")
+
+        # Check if it's an area value - try multiple patterns
+        text_normalized = text.replace(',', '.')
+        area_match = re.match(area_pattern, text_normalized)
+        if not area_match:
+            # Try number-only pattern (e.g., "2.7" without "m²")
+            area_match = re.match(area_pattern_num_only, text_normalized)
+
+        if area_match:
+            # Handle OCR misreading "." as "/" (e.g., "2/4" should be "2.4")
+            area_str = area_match.group(1).replace(',', '.').replace('/', '.')
+            area_val = float(area_str)
+            # Valid room area range (1-100 m²)
+            if 1.0 <= area_val <= 100:
+                area_blocks.append({
+                    "area": area_val,
+                    "x": block["x"],
+                    "y": block["y"],
+                    "text": text,
+                })
+
+    logger.info(f"Found {len(room_blocks)} room labels and {len(area_blocks)} area values")
+
+    # Room size validation ranges
+    ROOM_SIZE_HINTS = {
+        "living": (8, 60),
+        "bedroom": (5, 25),
+        "kitchen": (6, 35),
+        "bathroom": (2, 12),
+        "laundry": (2, 15),
+        "entry": (2, 20),
+        "closet": (1, 10),
+        "storage": (3, 40),
+        "garage": (15, 60),
+    }
+
+    def euclidean_distance(x1, y1, x2, y2):
+        return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+    def is_plausible_size(category: str, area: float) -> bool:
+        if category in ROOM_SIZE_HINTS:
+            min_size, max_size = ROOM_SIZE_HINTS[category]
+            return min_size <= area <= max_size
+        return True
+
+    # Match each room to its spatially closest plausible area
+    used_areas = set()
+
+    for room_block in room_blocks:
+        room_name = room_block["name"]
+        room_x = room_block["x"]
+        room_y = room_block["y"]
+        category = room_block["category"]
+
+        best_area = None
+        best_distance = float('inf')
+        best_area_idx = None
+
+        for idx, area_block in enumerate(area_blocks):
+            if idx in used_areas:
+                continue
+
+            area_val = area_block["area"]
+
+            # Skip implausible sizes for this room type
+            if not is_plausible_size(category, area_val):
+                continue
+
+            # Calculate 2D distance
+            dist = euclidean_distance(room_x, room_y, area_block["x"], area_block["y"])
+
+            # Prefer areas that are BELOW or to the RIGHT of the room name
+            # (typical floor plan layout: label above or left of area)
+            if area_block["y"] >= room_y or area_block["x"] >= room_x:
+                # Slight preference for areas below/right
+                dist *= 0.9
+
+            if dist < best_distance:
+                best_distance = dist
+                best_area = area_val
+                best_area_idx = idx
+
+        if best_area is not None:
+            room_key = (room_name, round(best_area, 1))
+
+            if room_key not in seen_rooms:
+                seen_rooms.add(room_key)
+                rooms.append({
+                    "name": room_name,
+                    "area": best_area,
+                    "category": category,
+                    "is_biarea": is_biarea(category),
+                    "spatial_distance": best_distance,  # For debugging
+                })
+                used_areas.add(best_area_idx)
+                logger.info(f"Matched {room_name} -> {best_area} m² (distance: {best_distance:.4f})")
+
+    return rooms
 
 
 def parse_rooms_from_text(text: str) -> List[Dict]:
@@ -1370,8 +1631,8 @@ async def analyze_floor_plan_deterministic(image_bytes: bytes, mime_type: str) -
     """
     Main entry point for deterministic floor plan analysis.
 
-    1. Extract text via Document AI OCR
-    2. Parse room names and areas
+    1. Extract text via Document AI OCR with bounding boxes
+    2. Parse room names and areas using SPATIAL matching (2D coordinates)
     3. Detect equipment (heat pump, laundry, fireplace)
     4. Calculate BOA (living area) vs Biarea (secondary area)
     5. Apply wall thickness adjustment for accurate totals
@@ -1387,8 +1648,8 @@ async def analyze_floor_plan_deterministic(image_bytes: bytes, mime_type: str) -
         areaBreakdown: Dict         # Detailed area breakdown
     }
     """
-    # Step 1: OCR
-    text = extract_text_with_documentai(image_bytes, mime_type)
+    # Step 1: OCR with bounding boxes for spatial matching
+    text, text_blocks = extract_text_with_bounding_boxes(image_bytes, mime_type)
 
     if not text:
         logger.warning("No text extracted, falling back to empty result")
@@ -1404,8 +1665,19 @@ async def analyze_floor_plan_deterministic(image_bytes: bytes, mime_type: str) -
 
     logger.info(f"Extracted {len(text)} characters from document")
 
-    # Step 2: Parse rooms and summary areas
-    rooms = parse_rooms_from_text(text)
+    # Step 2: Parse rooms using SPATIAL matching (uses 2D bounding box coordinates)
+    # This fixes issues where adjacent rooms (SOV2/SOV3) get their areas swapped
+    rooms = []
+    if text_blocks:
+        rooms = parse_rooms_with_spatial_matching(text_blocks)
+        logger.info(f"Spatial matching found {len(rooms)} rooms")
+
+    # Fallback to text-based matching if spatial matching found too few rooms
+    if len(rooms) < 3:
+        logger.warning(f"Spatial matching found only {len(rooms)} rooms, falling back to text-based")
+        rooms = parse_rooms_from_text(text)
+        logger.info(f"Text-based matching found {len(rooms)} rooms")
+
     summary = parse_summary_areas(text)
 
     # Step 3: Detect equipment labels (VP, TM, TT, BRASKAMIN, etc.)
