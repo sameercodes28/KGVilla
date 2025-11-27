@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { ClientCostSection } from './ClientCostSection';
-import { ContractScope } from './ContractScope';
 import { PhaseSection } from './PhaseSection';
 import { TotalSummary } from './TotalSummary';
 import { AddItemForm } from './AddItemForm';
@@ -67,8 +66,6 @@ export function ProjectDataFeed() {
                 </header>
 
                 <ClientCostSection onInspectItem={setInspectingItem} />
-
-                <ContractScope totalCost={totalCost} />
 
                 {/* Phases View */}
                 <div className="space-y-6">

@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { CostItem } from '@/types';
 import { getItemRegulations, RegulationRef, REGULATION_COLORS } from '@/data/regulationMapping';
 import { cn } from '@/lib/utils';
+import { ContractScope } from '@/components/qto/ContractScope';
 
 // Phase Icons mapping
 const PHASE_ICONS: Record<string, React.ElementType> = {
@@ -472,6 +473,11 @@ function CustomerViewContent() {
                                 {Math.round(totalCost).toLocaleString('sv-SE')} kr
                             </span>
                         </div>
+                    </div>
+
+                    {/* Contract & Payment Plan */}
+                    <div className="mt-8">
+                        <ContractScope totalCost={totalCost} />
                     </div>
                 </div>
             </div>
