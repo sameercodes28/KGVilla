@@ -242,7 +242,7 @@ export default function Home() {
             {/* JB Villan Logo */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-                src="/jb-villan-logo.svg"
+                src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/jb-villan-logo.svg`}
                 alt="JB Villan Kalkyl"
                 className="h-12 mx-auto mb-6"
             />
@@ -278,16 +278,16 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             
             {/* Create New Card */}
-            <button 
+            <button
                 onClick={() => setIsModalOpen(true)}
-                className="group relative flex flex-col items-center justify-center h-72 bg-gradient-to-br from-red-600 to-red-700 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-white overflow-hidden"
+                className="group relative flex flex-col items-center justify-center h-72 bg-white rounded-3xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden border-2 border-dashed border-slate-200 hover:border-red-300"
             >
-                <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
-                <div className="h-20 w-20 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center text-white mb-6 group-hover:scale-110 transition-transform border border-white/30">
-                    <Plus className="h-10 w-10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="h-16 w-16 bg-red-50 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:bg-red-100 transition-all border border-red-100">
+                    <Plus className="h-8 w-8 text-red-500 group-hover:text-red-600 transition-colors" />
                 </div>
-                <h3 className="font-bold text-2xl">{t('dash.create_project')}</h3>
-                <p className="text-red-100 text-sm mt-2 font-medium">{t('dash.start_blueprint')}</p>
+                <h3 className="font-bold text-xl text-slate-800">{t('dash.create_project')}</h3>
+                <p className="text-slate-400 text-sm mt-2 font-medium">{t('dash.start_blueprint')}</p>
             </button>
 
             {/* Recent Project Cards */}
