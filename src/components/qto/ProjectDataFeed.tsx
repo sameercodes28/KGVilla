@@ -136,21 +136,21 @@ export function ProjectDataFeed() {
                                 <TrendingUp className="h-5 w-5 text-green-600" />
                             </div>
                             <div className="flex-1">
-                                <h4 className="font-semibold text-green-800">JB Villan Prefab Advantage</h4>
+                                <h4 className="font-semibold text-green-800">{t('prefab.advantage_title')}</h4>
                                 <p className="text-sm text-green-700 mt-1">
-                                    A general contractor would charge approximately{' '}
+                                    {t('prefab.contractor_charge')}{' '}
                                     <span className="font-bold font-mono">{Math.round(generalContractorTotal).toLocaleString('sv-SE')} kr</span>{' '}
-                                    for this build based on 2025 market rates.
+                                    {t('prefab.for_this_build')}
                                 </p>
                                 <div className="mt-3 flex items-center gap-4">
                                     <div className="text-sm">
-                                        <span className="text-green-600">You save:</span>{' '}
+                                        <span className="text-green-600">{t('prefab.you_save')}</span>{' '}
                                         <span className="font-bold font-mono text-green-700">
                                             {Math.round(prefabSavings).toLocaleString('sv-SE')} kr
                                         </span>
                                     </div>
                                     <div className="text-xs px-2 py-1 bg-green-200 text-green-800 rounded-full font-semibold">
-                                        {Math.round((prefabSavings / generalContractorTotal) * 100)}% savings
+                                        {Math.round((prefabSavings / generalContractorTotal) * 100)}% {t('prefab.savings_percent')}
                                     </div>
                                 </div>
                             </div>

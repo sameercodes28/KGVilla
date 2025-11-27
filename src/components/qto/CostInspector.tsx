@@ -11,6 +11,7 @@ import { apiClient } from '@/lib/apiClient';
 import { logger } from '@/lib/logger';
 import { getItemRegulations, REGULATION_COLORS } from '@/data/regulationMapping';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 interface CostInspectorProps {
     item: CostItem | null;
@@ -112,6 +113,7 @@ function Section({
 }
 
 export function CostInspector({ item, onClose, context = {} }: CostInspectorProps) {
+    const { t } = useTranslation();
     const [narrative, setNarrative] = useState<NarrativeResponse | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -269,8 +271,8 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                         <Calculator className="h-5 w-5" />
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold">Cost Analysis</h2>
-                        <p className="text-xs text-slate-400">Detailed calculation breakdown</p>
+                        <h2 className="text-lg font-bold">{t('inspector.title')}</h2>
+                        <p className="text-xs text-slate-400">{t('inspector.subtitle')}</p>
                     </div>
                 </div>
                 <button
@@ -301,7 +303,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                         </div>
                         {displayedItem.confidenceScore && (
                             <div className="text-xs text-slate-400 mt-1">
-                                Confidence: {Math.round(displayedItem.confidenceScore * 100)}%
+                                {t('inspector.confidence')} {Math.round(displayedItem.confidenceScore * 100)}%
                             </div>
                         )}
                     </div>
@@ -312,7 +314,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
 
                 {/* Quantity Calculation Section */}
-                <Section title="How We Calculated the Quantity" icon={Ruler} color="blue">
+                <Section title={t('inspector.how_calculated')} icon={Ruler} color="blue">
                     <div className="space-y-3">
                         {calculationSteps.length > 0 ? (
                             calculationSteps.map((step, i) => (
@@ -325,7 +327,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                             ))
                         ) : (
                             <p className="text-sm text-slate-500 italic">
-                                Quantity derived from AI analysis of the floor plan dimensions.
+                                {t('inspector.quantity_derived')}
                             </p>
                         )}
 
@@ -333,7 +335,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                         {displayedItem.quantityBreakdown && displayedItem.quantityBreakdown.items.length > 0 && (
                             <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
                                 <p className="text-xs font-medium text-slate-600 uppercase mb-2">
-                                    {displayedItem.quantityBreakdown.calculationMethod || 'Room Breakdown'}
+                                    {displayedItem.quantityBreakdown.calculationMethod || t('qto.room_breakdown')}
                                 </p>
                                 <div className="space-y-1.5">
                                     {displayedItem.quantityBreakdown.items.map((breakdownItem, i) => (
@@ -353,7 +355,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                     ))}
                                 </div>
                                 <div className="mt-2 pt-2 border-t border-slate-200 flex justify-between text-sm font-medium">
-                                    <span className="text-slate-700">Total</span>
+                                    <span className="text-slate-700">{t('qto.total')}</span>
                                     <span className="font-mono text-blue-700">
                                         {displayedItem.quantityBreakdown.total.toFixed(1)} {displayedItem.quantityBreakdown.unit}
                                     </span>
@@ -364,7 +366,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                         {/* Show the actual measurement */}
                         <div className="mt-3 p-3 bg-blue-100/50 rounded-lg">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-medium text-blue-800 uppercase">Result</span>
+                                <span className="text-xs font-medium text-blue-800 uppercase">{t('inspector.result')}</span>
                                 <span className="font-mono font-bold text-blue-900">
                                     {(Math.round(Number(displayedItem.quantity) * 10) / 10).toFixed(1)} {displayedItem.unit}
                                 </span>
@@ -375,7 +377,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
 
                 {/* Regulations Section - Always show from our mapping */}
                 {itemRegulations.length > 0 && (
-                    <Section title="Applicable Regulations" icon={Scale} color="green">
+                    <Section title={t('inspector.regulations')} icon={Scale} color="green">
                         <div className="space-y-3">
                             {itemRegulations.map((reg, i) => {
                                 const colors = REGULATION_COLORS[reg.id] || { bgColor: 'bg-slate-100', color: 'text-slate-700' };
@@ -391,7 +393,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                             <div className="flex-1 min-w-0">
                                                 {reg.section && (
                                                     <p className="text-xs font-mono text-slate-500 mb-1">
-                                                        Section: {reg.section}
+                                                        {t('inspector.section')} {reg.section}
                                                     </p>
                                                 )}
                                                 {reg.requirement && (
@@ -410,17 +412,17 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
 
                 {/* Price Breakdown Section */}
                 {displayedItem.breakdown && (
-                    <Section title="Price Breakdown" icon={FileText} color="amber">
+                    <Section title={t('inspector.price_breakdown')} icon={FileText} color="amber">
                         <div className="space-y-3">
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="p-3 bg-amber-100/50 rounded-lg">
-                                    <p className="text-xs text-amber-600 uppercase font-medium mb-1">Materials</p>
+                                    <p className="text-xs text-amber-600 uppercase font-medium mb-1">{t('inspector.materials')}</p>
                                     <p className="text-lg font-mono font-bold text-amber-900">
                                         {Math.round(displayedItem.breakdown.material).toLocaleString('sv-SE')} kr
                                     </p>
                                 </div>
                                 <div className="p-3 bg-amber-100/50 rounded-lg">
-                                    <p className="text-xs text-amber-600 uppercase font-medium mb-1">Labor</p>
+                                    <p className="text-xs text-amber-600 uppercase font-medium mb-1">{t('inspector.labor')}</p>
                                     <p className="text-lg font-mono font-bold text-amber-900">
                                         {Math.round(displayedItem.breakdown.labor).toLocaleString('sv-SE')} kr
                                     </p>
@@ -429,7 +431,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
 
                             {displayedItem.breakdown.components && displayedItem.breakdown.components.length > 0 && (
                                 <div className="mt-2">
-                                    <p className="text-xs text-amber-700 font-medium mb-2">Includes:</p>
+                                    <p className="text-xs text-amber-700 font-medium mb-2">{t('inspector.includes')}</p>
                                     <ul className="space-y-1">
                                         {displayedItem.breakdown.components.map((comp, i) => (
                                             <li key={i} className="flex items-center gap-2 text-sm text-slate-600">
@@ -443,7 +445,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
 
                             {displayedItem.breakdown.source && (
                                 <p className="text-xs text-slate-400 mt-2">
-                                    Price source: {displayedItem.breakdown.source}
+                                    {t('inspector.price_source')} {displayedItem.breakdown.source}
                                 </p>
                             )}
                         </div>
@@ -452,23 +454,23 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
 
                 {/* JB Villan Prefab Efficiency Section */}
                 {displayedItem.prefabDiscount && (
-                    <Section title="JB Villan Prefab Efficiency" icon={Factory} color="green">
+                    <Section title={t('prefab.title')} icon={Factory} color="green">
                         <div className="space-y-4">
                             {/* Price Comparison */}
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="p-3 bg-red-50 rounded-lg border border-red-200">
-                                    <p className="text-xs text-red-600 uppercase font-medium mb-1">General Contractor</p>
+                                    <p className="text-xs text-red-600 uppercase font-medium mb-1">{t('prefab.general_contractor')}</p>
                                     <p className="text-lg font-mono font-bold text-red-700 line-through">
                                         {Math.round(displayedItem.prefabDiscount.generalContractorPrice).toLocaleString('sv-SE')} kr
                                     </p>
-                                    <p className="text-[10px] text-red-500 mt-0.5">2025 market rate</p>
+                                    <p className="text-[10px] text-red-500 mt-0.5">{t('prefab.market_rate')}</p>
                                 </div>
                                 <div className="p-3 bg-green-100 rounded-lg border border-green-300">
-                                    <p className="text-xs text-green-700 uppercase font-medium mb-1">JB Villan Price</p>
+                                    <p className="text-xs text-green-700 uppercase font-medium mb-1">{t('prefab.jb_price')}</p>
                                     <p className="text-lg font-mono font-bold text-green-800">
                                         {Math.round(displayedItem.prefabDiscount.jbVillanPrice).toLocaleString('sv-SE')} kr
                                     </p>
-                                    <p className="text-[10px] text-green-600 mt-0.5">Factory-optimized</p>
+                                    <p className="text-[10px] text-green-600 mt-0.5">{t('prefab.factory_optimized')}</p>
                                 </div>
                             </div>
 
@@ -480,7 +482,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                             <TrendingDown className="h-5 w-5 text-green-700" />
                                         </div>
                                         <div>
-                                            <p className="text-xs text-green-700 font-medium uppercase">Your Savings</p>
+                                            <p className="text-xs text-green-700 font-medium uppercase">{t('prefab.your_savings')}</p>
                                             <p className="text-2xl font-mono font-bold text-green-800">
                                                 {Math.round(displayedItem.prefabDiscount.savingsAmount).toLocaleString('sv-SE')} kr
                                             </p>
@@ -496,7 +498,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                             <div className="p-3 bg-white rounded-lg border border-slate-200">
                                 <p className="text-xs font-medium text-slate-600 uppercase mb-2 flex items-center gap-1">
                                     <Factory className="h-3 w-3" />
-                                    Why JB Villan is cheaper
+                                    {t('prefab.why_cheaper')}
                                 </p>
                                 <p className="text-sm text-slate-700 leading-relaxed">
                                     {displayedItem.prefabDiscount.reason}
@@ -507,15 +509,15 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                             <div className="text-xs text-slate-500 space-y-1 pt-2 border-t border-slate-200">
                                 <p className="flex items-center gap-1">
                                     <CheckCircle className="h-3 w-3 text-green-500" />
-                                    Factory manufacturing reduces waste and labor costs
+                                    {t('prefab.benefit_waste')}
                                 </p>
                                 <p className="flex items-center gap-1">
                                     <CheckCircle className="h-3 w-3 text-green-500" />
-                                    Bulk purchasing power for materials
+                                    {t('prefab.benefit_bulk')}
                                 </p>
                                 <p className="flex items-center gap-1">
                                     <CheckCircle className="h-3 w-3 text-green-500" />
-                                    Standardized processes increase efficiency
+                                    {t('prefab.benefit_standard')}
                                 </p>
                             </div>
                         </div>
@@ -524,16 +526,16 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
 
                 {/* AI Explanation Section */}
                 {isLoading && (
-                    <Section title="AI Analysis" icon={Lightbulb} color="purple">
+                    <Section title={t('inspector.ai_analysis')} icon={Lightbulb} color="purple">
                         <div className="flex flex-col items-center justify-center py-6 text-slate-400">
                             <Loader2 className="h-6 w-6 animate-spin mb-2" />
-                            <p className="text-sm">Generating detailed analysis...</p>
+                            <p className="text-sm">{t('inspector.generating')}</p>
                         </div>
                     </Section>
                 )}
 
                 {narrative && !isLoading && (
-                    <Section title="AI Analysis" icon={Lightbulb} color="purple">
+                    <Section title={t('inspector.ai_analysis')} icon={Lightbulb} color="purple">
                         <div className="space-y-4">
                             <div className="text-sm text-slate-700 leading-relaxed">
                                 {renderText(narrative.narrative)}
@@ -541,7 +543,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
 
                             {narrative.assumptions && narrative.assumptions.length > 0 && (
                                 <div className="mt-3 p-3 bg-purple-100/50 rounded-lg">
-                                    <p className="text-xs font-medium text-purple-800 mb-2">Assumptions Made:</p>
+                                    <p className="text-xs font-medium text-purple-800 mb-2">{t('inspector.assumptions')}</p>
                                     <ul className="space-y-1">
                                         {narrative.assumptions.map((assumption, i) => (
                                             <li key={i} className="text-xs text-purple-700 flex items-start gap-2">
@@ -561,13 +563,13 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                         <div className="flex items-start gap-3">
                             <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-sm text-amber-700">{error}</p>
+                                <p className="text-sm text-amber-700">{t('inspector.error_ai')}</p>
                                 <button
                                     onClick={() => fetchNarrative(true)}
                                     className="mt-2 text-xs text-amber-600 hover:text-amber-800 font-medium flex items-center gap-1"
                                 >
                                     <RefreshCw className="h-3 w-3" />
-                                    Retry AI analysis
+                                    {t('inspector.retry')}
                                 </button>
                             </div>
                         </div>
@@ -577,7 +579,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                 {/* Guideline Reference */}
                 {displayedItem.guidelineReference && (
                     <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                        <p className="text-xs font-medium text-slate-500 uppercase mb-1">Reference Standard</p>
+                        <p className="text-xs font-medium text-slate-500 uppercase mb-1">{t('report.reference_standard')}</p>
                         <p className="text-sm text-slate-700">{displayedItem.guidelineReference}</p>
                     </div>
                 )}
@@ -588,7 +590,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                     className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-sm font-medium transition-colors"
                 >
                     <RefreshCw className="h-4 w-4" />
-                    Regenerate Analysis
+                    {t('inspector.regenerate')}
                 </button>
             </div>
 
@@ -597,9 +599,9 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                 <div className="flex items-center justify-between text-xs text-slate-500">
                     <div className="flex items-center gap-2">
                         <BookOpen className="h-4 w-4 text-green-600" />
-                        <span>Based on BBR 2025, Säker Vatten & Swedish standards</span>
+                        <span>{t('inspector.based_on')}</span>
                     </div>
-                    <span className="font-mono">{itemRegulations.length} regulations</span>
+                    <span className="font-mono">{itemRegulations.length} {t('common.regulations')}</span>
                 </div>
             </div>
         </div>
