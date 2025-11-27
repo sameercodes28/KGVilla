@@ -1073,14 +1073,32 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
     # If no summary areas provided, estimate from rooms
     total_room_area = sum(r["area"] for r in rooms)
 
+    # Calculate biarea (garage, storage, utility - non-heated areas)
+    biarea = sum(r["area"] for r in rooms if r["category"] in ["garage", "storage", "utility"])
+    biarea_rooms = [r for r in rooms if r["category"] in ["garage", "storage", "utility"]]
+
     # Estimate boyta as living area (exclude garage, storage)
     if boyta == 0:
-        living_area = sum(r["area"] for r in rooms if r["category"] not in ["garage", "storage"])
+        living_area = sum(r["area"] for r in rooms if r["category"] not in ["garage", "storage", "utility"])
         boyta = living_area if living_area > 0 else total_room_area
+
+    # BOA rooms for breakdown
+    boa_rooms = [r for r in rooms if r["category"] not in ["garage", "storage", "utility"]]
 
     # Estimate byggyta as total footprint (all rooms + 10% for walls)
     if byggyta == 0:
         byggyta = total_room_area * 1.1  # Add 10% for wall thickness
+
+    # Create area breakdown items for structural calculations
+    boa_breakdown = [QuantityBreakdownItem(name=r["name"], value=r["area"], unit="m²", category=r["category"]) for r in boa_rooms]
+    biarea_breakdown = [QuantityBreakdownItem(name=r["name"], value=r["area"], unit="m²", category=r["category"]) for r in biarea_rooms]
+
+    # Building footprint breakdown
+    byggyta_breakdown = boa_breakdown + biarea_breakdown
+    if total_room_area > 0:
+        wall_allowance = byggyta - total_room_area
+        if wall_allowance > 0:
+            byggyta_breakdown.append(QuantityBreakdownItem(name="Wall thickness allowance", value=round(wall_allowance, 1), unit="m²", category="structure"))
 
     # --- GROUND WORKS ---
     if byggyta > 0:
@@ -1089,13 +1107,19 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             id="ground-excavation",
             phase="ground",
             elementName="Excavation & Site Preparation",
-            description=f"Ground preparation, leveling - {byggyta} m²",
+            description=f"Ground preparation, leveling - {byggyta:.1f} m²",
             quantity=byggyta,
             unit="m²",
             unitPrice=PRICING["excavation_per_m2"],
-            totalCost=byggyta * PRICING["excavation_per_m2"],
+            totalCost=round(byggyta * PRICING["excavation_per_m2"]),
             confidenceScore=0.9,
-            guidelineReference="AMA Anläggning"
+            guidelineReference="AMA Anläggning",
+            quantityBreakdown=QuantityBreakdown(
+                items=byggyta_breakdown,
+                total=byggyta,
+                unit="m²",
+                calculationMethod=f"Building footprint: BOA ({boyta:.1f}) + Biarea ({biarea:.1f}) + walls"
+            )
         ))
 
         # Foundation
@@ -1107,9 +1131,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=byggyta,
             unit="m²",
             unitPrice=PRICING["foundation_per_m2"],
-            totalCost=byggyta * PRICING["foundation_per_m2"],
+            totalCost=round(byggyta * PRICING["foundation_per_m2"]),
             confidenceScore=1.0,
-            guidelineReference="BBR 6:1, SS 21054"
+            guidelineReference="BBR 6:1, SS 21054",
+            quantityBreakdown=QuantityBreakdown(
+                items=byggyta_breakdown,
+                total=byggyta,
+                unit="m²",
+                calculationMethod=f"Building footprint: BOA ({boyta:.1f}) + Biarea ({biarea:.1f}) + walls"
+            )
         ))
 
         # Drainage
@@ -1122,9 +1152,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=perimeter,
             unit="m",
             unitPrice=PRICING["drainage_per_m2"],
-            totalCost=perimeter * PRICING["drainage_per_m2"],
+            totalCost=round(perimeter * PRICING["drainage_per_m2"]),
             confidenceScore=0.85,
-            guidelineReference="BBR 6:1"
+            guidelineReference="BBR 6:1",
+            quantityBreakdown=QuantityBreakdown(
+                items=[QuantityBreakdownItem(name="Building perimeter", value=round(perimeter, 1), unit="m", category="structure")],
+                total=perimeter,
+                unit="m",
+                calculationMethod=f"4 × √(footprint) = 4 × √({byggyta:.1f}) = {perimeter:.1f} m"
+            )
         ))
 
     # --- STRUCTURE ---
@@ -1134,13 +1170,19 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             id=f"structure-roof",
             phase="structure",
             elementName="Roof Structure & Covering",
-            description=f"Pitched roof with tiles - {byggyta} m²",
+            description=f"Pitched roof with tiles - {byggyta:.1f} m²",
             quantity=byggyta,
             unit="m²",
             unitPrice=PRICING["roof_per_m2"],
-            totalCost=byggyta * PRICING["roof_per_m2"],
+            totalCost=round(byggyta * PRICING["roof_per_m2"]),
             confidenceScore=1.0,
-            guidelineReference="AMA Hus"
+            guidelineReference="AMA Hus",
+            quantityBreakdown=QuantityBreakdown(
+                items=byggyta_breakdown,
+                total=byggyta,
+                unit="m²",
+                calculationMethod=f"Roof covers building footprint: {byggyta:.1f} m²"
+            )
         ))
 
         # Exterior walls (estimate perimeter from area)
@@ -1154,9 +1196,18 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=wall_area,
             unit="m²",
             unitPrice=PRICING["exterior_wall_per_m2"],
-            totalCost=wall_area * PRICING["exterior_wall_per_m2"],
+            totalCost=round(wall_area * PRICING["exterior_wall_per_m2"]),
             confidenceScore=0.8,
-            guidelineReference="BBR 9:4, AMA Hus"
+            guidelineReference="BBR 9:4, AMA Hus",
+            quantityBreakdown=QuantityBreakdown(
+                items=[
+                    QuantityBreakdownItem(name="Perimeter", value=round(perimeter, 1), unit="m", category="structure"),
+                    QuantityBreakdownItem(name="Wall height", value=2.5, unit="m", category="structure")
+                ],
+                total=wall_area,
+                unit="m²",
+                calculationMethod=f"Perimeter ({perimeter:.1f} m) × height (2.5 m) = {wall_area:.1f} m²"
+            )
         ))
 
         # Additional insulation
@@ -1168,9 +1219,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=boyta,
             unit="m²",
             unitPrice=PRICING["insulation_per_m2"],
-            totalCost=boyta * PRICING["insulation_per_m2"],
+            totalCost=round(boyta * PRICING["insulation_per_m2"]),
             confidenceScore=0.85,
-            guidelineReference="BBR 9"
+            guidelineReference="BBR 9",
+            quantityBreakdown=QuantityBreakdown(
+                items=boa_breakdown,
+                total=boyta,
+                unit="m²",
+                calculationMethod=f"Living area (BOA): {boyta:.1f} m²"
+            )
         ))
 
         # Facade cladding
@@ -1182,9 +1239,18 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=wall_area,
             unit="m²",
             unitPrice=PRICING["facade_cladding_per_m2"],
-            totalCost=wall_area * PRICING["facade_cladding_per_m2"],
+            totalCost=round(wall_area * PRICING["facade_cladding_per_m2"]),
             confidenceScore=0.85,
-            guidelineReference="AMA Hus"
+            guidelineReference="AMA Hus",
+            quantityBreakdown=QuantityBreakdown(
+                items=[
+                    QuantityBreakdownItem(name="Perimeter", value=round(perimeter, 1), unit="m", category="structure"),
+                    QuantityBreakdownItem(name="Wall height", value=2.5, unit="m", category="structure")
+                ],
+                total=wall_area,
+                unit="m²",
+                calculationMethod=f"Same as exterior walls: {wall_area:.1f} m²"
+            )
         ))
 
         # Exterior paint
@@ -1196,9 +1262,18 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=wall_area,
             unit="m²",
             unitPrice=PRICING["exterior_paint_per_m2"],
-            totalCost=wall_area * PRICING["exterior_paint_per_m2"],
+            totalCost=round(wall_area * PRICING["exterior_paint_per_m2"]),
             confidenceScore=0.9,
-            guidelineReference="AMA Hus"
+            guidelineReference="AMA Hus",
+            quantityBreakdown=QuantityBreakdown(
+                items=[
+                    QuantityBreakdownItem(name="Perimeter", value=round(perimeter, 1), unit="m", category="structure"),
+                    QuantityBreakdownItem(name="Wall height", value=2.5, unit="m", category="structure")
+                ],
+                total=wall_area,
+                unit="m²",
+                calculationMethod=f"Same as exterior walls: {wall_area:.1f} m²"
+            )
         ))
 
         # Gutters
@@ -1211,9 +1286,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=roof_perimeter,
             unit="m",
             unitPrice=PRICING["gutters_per_m"],
-            totalCost=roof_perimeter * PRICING["gutters_per_m"],
+            totalCost=round(roof_perimeter * PRICING["gutters_per_m"]),
             confidenceScore=0.9,
-            guidelineReference="AMA Hus"
+            guidelineReference="AMA Hus",
+            quantityBreakdown=QuantityBreakdown(
+                items=[QuantityBreakdownItem(name="Roof perimeter", value=round(roof_perimeter, 1), unit="m", category="structure")],
+                total=roof_perimeter,
+                unit="m",
+                calculationMethod=f"Building perimeter × 1.2 = {roof_perimeter:.1f} m"
+            )
         ))
 
         # Soffit/fascia
@@ -1225,9 +1306,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=roof_perimeter,
             unit="m",
             unitPrice=PRICING["soffit_per_m"],
-            totalCost=roof_perimeter * PRICING["soffit_per_m"],
+            totalCost=round(roof_perimeter * PRICING["soffit_per_m"]),
             confidenceScore=0.9,
-            guidelineReference="AMA Hus"
+            guidelineReference="AMA Hus",
+            quantityBreakdown=QuantityBreakdown(
+                items=[QuantityBreakdownItem(name="Roof perimeter", value=round(roof_perimeter, 1), unit="m", category="structure")],
+                total=roof_perimeter,
+                unit="m",
+                calculationMethod=f"Same as gutters: {roof_perimeter:.1f} m"
+            )
         ))
 
     # --- INTERIOR BY ROOM ---
@@ -1803,9 +1890,15 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             quantity=boyta,
             unit="m²",
             unitPrice=PRICING["trim_per_m2"],
-            totalCost=boyta * PRICING["trim_per_m2"],
+            totalCost=round(boyta * PRICING["trim_per_m2"]),
             confidenceScore=0.9,
-            guidelineReference="AMA Hus"
+            guidelineReference="AMA Hus",
+            quantityBreakdown=QuantityBreakdown(
+                items=boa_breakdown,
+                total=boyta,
+                unit="m²",
+                calculationMethod=f"Living area (BOA): {boyta:.1f} m²"
+            )
         ))
 
     # --- ADMIN/MANDATORY ---
