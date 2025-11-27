@@ -21,40 +21,13 @@ export default function Home() {
   // Search State
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Modal State - use separate mount/visible states to prevent DOM race conditions
+  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
-  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [newProjectName, setNewProjectName] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Handle modal open/close animations
-  const openCreateModal = () => {
-    setIsModalOpen(true);
-    requestAnimationFrame(() => setIsModalVisible(true));
-  };
-
-  const closeCreateModal = () => {
-    setIsModalVisible(false);
-    setTimeout(() => {
-      setIsModalOpen(false);
-      setNewProjectName('');
-      setSelectedFile(null);
-    }, 200);
-  };
-
-  const openDeleteModal = (id: string) => {
-    setProjectToDelete(id);
-    requestAnimationFrame(() => setIsDeleteModalVisible(true));
-  };
-
-  const closeDeleteModal = () => {
-    setIsDeleteModalVisible(false);
-    setTimeout(() => setProjectToDelete(null), 200);
-  };
 
   const filteredProjects = projects.filter(p =>
       p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -129,23 +102,22 @@ export default function Home() {
 
     // 3. Create Project with Data
     const id = await createProject(projectName, '', selectedFile ? { items: initialItems, planUrl, totalArea, boa, biarea, estimatedCost } : undefined);
-
+    
     setIsAnalyzing(false);
-    // Navigate without closing modal - let the navigation handle cleanup
-    // This prevents the DOM race condition
-    router.push(`/qto?project=${id}`);
+    setIsModalOpen(false);
+    router.push(`/qto?project=${id}`); 
   };
 
   const handleDelete = (e: React.MouseEvent, id: string) => {
       e.preventDefault();
       e.stopPropagation();
-      openDeleteModal(id);
+      setProjectToDelete(id);
   };
 
   const confirmDelete = () => {
       if (projectToDelete) {
           deleteProject(projectToDelete);
-          closeDeleteModal();
+          setProjectToDelete(null);
       }
   };
 
@@ -201,8 +173,8 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             
             {/* Create New Card */}
-            <button
-                onClick={openCreateModal}
+            <button 
+                onClick={() => setIsModalOpen(true)}
                 className="group relative flex flex-col items-center justify-center h-72 bg-gradient-to-br from-blue-600 to-blue-700 rounded-3xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 text-white overflow-hidden"
             >
                 <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px] opacity-20"></div>
@@ -357,25 +329,13 @@ export default function Home() {
 
       {/* Delete Confirmation Modal */}
       {projectToDelete && (
-        <div
-            className={cn(
-                "fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-200",
-                isDeleteModalVisible ? "opacity-100" : "opacity-0"
-            )}
-            onClick={closeDeleteModal}
-        >
-            <div
-                className={cn(
-                    "bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden p-6 space-y-4 transition-all duration-200",
-                    isDeleteModalVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
-                )}
-                onClick={e => e.stopPropagation()}
-            >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden p-6 space-y-4">
                 <h3 className="text-lg font-bold text-slate-900">{t('dash.delete_project')}</h3>
                 <p className="text-sm text-slate-500">{t('dash.delete_confirm')}</p>
                 <div className="flex space-x-3 justify-end pt-2">
                     <button
-                        onClick={closeDeleteModal}
+                        onClick={() => setProjectToDelete(null)}
                         className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg font-medium transition-colors"
                     >
                         {t('dash.cancel')}
@@ -393,20 +353,8 @@ export default function Home() {
 
       {/* Create Project Modal */}
       {isModalOpen && (
-        <div
-            className={cn(
-                "fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-200",
-                isModalVisible ? "opacity-100" : "opacity-0"
-            )}
-            onClick={closeCreateModal}
-        >
-            <div
-                className={cn(
-                    "bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden relative border border-slate-100 transition-all duration-200",
-                    isModalVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
-                )}
-                onClick={e => e.stopPropagation()}
-            >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 relative border border-slate-100">
                 {isAnalyzing && (
                     <div className="absolute inset-0 z-50 bg-white/95 backdrop-blur flex flex-col items-center justify-center text-center p-8">
                         <div className="relative">
@@ -422,7 +370,7 @@ export default function Home() {
 
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                     <h3 className="text-xl font-bold text-slate-900">{t('dash.new_project')}</h3>
-                    <button onClick={closeCreateModal} className="p-2 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
+                    <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full text-slate-400 hover:text-slate-600 transition-colors">
                         <X className="h-5 w-5" />
                     </button>
                 </div>
