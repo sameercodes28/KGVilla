@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useProjects } from '@/hooks/useProjects';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
-import { Sparkles, Building, ChevronDown, ArrowLeft, Presentation } from 'lucide-react';
+import { Building, ChevronDown, ArrowLeft, Presentation } from 'lucide-react';
 import { SyncState } from '@/hooks/useProjectData';
 import { SyncIndicator } from '@/components/ui/SyncIndicator';
 
@@ -35,36 +35,17 @@ export function ProjectHeader({
     return (
         <div className="bg-white border-b border-slate-200 px-6 py-4 shadow-sm sticky top-0 z-30">
             <div className="max-w-7xl mx-auto flex justify-between items-center">
-                {/* Left Side: Back Button + Title */}
-                <div className="flex items-center space-x-4">
+                {/* Left Side: Back Button Only */}
+                <div className="flex items-center">
                     {showBackButton && (
-                        <Link 
-                            href="/" 
+                        <Link
+                            href="/"
                             className="p-2 -ml-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors"
                             title={t('header.back_home')}
                         >
                             <ArrowLeft className="h-5 w-5" />
                         </Link>
                     )}
-                    
-                    <div className="flex items-center space-x-3">
-                        <div className="bg-purple-100 p-2 rounded-xl hidden md:block">
-                            <Sparkles className="h-5 w-5 text-purple-600" />
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h1 className="text-lg font-bold text-slate-900 leading-tight">
-                                    {title || t('app.title')}
-                                </h1>
-                                <span className="text-[10px] font-mono bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
-                                    v{process.env.NEXT_PUBLIC_APP_VERSION}
-                                </span>
-                            </div>
-                            {subtitle && (
-                                <p className="text-xs text-slate-500">{subtitle}</p>
-                            )}
-                        </div>
-                    </div>
                 </div>
 
                 {/* Right Side: Project Switcher & Actions */}
