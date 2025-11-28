@@ -13,7 +13,7 @@ SERVICE_URL="https://$SERVICE-30314481610.$REGION.run.app"
 
 # CRITICAL ENVIRONMENT VARIABLES - All required for the service to work
 API_KEY="dev-key-12345"
-DOCUMENTAI_PROCESSOR_ID="4e83090fc2c18b12"
+DOCUMENTAI_PROCESSOR_ID="59c3cc9c5dd39784"
 DOCUMENTAI_LOCATION="eu"
 
 echo "=========================================="
@@ -99,4 +99,8 @@ echo ""
 echo "=========================================="
 echo "✅ Deployment complete and verified!"
 echo "Service URL: $SERVICE_URL"
+echo ""
+echo "⚠️  IMPORTANT: Manually test OCR by uploading a floor plan!"
+echo "   Go to: https://sameercodes28.github.io/KGVilla/"
+echo "   Create a new project and verify cost items are generated."
 echo "=========================================="
