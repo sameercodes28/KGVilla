@@ -272,8 +272,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
-        {/* Background Gradient */}
+        {/* Background Pattern */}
         <div className="absolute inset-0 z-0 pointer-events-none">
+            <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-60"></div>
             <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-red-50/80 to-transparent"></div>
         </div>
 
