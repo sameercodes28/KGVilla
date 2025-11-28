@@ -52,7 +52,7 @@ export interface Assembly {
   }[];
 }
 
-export type ConstructionPhase = 'ground' | 'structure' | 'electrical' | 'plumbing' | 'interior' | 'completion';
+export type ConstructionPhase = 'ground' | 'structure' | 'electrical' | 'plumbing' | 'interior' | 'completion' | 'admin';
 
 export interface CostBreakdown {
   material: number;
