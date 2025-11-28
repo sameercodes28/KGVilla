@@ -29,31 +29,41 @@ function getProjectCostFromItems(projectId: string): number {
     return 0;
 }
 
-// Funny Swedish loading messages
+// Funny JB-themed loading messages (AI consulting expert JB)
 const LOADING_MESSAGES_SV = [
-  'Analyserar JBs tankar...',
-  'Räknar takpannor i huvudet...',
-  'Konsulterar gamla byggmästare...',
-  'Mäter väggar med tumstock...',
-  'Beräknar kostnader med pannkalkylator...',
-  'Jämför priser med grannens hus...',
-  'Undersöker ritningen med förstoringsglas...',
-  'Kollar om det finns fika i budgeten...',
-  'Funderar på hur många skruvar som behövs...',
-  'Räknar kvadratmeter som en matematiker...',
+  'Frågar JB om detta...',
+  'Hämtar svar från JBs hjärna...',
+  'Konsulterar experten JB...',
+  'Lär mig av JB...',
+  'Vad skulle JB säga?',
+  'Dubbelkollar med JB...',
+  'Frågar JB över en fika...',
+  'Inhämtar JBs visdom...',
+  'Söker i JBs kunskapsbank...',
+  'Ringer JB för expertråd...',
+  'Kollar med mästaren JB...',
+  'Hämtar data från JBs erfarenhet...',
+  'Frågar JB en sista gång...',
+  'Laddar ner JBs expertis...',
+  'Kopierar JBs 30 års kunskap...',
 ];
 
 const LOADING_MESSAGES_EN = [
-  'Analyzing JB\'s thoughts...',
-  'Counting roof tiles in my head...',
-  'Consulting ancient builders...',
-  'Measuring walls with a ruler...',
-  'Calculating costs with a calculator...',
-  'Comparing prices with the neighbor\'s house...',
-  'Examining blueprints with a magnifying glass...',
-  'Checking if coffee is in the budget...',
-  'Figuring out how many screws are needed...',
-  'Counting square meters like a mathematician...',
+  'Asking JB about this...',
+  'Fetching answers from JB\'s brain...',
+  'Consulting expert JB...',
+  'Learning from JB...',
+  'What would JB say?',
+  'Double-checking with JB...',
+  'Asking JB over fika...',
+  'Gathering JB\'s wisdom...',
+  'Searching JB\'s knowledge bank...',
+  'Calling JB for expert advice...',
+  'Checking with master JB...',
+  'Pulling data from JB\'s experience...',
+  'Asking JB one more time...',
+  'Downloading JB\'s expertise...',
+  'Copying JB\'s 30 years of knowledge...',
 ];
 
 export default function Home() {
@@ -70,7 +80,7 @@ export default function Home() {
   const [newProjectName, setNewProjectName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(() => Math.floor(Math.random() * 15));
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // State for calculated costs (from items in localStorage)
