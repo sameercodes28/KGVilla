@@ -77,7 +77,6 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
                 currentProjectId={projectId}
                 showBackButton
                 title={project?.name || 'New Project'}
-                subtitle={`${items.length} Items • ${totalArea > 0 ? Math.round(totalCost / totalArea).toLocaleString('sv-SE') : '—'} kr/m²`}
                 syncState={syncState}
             />
 

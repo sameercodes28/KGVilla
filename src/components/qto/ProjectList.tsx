@@ -23,7 +23,7 @@ function getProjectCostFromItems(projectId: string): number {
 }
 
 export function ProjectList() {
-    const { projects, deleteProject, updateProjectStatus } = useProjects();
+    const { projects, deleteProject } = useProjects();
     const { t } = useTranslation();
 
     // State for calculated costs (from items in localStorage)
@@ -59,13 +59,6 @@ export function ProjectList() {
         }
     };
 
-    const handleStatusToggle = (e: React.MouseEvent, project: Project) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const newStatus = project.status === 'final' ? 'draft' : 'final';
-        updateProjectStatus(project.id, newStatus);
-    };
-
     return (
         <div className="max-w-5xl mx-auto pt-24 px-6 pb-20">
             <div className="mb-12">
@@ -80,7 +73,6 @@ export function ProjectList() {
                         project={project}
                         getCost={getProjectCost}
                         onDelete={handleDelete}
-                        onStatusToggle={handleStatusToggle}
                     />
                 ))}
             </div>

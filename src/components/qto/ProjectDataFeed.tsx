@@ -67,10 +67,9 @@ export function ProjectDataFeed() {
                     <div>
                         <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">{project.name}</h1>
                         <p className="text-slate-500">
-                            {project.location}
                             {(boa > 0 || biarea > 0) ? (
                                 <span>
-                                    {' '} • <span className="font-medium text-slate-700">{boa || 0} m²</span>
+                                    <span className="font-medium text-slate-700">{boa || 0} m²</span>
                                     <span className="text-slate-400"> BOA</span>
                                     {biarea > 0 && (
                                         <span>
@@ -80,8 +79,12 @@ export function ProjectDataFeed() {
                                     )}
                                 </span>
                             ) : (
-                                <span> • {totalArea || 0} m²</span>
+                                <span>{totalArea || 0} m²</span>
                             )}
+                            {' • '}<span className="font-medium text-slate-700">{items.length} Items</span>
+                            {' • '}<span className="font-medium text-slate-700">
+                                {(boa || totalArea) > 0 ? Math.round(totalCost / (boa || totalArea)).toLocaleString('sv-SE') : '—'} kr/m²
+                            </span>
                         </p>
                     </div>
                 </header>

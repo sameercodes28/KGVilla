@@ -337,7 +337,6 @@ export default function Home() {
                     project={project}
                     getCost={getProjectCost}
                     onDelete={handleDelete}
-                    onStatusToggle={handleStatusToggle}
                 />
             ))}
         </div>
