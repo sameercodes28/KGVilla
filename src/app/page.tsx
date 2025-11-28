@@ -4,7 +4,6 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Plus, FolderOpen, ArrowRight, X, UploadCloud, Trash2, FileText, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from '@/contexts/LanguageContext';
-import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { useProjects } from '@/hooks/useProjects';
 import { useRouter } from 'next/navigation';
 import { CostItem, Project } from '@/types';
@@ -288,8 +287,6 @@ export default function Home() {
             <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-red-50/80 to-transparent"></div>
         </div>
 
-      <LanguageToggle />
-      
       <main className="max-w-6xl mx-auto pt-16 px-6 pb-20 relative z-10">
         {/* Hero Section - Clean & Minimal */}
         <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
