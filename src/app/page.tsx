@@ -287,15 +287,15 @@ export default function Home() {
             <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-red-50/80 to-transparent"></div>
         </div>
 
-      <main className="max-w-6xl mx-auto pt-16 px-6 pb-20 relative z-10">
+      <main className="max-w-6xl mx-auto pt-8 px-6 pb-20 relative z-10">
         {/* Hero Section - Clean & Minimal */}
-        <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* JB Villan Official Logo */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 src={getAssetPath('/jb-villan-logo.png')}
                 alt="JB Villan"
-                className="h-16 mx-auto mb-10"
+                className="h-14 mx-auto mb-6"
             />
 
             {/* Main Headline */}
@@ -308,7 +308,7 @@ export default function Home() {
             </h1>
 
             {/* Subheadline */}
-            <p className="text-lg md:text-xl text-slate-500 max-w-xl mx-auto leading-relaxed mb-8">
+            <p className="text-lg md:text-xl text-slate-500 max-w-xl mx-auto leading-relaxed mb-6">
                 {language === 'sv'
                     ? 'Ladda upp en ritning. Få en kostnadskalkyl på sekunder.'
                     : 'Upload a blueprint. Get a cost estimate in seconds.'}
@@ -327,7 +327,7 @@ export default function Home() {
         </div>
 
         {/* Recent Activity Header */}
-        <h2 className="text-xl font-bold text-slate-900 mb-8">{t('dash.recent_activity')}</h2>
+        <h2 className="text-xl font-bold text-slate-900 mb-6">{t('dash.recent_activity')}</h2>
 
         {/* Projects Grid (Recent) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
