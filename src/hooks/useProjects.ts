@@ -97,12 +97,21 @@ export function useProjects() {
             return updated;
         });
 
+        // Save items to localStorage immediately (critical for homepage cost display)
+        if (initialData?.items && initialData.items.length > 0) {
+            try {
+                localStorage.setItem(`kgvilla_items_${newProject.id}`, JSON.stringify(initialData.items));
+                logger.info('useProjects', 'Saved items to localStorage', { count: initialData.items.length });
+            } catch (e) {
+                logger.error('useProjects', 'Failed to save items to localStorage', e);
+            }
+        }
+
         try {
             await apiClient.post('/projects', newProject);
 
             if (initialData) {
                 await apiClient.post(`/projects/${newProject.id}/items`, initialData.items);
-                // Note: We rely on useProjectData to handle item persistence locally
             }
         } catch (e) {
             logger.error('useProjects', 'API create failed (saved locally)', e);
