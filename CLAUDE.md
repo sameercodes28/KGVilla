@@ -26,11 +26,21 @@ Before changing ANY value in `deploy.sh`:
 - **WRONG**: `gcloud run services update --set-env-vars ...`
 - **RIGHT**: `cd backend && ./deploy.sh`
 
-### 4. NEVER skip post-deployment testing
-After ANY backend deployment:
+### 4. NEVER skip post-deployment verification
+After ANY backend deployment, VERIFY IT YOURSELF - don't ask the user to test:
 1. Test health endpoint: `curl https://kgvilla-backend-30314481610.europe-north1.run.app/health`
-2. Test OCR by uploading a floor plan in the app
-3. Verify cost items are generated (not empty)
+2. Test OCR with curl:
+   ```bash
+   curl -s -X POST "https://kgvilla-backend-30314481610.europe-north1.run.app/analyze" \
+     -H "X-API-Key: dev-key-12345" \
+     -F "file=@/Users/sameerm4/Desktop/KGVilla/1328.jpg" | head -200
+   ```
+3. Verify the response contains items (not empty `{"items":[]}`)
+
+### 5. ALWAYS verify changes yourself before telling user it's done
+- Don't ask the user to test things you can test yourself
+- Run curl commands, check logs, verify endpoints
+- Only tell the user "it's working" after YOU have verified it
 
 ---
 
