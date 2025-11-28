@@ -459,6 +459,8 @@ const dictionary: Record<string, DictionaryEntry> = {
     'prefab.contractor_charge': { en: 'A general contractor would charge approximately', sv: 'En generalentreprenör skulle ta ungefär' },
     'prefab.for_this_build': { en: 'for this build based on 2025 market rates.', sv: 'för denna byggnation baserat på 2025 marknadspriser.' },
     'prefab.savings_percent': { en: 'savings', sv: 'besparing' },
+    'prefab.streamlined_title': { en: 'JB Villan Streamlined', sv: 'JB Villan Effektiviserad' },
+    'prefab.standardized_title': { en: 'JB Villan Standardized', sv: 'JB Villan Standardiserad' },
 
     // Customer Report / Quote
     'report.quote': { en: 'Quote', sv: 'Offert' },

@@ -361,7 +361,9 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                             STANDARDIZED: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', badge: 'bg-purple-200 text-purple-800' },
                         }[effType];
                         const Icon = effType === 'STREAMLINED' ? Zap : effType === 'STANDARDIZED' ? Target : Factory;
-                        const title = effType === 'PREFAB' ? t('prefab.title') : `JB VILLAN ${effType}`;
+                        const title = effType === 'PREFAB' ? t('prefab.title') :
+                                      effType === 'STREAMLINED' ? t('prefab.streamlined_title') :
+                                      t('prefab.standardized_title');
 
                         return (
                             <div className={cn("mb-4 p-3 rounded-xl border", colors.bg, colors.border)}>

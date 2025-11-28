@@ -502,7 +502,9 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                             efficiencyInfo.color === 'blue' ? "text-blue-700" :
                                             "text-purple-700"
                                         )}>
-                                            JB Villan {efficiencyInfo.type}
+                                            {efficiencyInfo.type === 'PREFAB' ? t('prefab.title') :
+                                             efficiencyInfo.type === 'STREAMLINED' ? t('prefab.streamlined_title') :
+                                             t('prefab.standardized_title')}
                                         </p>
                                         <p className="text-sm text-slate-600">
                                             {displayedItem.prefabDiscount.reason}
