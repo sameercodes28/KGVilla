@@ -2207,6 +2207,21 @@ async def analyze_floor_plan_deterministic(image_bytes: bytes, mime_type: str) -
     # Step 4: Calculate BOA vs Biarea with wall thickness adjustment
     area_breakdown = calculate_area_breakdown(rooms)
 
+    # Sanity check: detect potential decimal parsing issues (10x error)
+    # Swedish residential rooms typically range 3-40 m², BOA 50-250 m²
+    large_rooms = [r for r in rooms if r.get("area", 0) > 50]
+    if large_rooms:
+        logger.warning(
+            f"SANITY CHECK: {len(large_rooms)} rooms with area > 50 m² detected. "
+            f"This may indicate OCR decimal parsing issues: {[(r['name'], r['area']) for r in large_rooms]}"
+        )
+
+    if area_breakdown['boa_gross'] > 400:
+        logger.warning(
+            f"SANITY CHECK: BOA = {area_breakdown['boa_gross']} m² is unusually high. "
+            f"Typical Swedish villa BOA is 70-200 m². Possible decimal parsing error?"
+        )
+
     logger.info(
         f"Found {len(rooms)} rooms | "
         f"BOA: {area_breakdown['boa_gross']} m² | "

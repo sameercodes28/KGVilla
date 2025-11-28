@@ -41,7 +41,7 @@ export default function RootLayout({
               {children}
             </main>
             <BottomNav />
-            <div className="fixed bottom-1 right-1 z-[60] text-[11px] font-mono text-red-600 opacity-90 hover:opacity-100 pointer-events-none select-none font-bold">
+            <div className="fixed bottom-1 left-2 z-[60] text-[11px] font-mono text-red-600 opacity-90 hover:opacity-100 pointer-events-none select-none font-bold">
               v{packageJson.version}
             </div>
           </LanguageProvider>

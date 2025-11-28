@@ -4,7 +4,6 @@ import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SplitLayout } from '@/components/qto/SplitLayout';
 import { ProjectList } from '@/components/qto/ProjectList';
-import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { BottomNav } from '@/components/layout/BottomNav';
 
 function QTOContent() {
@@ -15,7 +14,6 @@ function QTOContent() {
         return (
             <>
                 <ProjectList />
-                <LanguageToggle />
                 <BottomNav />
             </>
         );
@@ -24,7 +22,6 @@ function QTOContent() {
     return (
         <>
             <SplitLayout projectId={projectId} />
-            <LanguageToggle />
             <BottomNav />
         </>
     );

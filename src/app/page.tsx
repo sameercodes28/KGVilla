@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { Plus, FolderOpen, ArrowRight, X, UploadCloud, Trash2, FileText, Sparkles } from 'lucide-react';
-import Link from 'next/link';
+import { Plus, FolderOpen, ArrowRight, X, UploadCloud, Sparkles } from 'lucide-react';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { useProjects } from '@/hooks/useProjects';
 import { useRouter } from 'next/navigation';
@@ -11,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/apiClient';
 import { getAssetPath } from '@/lib/constants';
+import { ProjectCard } from '@/components/ui/ProjectCard';
 
 // Helper to get actual cost from items in localStorage
 function getProjectCostFromItems(projectId: string): number {
@@ -329,96 +329,16 @@ export default function Home() {
         {/* Recent Activity Header */}
         <h2 className="text-xl font-bold text-slate-900 mb-6">{t('dash.recent_activity')}</h2>
 
-        {/* Projects Grid (Recent) */}
+        {/* Projects Grid (Recent) - Using reusable ProjectCard component */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {/* Recent Project Cards - Floor Plan Style */}
             {recentProjects.map((project) => (
-                <Link key={project.id} href={`/qto?project=${project.id}`} className="block group relative">
-                    <div className="h-72 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative">
-                        {/* Floor Plan Background */}
-                        {project.floorPlanUrl ? (
-                            /* eslint-disable-next-line @next/next/no-img-element */
-                            <img
-                                src={project.floorPlanUrl}
-                                alt={project.name}
-                                className="absolute inset-0 w-full h-full object-cover"
-                            />
-                        ) : (
-                            <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                                <FileText className="h-16 w-16 text-slate-300" />
-                            </div>
-                        )}
-
-                        {/* Gradient Overlay for readability */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-slate-900/10 group-hover:from-slate-900/95 transition-all" />
-
-                        {/* Status Badge - Top Right */}
-                        <div className="absolute top-4 right-4 z-20">
-                            <button
-                                onClick={(e) => handleStatusToggle(e, project)}
-                                className={cn(
-                                    "backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold uppercase shadow-lg transition-all border",
-                                    project.status === 'final'
-                                        ? "bg-green-500/90 text-white border-green-400/50 hover:bg-green-400"
-                                        : "bg-white/20 text-white border-white/30 hover:bg-white/30"
-                                )}
-                            >
-                                {project.status || 'DRAFT'}
-                            </button>
-                        </div>
-
-                        {/* Delete Button - Top Left */}
-                        <button
-                            onClick={(e) => handleDelete(e, project.id)}
-                            className="absolute top-4 left-4 p-2 bg-black/30 hover:bg-red-500 text-white/80 hover:text-white rounded-full backdrop-blur-md transition-all shadow-lg opacity-0 group-hover:opacity-100 z-20 border border-white/20"
-                            title="Delete Project"
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </button>
-
-                        {/* Content Overlay - Bottom */}
-                        <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
-                            {/* Project Name */}
-                            <h3 className="font-bold text-white text-xl mb-2 line-clamp-1 drop-shadow-lg">{project.name}</h3>
-
-                            {/* Stats Row */}
-                            <div className="flex items-center gap-3 mb-3">
-                                {/* Area Badge */}
-                                <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-white/15 backdrop-blur-md border border-white/20">
-                                    {(project.boa && project.boa > 0) ? (
-                                        <span className="text-sm font-semibold text-white">
-                                            {project.boa}
-                                            {project.biarea && project.biarea > 0 && (
-                                                <span className="text-white/70">+{project.biarea}</span>
-                                            )}
-                                            <span className="text-white/60 ml-1 text-xs">m²</span>
-                                        </span>
-                                    ) : (
-                                        <span className="text-sm font-semibold text-white">
-                                            {project.totalArea || 0}
-                                            <span className="text-white/60 ml-1 text-xs">m²</span>
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Price Badge */}
-                                <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-red-500/80 backdrop-blur-md border border-red-400/30">
-                                    <span className="text-sm font-bold text-white">
-                                        {getProjectCost(project).toLocaleString('sv-SE')}
-                                        <span className="text-white/80 ml-1 text-xs">kr</span>
-                                    </span>
-                                </div>
-                            </div>
-
-                            {/* Arrow Button */}
-                            <div className="flex justify-end">
-                                <div className="h-9 w-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:bg-red-500 group-hover:scale-110 transition-all border border-white/20">
-                                    <ArrowRight className="h-4 w-4 text-white" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Link>
+                <ProjectCard
+                    key={project.id}
+                    project={project}
+                    getCost={getProjectCost}
+                    onDelete={handleDelete}
+                    onStatusToggle={handleStatusToggle}
+                />
             ))}
         </div>
 

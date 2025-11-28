@@ -11,7 +11,6 @@ import {
     Phone, Building2, Hammer, Zap, Droplets, PaintBucket,
     ClipboardCheck, EyeOff, Plus
 } from 'lucide-react';
-import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import Link from 'next/link';
 import { CostItem } from '@/types';
 import { getItemRegulations, RegulationRef, REGULATION_COLORS } from '@/data/regulationMapping';
@@ -310,8 +309,6 @@ function CustomerViewContent() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white font-sans text-slate-900">
-            <LanguageToggle />
-
             {/* Back Button */}
             <Link
                 href={`/qto?project=${projectId || ''}`}
