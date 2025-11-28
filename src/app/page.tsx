@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { Plus, FolderOpen, ArrowRight, X, UploadCloud, Trash2, Sparkles, FileText } from 'lucide-react';
-import { RegulationBadges } from '@/components/ui/RegulationBadges';
+import { Plus, FolderOpen, ArrowRight, X, UploadCloud, Trash2, FileText, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from '@/contexts/LanguageContext';
 import { LanguageToggle } from '@/components/ui/LanguageToggle';
@@ -281,30 +280,58 @@ export default function Home() {
 
       <LanguageToggle />
       
-      <main className="max-w-6xl mx-auto pt-12 px-6 pb-20 relative z-10">
-        {/* Hero Section */}
-        <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <main className="max-w-6xl mx-auto pt-16 px-6 pb-20 relative z-10">
+        {/* Hero Section - Clean & Minimal */}
+        <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* JB Villan Official Logo */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
                 src={getAssetPath('/jb-villan-logo.png')}
                 alt="JB Villan"
-                className="h-14 mx-auto mb-6"
+                className="h-16 mx-auto mb-10"
             />
-            <div className="inline-flex items-center px-3 py-1 rounded-full bg-white/80 backdrop-blur border border-red-100 text-red-700 text-[10px] font-bold uppercase tracking-wide mb-4 shadow-sm">
-                <Sparkles className="w-3 h-3 mr-2 text-red-500" />
-                {t('dash.smart_intelligence')}
-            </div>
-            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight mb-4 leading-tight">
-                {t('dash.hero_title')} <br/>
-                <span className="text-red-600">{t('dash.hero_subtitle')}</span>
+
+            {/* Main Headline */}
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 leading-[1.1]">
+                <span className="text-slate-900">{t('dash.hero_title')}</span>
+                <br />
+                <span className="bg-gradient-to-r from-red-600 via-red-500 to-orange-500 bg-clip-text text-transparent">
+                    {t('dash.hero_subtitle')}
+                </span>
             </h1>
-            <p className="text-base text-slate-500 max-w-2xl mx-auto leading-relaxed mb-6">
-                {t('dash.hero_desc_1')} <strong>{t('dash.hero_desc_highlight')}</strong> {t('dash.hero_desc_2')}
+
+            {/* Subheadline */}
+            <p className="text-lg md:text-xl text-slate-500 max-w-xl mx-auto leading-relaxed mb-8">
+                {language === 'sv'
+                    ? 'Ladda upp en ritning. Få en kostnadskalkyl på sekunder.'
+                    : 'Upload a blueprint. Get a cost estimate in seconds.'}
             </p>
 
-            {/* Regulation Badges - Clickable with explanations */}
-            <RegulationBadges />
+            {/* CTA Button */}
+            <button
+                onClick={() => setIsModalOpen(true)}
+                className="group relative inline-flex items-center gap-2 px-8 py-4 bg-slate-900 text-white font-semibold rounded-2xl shadow-xl shadow-slate-900/20 hover:shadow-2xl hover:shadow-slate-900/30 hover:-translate-y-0.5 transition-all duration-300"
+            >
+                <Plus className="w-5 h-5" />
+                <span>{t('dash.create_project')}</span>
+                <ArrowRight className="w-4 h-4 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
+            </button>
+
+            {/* Trust Indicators */}
+            <div className="mt-10 flex flex-col items-center gap-3">
+                <p className="text-xs text-slate-400 uppercase tracking-wider font-medium">
+                    {language === 'sv' ? 'Regelefterlevnad inbyggd' : 'Compliance built-in'}
+                </p>
+                <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <span className="px-2 py-1 bg-white rounded-md border border-slate-200 shadow-sm">BBR</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="px-2 py-1 bg-white rounded-md border border-slate-200 shadow-sm">Säker Vatten</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="px-2 py-1 bg-white rounded-md border border-slate-200 shadow-sm">EKS</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="text-slate-400">+14 {language === 'sv' ? 'fler' : 'more'}</span>
+                </div>
+            </div>
         </div>
 
         {/* Action Bar */}
