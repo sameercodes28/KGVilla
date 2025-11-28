@@ -186,8 +186,11 @@ PRICING = {
 # - Lower material costs (bulk purchasing, optimized cuts)
 # - Less on-site labor (factory assembly)
 # - Reduced waste and contingency needs
+#
+# NOTE: Only items that are ACTUALLY prefabricated should get the prefab badge.
+# Foundation work (concrete poured on site) is NOT prefab.
 PREFAB_PRICING = {
-    # Structure items with prefab efficiency
+    # Structure items with TRUE prefab efficiency
     "exterior_wall_per_m2": {
         "general_contractor": 3800,
         "jb_villan": 2800,
@@ -200,12 +203,8 @@ PREFAB_PRICING = {
         "savings_pct": 18,
         "reason": "Pre-assembled roof trusses from factory"
     },
-    "foundation_per_m2": {
-        "general_contractor": 3500,
-        "jb_villan": 3200,
-        "savings_pct": 9,
-        "reason": "Standardized slab design with efficient formwork"
-    },
+    # Foundation is NOT prefab - concrete is poured on site
+    # Using standard pricing without prefab discount
     "interior_wall_per_m2": {
         "general_contractor": 1450,
         "jb_villan": 1200,
@@ -227,10 +226,11 @@ PREFAB_PRICING = {
 }
 
 # Items that get JB Villan prefab efficiency badge
+# Only items that are ACTUALLY manufactured off-site should be here
 PREFAB_ITEMS = [
     "Exterior Walls",
     "Roof Structure",
-    "Foundation",
+    # Foundation removed - concrete poured on site is NOT prefab
     "Interior Walls",
     "Site Overhead",
     "Contingency",
@@ -1177,20 +1177,18 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             )
         ))
 
-        # Foundation - JB Villan prefab pricing
-        foundation_gc_price = PREFAB_PRICING["foundation_per_m2"]["general_contractor"]
-        foundation_jb_price = PREFAB_PRICING["foundation_per_m2"]["jb_villan"]
-        foundation_gc_total = round(byggyta * foundation_gc_price)
-        foundation_jb_total = round(byggyta * foundation_jb_price)
+        # Foundation - standard pricing (NOT prefab - concrete poured on site)
+        foundation_price = PRICING["foundation_per_m2"]
+        foundation_total = round(byggyta * foundation_price)
         items.append(CostItem(
             id="ground-foundation",
             phase="ground",
-            elementName="Foundation (Platta på mark)",
-            description=f"Insulated slab on grade with 300mm EPS under, 100mm edge insulation. Includes reinforcement mesh, radon barrier, and underfloor heating pipes preparation. JB Villan prefab efficiency: standardized slab design.",
+            elementName="Foundation (Slab on Grade)",
+            description=f"Insulated slab on grade with 300mm EPS under, 100mm edge insulation. Includes reinforcement mesh, radon barrier, and underfloor heating pipes preparation.",
             quantity=byggyta,
             unit="m²",
-            unitPrice=foundation_jb_price,
-            totalCost=foundation_jb_total,
+            unitPrice=foundation_price,
+            totalCost=foundation_total,
             confidenceScore=1.0,
             guidelineReference="BBR 6:1, SS 21054",
             quantityBreakdown=QuantityBreakdown(
@@ -1198,14 +1196,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=byggyta,
                 unit="m²",
                 calculationMethod=f"Building footprint: BOA ({boyta:.1f}) + Biarea ({biarea:.1f}) + walls"
-            ),
-            prefabDiscount=PrefabDiscount(
-                generalContractorPrice=foundation_gc_total,
-                jbVillanPrice=foundation_jb_total,
-                savingsAmount=foundation_gc_total - foundation_jb_total,
-                savingsPercent=PREFAB_PRICING["foundation_per_m2"]["savings_pct"],
-                reason=PREFAB_PRICING["foundation_per_m2"]["reason"]
             )
+            # No prefabDiscount - foundation work is done on-site, not prefabricated
         ))
 
         # Drainage
