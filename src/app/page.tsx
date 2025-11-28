@@ -319,19 +319,8 @@ export default function Home() {
 
         </div>
 
-        {/* Action Bar */}
-        <div className="flex justify-between items-center mb-8">
-            <h2 className="text-xl font-bold text-slate-900">{t('dash.recent_activity')}</h2>
-            <div className="relative">
-                <input
-                    type="text"
-                    placeholder={t('dash.search_placeholder')}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-4 pr-10 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-red-500 outline-none text-sm bg-white/80 backdrop-blur"
-                />
-            </div>
-        </div>
+        {/* Recent Activity Header */}
+        <h2 className="text-xl font-bold text-slate-900 mb-8">{t('dash.recent_activity')}</h2>
 
         {/* Projects Grid (Recent) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
@@ -428,8 +417,15 @@ export default function Home() {
 
         {/* All Projects List */}
         <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+            <div className="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                 <h3 className="font-bold text-slate-900">{t('dash.all_projects')} ({filteredProjects.length})</h3>
+                <input
+                    type="text"
+                    placeholder={t('dash.search_placeholder')}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-4 pr-4 py-2 rounded-lg border border-slate-200 focus:ring-2 focus:ring-red-500 outline-none text-sm bg-white"
+                />
             </div>
             <table className="w-full text-sm text-left">
                 <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
