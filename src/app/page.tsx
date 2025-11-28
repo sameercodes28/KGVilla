@@ -272,9 +272,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-hidden">
-        {/* Background Pattern */}
+        {/* Background Gradient */}
         <div className="absolute inset-0 z-0 pointer-events-none">
-            <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-60"></div>
             <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-red-50/80 to-transparent"></div>
         </div>
 
@@ -317,21 +316,6 @@ export default function Home() {
                 <ArrowRight className="w-4 h-4 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
             </button>
 
-            {/* Trust Indicators */}
-            <div className="mt-10 flex flex-col items-center gap-3">
-                <p className="text-xs text-slate-400 uppercase tracking-wider font-medium">
-                    {language === 'sv' ? 'Regelefterlevnad inbyggd' : 'Compliance built-in'}
-                </p>
-                <div className="flex items-center gap-2 text-sm text-slate-500">
-                    <span className="px-2 py-1 bg-white rounded-md border border-slate-200 shadow-sm">BBR</span>
-                    <span className="text-slate-300">•</span>
-                    <span className="px-2 py-1 bg-white rounded-md border border-slate-200 shadow-sm">Säker Vatten</span>
-                    <span className="text-slate-300">•</span>
-                    <span className="px-2 py-1 bg-white rounded-md border border-slate-200 shadow-sm">EKS</span>
-                    <span className="text-slate-300">•</span>
-                    <span className="text-slate-400">+14 {language === 'sv' ? 'fler' : 'more'}</span>
-                </div>
-            </div>
         </div>
 
         {/* Action Bar */}
