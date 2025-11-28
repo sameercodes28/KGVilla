@@ -159,7 +159,7 @@ const dictionary: Record<string, DictionaryEntry> = {
     'dash.hero_title': { en: 'Precision Pricing for', sv: 'Precisionsprissättning för' },
     'dash.hero_subtitle': { en: 'Swedish Villas.', sv: 'Svenska Villor.' },
     'dash.hero_desc_1': { en: 'Instantly analyze blueprints against', sv: 'Analysera ritningar direkt mot' },
-    'dash.hero_desc_highlight': { en: '22 Swedish building regulations', sv: '22 svenska byggregler' },
+    'dash.hero_desc_highlight': { en: '17 Swedish building regulations', sv: '17 svenska byggregler' },
     'dash.hero_desc_2': { en: 'including BBR, Säker Vatten, EKS, and more. Generate compliant, professional quotes in seconds.', sv: 'inklusive BBR, Säker Vatten, EKS och fler. Generera regelenliga, professionella offerter på sekunder.' },
     'dash.recent_activity': { en: 'Recent Activity', sv: 'Senaste Aktivitet' },
     'dash.search_placeholder': { en: 'Search projects...', sv: 'Sök projekt...' },
@@ -184,7 +184,7 @@ const dictionary: Record<string, DictionaryEntry> = {
     'dash.analyze_create': { en: 'Analyze & Create Project', sv: 'Analysera & Skapa Projekt' },
     'dash.create_empty': { en: 'Create Empty Project', sv: 'Skapa Tomt Projekt' },
     'dash.analyzing': { en: 'Analyzing Blueprint...', sv: 'Analyserar Ritning...' },
-    'dash.checking_compliance': { en: 'Checking compliance with 22 Swedish building standards.', sv: 'Kontrollerar efterlevnad av 22 svenska byggregler.' },
+    'dash.checking_compliance': { en: 'Checking compliance with 17 Swedish building standards.', sv: 'Kontrollerar efterlevnad av 17 svenska byggregler.' },
 
     // QTO Page / Split Layout
     'qto.title': { en: 'Quantity Take-Off & Analysis', sv: 'Mängdning & Analys' },

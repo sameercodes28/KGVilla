@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, ShieldCheck, CheckCircle2, Scale, Ruler, Hammer, Zap, FileText, Building2, Droplets, Wind, Volume2, Leaf, AlertTriangle, BadgeCheck, Accessibility } from 'lucide-react';
+import { X, ShieldCheck, CheckCircle2, Scale, Ruler, Hammer, Zap, FileText, Building2, Droplets, Wind, Volume2, Leaf, AlertTriangle, BadgeCheck, Accessibility, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/contexts/LanguageContext';
+
+type RegulationCategory = 'building' | 'water' | 'electrical' | 'energy' | 'quality';
 
 interface Regulation {
     id: string;
@@ -16,7 +19,17 @@ interface Regulation {
     importance: string;
     whatWeUse: string[];
     link?: string;
+    category: RegulationCategory;
 }
+
+const CATEGORIES = [
+    { id: 'all', name: 'All', nameSv: 'Alla', icon: Check, color: 'text-slate-600', bgColor: 'bg-slate-100' },
+    { id: 'building', name: 'Building', nameSv: 'Bygg', icon: Building2, color: 'text-green-600', bgColor: 'bg-green-50' },
+    { id: 'water', name: 'Water', nameSv: 'Vatten', icon: Droplets, color: 'text-blue-600', bgColor: 'bg-blue-50' },
+    { id: 'electrical', name: 'Electrical', nameSv: 'El', icon: Zap, color: 'text-yellow-600', bgColor: 'bg-yellow-50' },
+    { id: 'energy', name: 'Energy', nameSv: 'Energi', icon: Leaf, color: 'text-emerald-600', bgColor: 'bg-emerald-50' },
+    { id: 'quality', name: 'Quality', nameSv: 'Kvalitet', icon: Hammer, color: 'text-orange-600', bgColor: 'bg-orange-50' },
+];
 
 const REGULATIONS: Regulation[] = [
     {
@@ -36,7 +49,8 @@ const REGULATIONS: Regulation[] = [
             'BBR 6:5 - Structural load requirements',
             'BBR 8:4 - Sound insulation between dwellings'
         ],
-        link: 'https://www.boverket.se/sv/byggande/bygga-nytt/krav/bbr/'
+        link: 'https://www.boverket.se/sv/byggande/bygga-nytt/krav/bbr/',
+        category: 'building'
     },
     {
         id: 'saker-vatten',
@@ -55,7 +69,8 @@ const REGULATIONS: Regulation[] = [
             'Wall protection height minimums (1.2m splash zone)',
             'Material certification requirements'
         ],
-        link: 'https://www.sakervatten.se/'
+        link: 'https://www.sakervatten.se/',
+        category: 'water'
     },
     {
         id: 'abt-06',
@@ -73,7 +88,8 @@ const REGULATIONS: Regulation[] = [
             'Chapter 6 - Insurance requirements',
             'Chapter 7 - Payment milestones and schedules',
             'Chapter 9 - Defect liability and remediation'
-        ]
+        ],
+        category: 'building'
     },
     {
         id: 'ss-21054',
@@ -91,7 +107,8 @@ const REGULATIONS: Regulation[] = [
             'BTA (Bruttoarea) - Total building footprint',
             'Wall thickness exclusion rules',
             'Stairwell and utility space classifications'
-        ]
+        ],
+        category: 'quality'
     },
     {
         id: 'ama-hus',
@@ -109,7 +126,8 @@ const REGULATIONS: Regulation[] = [
             'NSC - Concrete work tolerances',
             'LCS - Insulation installation standards',
             'MBE - Interior finishing quality levels'
-        ]
+        ],
+        category: 'quality'
     },
     {
         id: 'ss-436',
@@ -127,7 +145,8 @@ const REGULATIONS: Regulation[] = [
             'Earth fault protection specifications',
             'Cable dimensioning for load calculations',
             'Distribution board sizing rules'
-        ]
+        ],
+        category: 'electrical'
     },
     {
         id: 'pbl',
@@ -145,7 +164,8 @@ const REGULATIONS: Regulation[] = [
             'Construction supervisor (KA) requirements',
             'Final approval (slutbesked) criteria',
             'Permit fee calculations'
-        ]
+        ],
+        category: 'building'
     },
     {
         id: 'eks',
@@ -163,7 +183,8 @@ const REGULATIONS: Regulation[] = [
             'Foundation design specifications',
             'Roof truss load calculations',
             'Safety factors for residential buildings'
-        ]
+        ],
+        category: 'building'
     },
     {
         id: 'ovk',
@@ -182,7 +203,8 @@ const REGULATIONS: Regulation[] = [
             'Supply air requirements 0.35 l/s per m²',
             'Heat recovery efficiency targets (FTX systems)'
         ],
-        link: 'https://www.boverket.se/sv/byggande/halsa-och-inomhusmiljo/ventilation/ovk/'
+        link: 'https://www.boverket.se/sv/byggande/halsa-och-inomhusmiljo/ventilation/ovk/',
+        category: 'energy'
     },
     {
         id: 'ss-25267',
@@ -200,7 +222,8 @@ const REGULATIONS: Regulation[] = [
             'Facade sound insulation requirements',
             'Installation noise limits (≤ 30 dB)',
             'Room acoustic requirements'
-        ]
+        ],
+        category: 'quality'
     },
     {
         id: 'energidek',
@@ -219,7 +242,8 @@ const REGULATIONS: Regulation[] = [
             'Heating system efficiency ratings',
             'Recommended improvement measures'
         ],
-        link: 'https://www.boverket.se/sv/byggande/energideklaration/'
+        link: 'https://www.boverket.se/sv/byggande/energideklaration/',
+        category: 'energy'
     },
     {
         id: 'elsak-fs',
@@ -238,7 +262,8 @@ const REGULATIONS: Regulation[] = [
             'Wet room electrical safety zones',
             'Inspection and documentation requirements'
         ],
-        link: 'https://www.elsakerhetsverket.se/'
+        link: 'https://www.elsakerhetsverket.se/',
+        category: 'electrical'
     },
     {
         id: 'radon',
@@ -257,7 +282,8 @@ const REGULATIONS: Regulation[] = [
             'Blue concrete identification and remediation',
             'Post-construction radon measurement'
         ],
-        link: 'https://www.stralsakerhetsmyndigheten.se/radon/'
+        link: 'https://www.stralsakerhetsmyndigheten.se/radon/',
+        category: 'energy'
     },
     {
         id: 'ce-cpr',
@@ -275,7 +301,8 @@ const REGULATIONS: Regulation[] = [
             'Fire classification (reaction to fire, resistance)',
             'Load-bearing capacity declarations',
             'Thermal performance declarations'
-        ]
+        ],
+        category: 'quality'
     },
     {
         id: 'hin',
@@ -294,7 +321,8 @@ const REGULATIONS: Regulation[] = [
             'Ramp gradients maximum 1:12',
             'Maneuvering space requirements (1.5m turning circle)'
         ],
-        link: 'https://www.boverket.se/sv/byggande/tillganglighet/'
+        link: 'https://www.boverket.se/sv/byggande/tillganglighet/',
+        category: 'quality'
     },
     {
         id: 'bbv',
@@ -313,7 +341,8 @@ const REGULATIONS: Regulation[] = [
             'Edge and corner sealing methods',
             'Certified installer requirements'
         ],
-        link: 'https://www.bfrv.se/'
+        link: 'https://www.bfrv.se/',
+        category: 'water'
     },
     {
         id: 'gvk',
@@ -332,7 +361,8 @@ const REGULATIONS: Regulation[] = [
             'Edge sealing specifications',
             'GVK-certified installer requirement'
         ],
-        link: 'https://www.gfrv.se/'
+        link: 'https://www.gfrv.se/',
+        category: 'water'
     }
 ];
 
@@ -423,11 +453,49 @@ function RegulationModal({ regulation, onClose }: RegulationModalProps) {
 
 export function RegulationBadges() {
     const [selectedRegulation, setSelectedRegulation] = useState<Regulation | null>(null);
+    const [activeCategory, setActiveCategory] = useState<string>('all');
+    const { language } = useTranslation();
+
+    const filteredRegulations = activeCategory === 'all'
+        ? REGULATIONS
+        : REGULATIONS.filter(r => r.category === activeCategory);
 
     return (
-        <>
-            <div className="flex flex-wrap justify-center gap-2 text-xs font-medium">
-                {REGULATIONS.map(reg => {
+        <div className="w-full max-w-2xl mx-auto">
+            {/* Category Tabs */}
+            <div className="flex flex-wrap justify-center gap-2 mb-4">
+                {CATEGORIES.map(cat => {
+                    const Icon = cat.icon;
+                    const count = cat.id === 'all'
+                        ? REGULATIONS.length
+                        : REGULATIONS.filter(r => r.category === cat.id).length;
+                    return (
+                        <button
+                            key={cat.id}
+                            onClick={() => setActiveCategory(cat.id)}
+                            className={cn(
+                                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all",
+                                activeCategory === cat.id
+                                    ? "bg-red-600 text-white shadow-md"
+                                    : "bg-white/60 text-slate-600 border border-slate-200 hover:bg-white hover:shadow-sm"
+                            )}
+                        >
+                            <Icon className="w-3.5 h-3.5" />
+                            <span>{language === 'sv' ? cat.nameSv : cat.name}</span>
+                            <span className={cn(
+                                "ml-0.5 px-1.5 py-0.5 rounded-full text-[10px]",
+                                activeCategory === cat.id ? "bg-white/20" : "bg-slate-100"
+                            )}>
+                                {count}
+                            </span>
+                        </button>
+                    );
+                })}
+            </div>
+
+            {/* Filtered Badges with Staggered Animation */}
+            <div className="flex flex-wrap justify-center gap-2 text-xs font-medium min-h-[40px]" key={activeCategory}>
+                {filteredRegulations.map((reg, index) => {
                     const Icon = reg.icon;
                     return (
                         <button
@@ -437,8 +505,10 @@ export function RegulationBadges() {
                                 "flex items-center px-3 py-1.5 rounded-full border shadow-sm transition-all",
                                 "hover:shadow-md hover:-translate-y-0.5 cursor-pointer",
                                 "bg-white/60 hover:bg-white",
+                                "animate-in fade-in slide-in-from-bottom-2",
                                 reg.borderColor
                             )}
+                            style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'backwards' }}
                         >
                             <Icon className={cn("w-3.5 h-3.5 mr-1.5", reg.color)} />
                             <span className="text-slate-700">{reg.name}</span>
@@ -447,12 +517,13 @@ export function RegulationBadges() {
                 })}
             </div>
 
+            {/* Regulation Modal */}
             {selectedRegulation && (
                 <RegulationModal
                     regulation={selectedRegulation}
                     onClose={() => setSelectedRegulation(null)}
                 />
             )}
-        </>
+        </div>
     );
 }
