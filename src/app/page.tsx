@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react';
-import { Plus, FolderOpen, ArrowRight, MapPin, X, UploadCloud, Trash2, Sparkles, FileText } from 'lucide-react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { Plus, FolderOpen, ArrowRight, X, UploadCloud, Trash2, Sparkles, FileText } from 'lucide-react';
 import { RegulationBadges } from '@/components/ui/RegulationBadges';
 import Link from 'next/link';
 import { useTranslation } from '@/contexts/LanguageContext';
@@ -13,6 +13,22 @@ import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/apiClient';
 import { getAssetPath } from '@/lib/constants';
+
+// Helper to get actual cost from items in localStorage
+function getProjectCostFromItems(projectId: string): number {
+    try {
+        const itemsData = localStorage.getItem(`kgvilla_items_${projectId}`);
+        if (itemsData) {
+            const items: CostItem[] = JSON.parse(itemsData);
+            return items
+                .filter(item => !item.disabled)
+                .reduce((sum, item) => sum + (item.totalCost || 0), 0);
+        }
+    } catch {
+        // Silent fail
+    }
+    return 0;
+}
 
 // Funny Swedish loading messages
 const LOADING_MESSAGES_SV = [
@@ -57,6 +73,34 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // State for calculated costs (from items in localStorage)
+  const [projectCosts, setProjectCosts] = useState<Record<string, number>>({});
+
+  // Calculate costs from items for all projects
+  const getProjectCost = useCallback((project: Project): number => {
+    // First check if we have a calculated cost from items
+    if (projectCosts[project.id] !== undefined) {
+      return projectCosts[project.id];
+    }
+    // Fall back to estimatedCost from project metadata
+    return project.estimatedCost || 0;
+  }, [projectCosts]);
+
+  // Load costs from localStorage items on mount and when projects change
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const costs: Record<string, number> = {};
+    projects.forEach(project => {
+      const costFromItems = getProjectCostFromItems(project.id);
+      if (costFromItems > 0) {
+        costs[project.id] = costFromItems;
+      }
+    });
+
+    setProjectCosts(costs);
+  }, [projects]);
 
   // Log component mount and state (intentionally runs only on mount)
   useEffect(() => {
@@ -366,18 +410,14 @@ export default function Home() {
                                 {/* Price Badge */}
                                 <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-red-500/80 backdrop-blur-md border border-red-400/30">
                                     <span className="text-sm font-bold text-white">
-                                        {(project.estimatedCost || 0).toLocaleString('sv-SE')}
+                                        {getProjectCost(project).toLocaleString('sv-SE')}
                                         <span className="text-white/80 ml-1 text-xs">kr</span>
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Location & Arrow */}
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center text-white/70 text-sm">
-                                    <MapPin className="h-3.5 w-3.5 mr-1" />
-                                    <span className="truncate max-w-[150px]">{project.location || t('dash.updated') + ' ' + project.lastModified}</span>
-                                </div>
+                            {/* Arrow Button */}
+                            <div className="flex justify-end">
                                 <div className="h-9 w-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:bg-red-500 group-hover:scale-110 transition-all border border-white/20">
                                     <ArrowRight className="h-4 w-4 text-white" />
                                 </div>
@@ -416,7 +456,7 @@ export default function Home() {
                             <td className="px-6 py-4 text-slate-500">{project.location}</td>
                             <td className="px-6 py-4 text-right text-slate-700">{project.boa || project.totalArea || 0} m²</td>
                             <td className="px-6 py-4 text-right text-slate-500">{project.biarea || 0} m²</td>
-                            <td className="px-6 py-4 text-right font-medium text-red-600">{(project.estimatedCost || 0).toLocaleString('sv-SE')} kr</td>
+                            <td className="px-6 py-4 text-right font-medium text-red-600">{getProjectCost(project).toLocaleString('sv-SE')} kr</td>
                             <td className="px-6 py-4">
                                 <button
                                     onClick={(e) => handleStatusToggle(e, project)}
