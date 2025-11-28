@@ -153,6 +153,11 @@ async def generate_narrative_explanation(item: CostItem, context: Dict, language
     boa = context.get("boa", 0)
     biarea = context.get("biarea", 0)
 
+    # Extract the actual calculation method from the item (if available)
+    calculation_method = ""
+    if item.quantityBreakdown and item.quantityBreakdown.calculationMethod:
+        calculation_method = item.quantityBreakdown.calculationMethod
+
     # Language-specific prompt sections
     if language == "sv":
         language_instruction = "SKRIV FÖRKLARINGEN PÅ SVENSKA med denna exakta struktur:"
@@ -215,6 +220,14 @@ ITEM DATA:
 - Total Cost: {item.totalCost} kr
 - Phase: {item.phase}
 - Room: {room}
+
+CALCULATION METHOD (USE THIS EXACTLY):
+{calculation_method if calculation_method else "Not specified - derive from quantity and context"}
+
+CRITICAL INSTRUCTION: If a Calculation Method is provided above, you MUST use EXACTLY
+that method in your explanation. Do NOT invent alternative measurement approaches like
+"measuring eaves" or "counting from drawings". The calculation method shown above is
+what was actually used by the pricing system.
 
 FLOOR PLAN CONTEXT:
 - Room this belongs to: {room}

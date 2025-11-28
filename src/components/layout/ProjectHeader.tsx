@@ -16,6 +16,11 @@ interface ProjectHeaderProps {
     subtitle?: string;
     syncState?: SyncState;
     hideProposalButton?: boolean;
+    // Project stats for the header display
+    boa?: number;
+    biarea?: number;
+    itemsCount?: number;
+    totalCost?: number;
 }
 
 export function ProjectHeader({
@@ -24,7 +29,11 @@ export function ProjectHeader({
     title,
     subtitle,
     syncState,
-    hideProposalButton = false
+    hideProposalButton = false,
+    boa = 0,
+    biarea = 0,
+    itemsCount = 0,
+    totalCost = 0
 }: ProjectHeaderProps) {
     const { projects } = useProjects();
     const { t } = useTranslation();
@@ -32,11 +41,14 @@ export function ProjectHeader({
 
     const selectedProject = projects.find(p => p.id === currentProjectId);
 
+    // Calculate cost per m²
+    const costPerSqm = boa > 0 ? Math.round(totalCost / boa) : 0;
+
     return (
-        <div className="bg-white border-b border-slate-200 px-6 py-4 shadow-sm sticky top-0 z-30">
-            <div className="max-w-7xl mx-auto flex justify-between items-center">
-                {/* Left Side: Back Button Only */}
-                <div className="flex items-center">
+        <div className="bg-white border-b border-slate-200 px-6 py-3 shadow-sm sticky top-0 z-30">
+            <div className="max-w-7xl mx-auto flex items-center">
+                {/* Left Side: Back Button */}
+                <div className="flex items-center w-24">
                     {showBackButton && (
                         <Link
                             href="/"
@@ -48,43 +60,84 @@ export function ProjectHeader({
                     )}
                 </div>
 
-                {/* Right Side: Project Switcher & Actions */}
-                <div className="flex items-center space-x-3">
-                    {syncState && (
-                        <div className="hidden md:block mr-2">
-                            <SyncIndicator syncState={syncState} />
-                        </div>
-                    )}
-
-                     {/* Project Switcher Dropdown */}
+                {/* Center: Project Switcher with Stats */}
+                <div className="flex-1 flex justify-center">
                     <div className="relative group">
-                        <button 
+                        <button
                             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                             onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
-                            className="flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+                            className="flex flex-col items-center bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-5 py-2 transition-colors"
                         >
-                            <Building className="h-4 w-4 text-slate-500" />
-                            <span className="max-w-[150px] truncate">
-                                {selectedProject?.name || t('common.select_project')}
-                            </span>
-                            <ChevronDown className="h-4 w-4 text-slate-400" />
+                            <div className="flex items-center space-x-2">
+                                <Building className="h-4 w-4 text-slate-500" />
+                                <span className="text-lg font-bold text-slate-900">
+                                    {selectedProject?.name || t('common.select_project')}
+                                </span>
+                                <ChevronDown className="h-4 w-4 text-slate-400" />
+                            </div>
+                            {selectedProject && (boa > 0 || itemsCount > 0) && (
+                                <div className="text-xs text-slate-500 mt-0.5">
+                                    {boa > 0 && (
+                                        <span>
+                                            <span className="font-medium text-slate-600">{boa} m²</span>
+                                            <span className="text-slate-400"> BOA</span>
+                                        </span>
+                                    )}
+                                    {itemsCount > 0 && (
+                                        <span>
+                                            {boa > 0 && ' · '}
+                                            <span className="font-medium text-slate-600">{itemsCount}</span>
+                                            <span className="text-slate-400"> Items</span>
+                                        </span>
+                                    )}
+                                    {costPerSqm > 0 && (
+                                        <span>
+                                            {' · '}
+                                            <span className="font-medium text-slate-600">{costPerSqm.toLocaleString('sv-SE')}</span>
+                                            <span className="text-slate-400"> kr/m²</span>
+                                        </span>
+                                    )}
+                                </div>
+                            )}
                         </button>
-                        
+
                         {isDropdownOpen && (
-                            <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+                            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
                                 <div className="max-h-80 overflow-y-auto">
                                     {projects.map(p => (
-                                        <Link 
+                                        <Link
                                             key={p.id}
                                             href={`?project=${p.id}`}
                                             onClick={() => setIsDropdownOpen(false)}
                                             className={cn(
-                                                "block w-full text-left px-4 py-3 text-sm hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0",
-                                                currentProjectId === p.id ? "bg-red-50 text-red-700 font-semibold" : "text-slate-700"
+                                                "block w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0",
+                                                currentProjectId === p.id ? "bg-red-50" : ""
                                             )}
                                         >
-                                            {p.name}
-                                            <span className="block text-xs text-slate-400 font-normal">{p.location}</span>
+                                            <div className={cn(
+                                                "font-semibold",
+                                                currentProjectId === p.id ? "text-red-700" : "text-slate-800"
+                                            )}>
+                                                {p.name}
+                                            </div>
+                                            <div className="text-xs text-slate-500 mt-0.5">
+                                                {p.boa && (
+                                                    <span>
+                                                        <span className="font-medium">{p.boa} m²</span> BOA
+                                                    </span>
+                                                )}
+                                                {p.estimatedCost && p.boa && (
+                                                    <span>
+                                                        {' · '}
+                                                        <span className="font-medium">
+                                                            {Math.round(p.estimatedCost / p.boa).toLocaleString('sv-SE')}
+                                                        </span> kr/m²
+                                                    </span>
+                                                )}
+                                                {!p.boa && p.location && (
+                                                    <span className="text-slate-400">{p.location}</span>
+                                                )}
+                                            </div>
                                         </Link>
                                     ))}
                                 </div>
@@ -96,7 +149,16 @@ export function ProjectHeader({
                             </div>
                         )}
                     </div>
-                    
+                </div>
+
+                {/* Right Side: Sync & Quote Button */}
+                <div className="flex items-center space-x-3 w-24 justify-end">
+                    {syncState && (
+                        <div className="hidden md:block">
+                            <SyncIndicator syncState={syncState} />
+                        </div>
+                    )}
+
                     {currentProjectId && !hideProposalButton && (
                          <Link
                             href={`/qto/customer?project=${currentProjectId}`}

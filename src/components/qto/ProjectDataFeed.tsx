@@ -62,33 +62,6 @@ export function ProjectDataFeed() {
     return (
         <div className="w-full h-full overflow-y-auto bg-white">
             <div className="w-full p-8 pb-32">
-                {/* Header - Clean & Simple */}
-                <header className="mb-8">
-                    <div>
-                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">{project.name}</h1>
-                        <p className="text-slate-500">
-                            {(boa > 0 || biarea > 0) ? (
-                                <span>
-                                    <span className="font-medium text-slate-700">{boa || 0} m²</span>
-                                    <span className="text-slate-400"> BOA</span>
-                                    {biarea > 0 && (
-                                        <span>
-                                            {' + '}<span className="font-medium text-slate-600">{biarea} m²</span>
-                                            <span className="text-slate-400"> Biarea</span>
-                                        </span>
-                                    )}
-                                </span>
-                            ) : (
-                                <span>{totalArea || 0} m²</span>
-                            )}
-                            {' • '}<span className="font-medium text-slate-700">{items.length} Items</span>
-                            {' • '}<span className="font-medium text-slate-700">
-                                {(boa || totalArea) > 0 ? Math.round(totalCost / (boa || totalArea)).toLocaleString('sv-SE') : '—'} kr/m²
-                            </span>
-                        </p>
-                    </div>
-                </header>
-
                 {/* Phases View */}
                 <div className="space-y-6">
                     {phases.map(phase => {

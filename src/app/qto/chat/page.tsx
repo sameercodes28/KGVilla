@@ -136,6 +136,10 @@ function ChatContent() {
                 showBackButton
                 syncState={syncState}
                 hideProposalButton
+                boa={selectedProject?.boa || 0}
+                biarea={selectedProject?.biarea || 0}
+                itemsCount={items.length}
+                totalCost={totalCost}
             />
 
             {/* Project Context Card */}

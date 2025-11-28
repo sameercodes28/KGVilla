@@ -1,6 +1,6 @@
 # KGVilla Technical Architecture
 
-> **Version 1.14.0**
+> **Version 1.16.0**
 
 ## System Overview
 

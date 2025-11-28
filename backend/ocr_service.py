@@ -57,6 +57,18 @@ BIAREA_CATEGORIES = ["garage", "storage", "utility"]  # Rooms that count as Biar
 # Typical inner walls: 100-120mm, adds ~3.5% to net area
 WALL_THICKNESS_FACTOR = 1.035  # 3.5% adjustment for wall thickness
 
+# Roof slope factor for pitched roofs
+# JB Villan uses 22° (1:2.5 ratio) as their standard pitch for single-family homes.
+# This is optimal for:
+# - Snow shedding: Steep enough for Swedish winters
+# - Attic space: Shallow enough for usable storage/attic
+# - Aesthetics: Traditional Swedish villa appearance
+# - Factory efficiency: Standardized truss design for prefab assembly
+# Formula: slope_factor = 1/cos(pitch_angle)
+# 1/cos(22°) = 1/0.927 ≈ 1.08
+ROOF_PITCH_DEGREES = 22
+ROOF_SLOPE_FACTOR = 1.08
+
 # Equipment labels that indicate features (from floor plan analysis)
 EQUIPMENT_LABELS = {
     "heat_pump": ["VP"],  # Värmepump
@@ -1230,25 +1242,34 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
     # --- STRUCTURE ---
     if byggyta > 0:
         # Roof - JB Villan PREFAB (factory-assembled trusses)
+        # Apply slope factor for pitched roof (22° pitch = 1.08 factor)
+        roof_surface_area = round(byggyta * ROOF_SLOPE_FACTOR, 1)
         roof_eff = JB_EFFICIENCY["roof_per_m2"]
-        roof_gc_total = round(byggyta * roof_eff["general_contractor"])
-        roof_jb_total = round(byggyta * roof_eff["jb_villan"])
+        roof_gc_total = round(roof_surface_area * roof_eff["general_contractor"])
+        roof_jb_total = round(roof_surface_area * roof_eff["jb_villan"])
         items.append(CostItem(
             id=f"structure-roof",
             phase="structure",
             elementName="Roof Structure & Covering",
-            description=f"Pitched roof with tiles - {byggyta:.1f} m².",
-            quantity=byggyta,
+            description=f"Pitched roof ({ROOF_PITCH_DEGREES}° standard pitch) with concrete tiles. JB Villan uses {ROOF_PITCH_DEGREES}° as their standard pitch - optimal for snow shedding while maintaining attic space.",
+            quantity=roof_surface_area,
             unit="m²",
             unitPrice=roof_eff["jb_villan"],
             totalCost=roof_jb_total,
             confidenceScore=1.0,
-            guidelineReference="AMA Hus",
+            guidelineReference="BBR 9:4, EKS 11, AMA Hus",
             quantityBreakdown=QuantityBreakdown(
-                items=byggyta_breakdown,
-                total=byggyta,
+                items=byggyta_breakdown + [
+                    QuantityBreakdownItem(
+                        name=f"Slope factor ({ROOF_PITCH_DEGREES}° pitch)",
+                        value=ROOF_SLOPE_FACTOR,
+                        unit="×",
+                        category="calculation"
+                    )
+                ],
+                total=roof_surface_area,
                 unit="m²",
-                calculationMethod=f"Roof covers building footprint: {byggyta:.1f} m²"
+                calculationMethod=f"Building footprint ({byggyta:.1f} m²) × slope factor ({ROOF_SLOPE_FACTOR} from {ROOF_PITCH_DEGREES}° pitch) = {roof_surface_area:.1f} m² roof surface"
             ),
             prefabDiscount=PrefabDiscount(
                 efficiencyType=roof_eff["type"],

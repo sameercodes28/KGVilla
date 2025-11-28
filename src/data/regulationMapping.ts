@@ -8,8 +8,10 @@
 export interface RegulationRef {
     id: string;
     name: string;
-    section?: string;       // Specific section reference
-    requirement?: string;   // Brief requirement description
+    section?: string;           // Specific section reference
+    requirement?: string;       // Brief requirement description
+    regulationDetail?: string;  // Detailed explanation of what the regulation requires
+    specificationDetail?: string; // How it should be built according to this standard
 }
 
 // Complete regulation definitions with colors for display
@@ -219,33 +221,532 @@ export const ITEM_REGULATIONS: Record<string, RegulationRef[]> = {
 
 /**
  * Maps element keywords to regulations for dynamically generated items
+ * NOTE: Both Swedish AND English keywords are needed because element names
+ * may be in either language depending on the source (OCR vs backend defaults)
  */
 export const KEYWORD_REGULATIONS: Record<string, RegulationRef[]> = {
-    // Structural keywords
+    // ============================================================
+    // ROOF / TAK - Both English and Swedish keywords
+    // ============================================================
+    'roof': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 9:4',
+            requirement: 'Roof U-value ≤ 0.13 W/m²K',
+            regulationDetail: 'Roof assemblies must achieve thermal transmittance ≤ 0.13 W/m²K to meet Swedish energy efficiency requirements for climate zone III (most of Sweden).',
+            specificationDetail: 'Minimum 400mm mineral wool insulation between and over rafters. Vapor barrier (PE 0.2mm) on warm side. Breathable roofing membrane under tiles/metal.'
+        },
+        {
+            id: 'eks',
+            name: 'EKS/Eurocode',
+            section: 'EKS 11',
+            requirement: 'Snow load 2.0-3.5 kN/m²',
+            regulationDetail: 'Roof structure must be designed for characteristic snow load based on location. Sweden ranges from 2.0 kN/m² (south) to 3.5+ kN/m² (north/mountains).',
+            specificationDetail: 'Truss spacing typically 600-1200mm. C24 structural timber minimum. Metal gang-nail connector plates at joints. Engineer-certified design required.'
+        },
+    ],
+
+    // ============================================================
+    // FOUNDATION / GRUND - Both English and Swedish keywords
+    // ============================================================
+    'foundation': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:1',
+            requirement: 'Moisture protection from ground',
+            regulationDetail: 'Foundation must prevent moisture from ground reaching the building. Capillary break and drainage required. Insulation must maintain R-value when wet.',
+            specificationDetail: 'Min 300mm EPS/XPS under slab (λ ≤ 0.036). Capillary break layer (min 150mm gravel). PE vapor barrier (0.2mm) with sealed joints.'
+        },
+        {
+            id: 'radon',
+            name: 'Radon',
+            section: 'BBR 6:23',
+            requirement: 'Indoor radon < 200 Bq/m³',
+            regulationDetail: 'Indoor radon concentration must not exceed 200 Bq/m³. In radon-risk areas, a radon barrier and possibly sub-slab ventilation is required.',
+            specificationDetail: 'Radon membrane (min 0.2mm polyethylene) with all penetrations sealed. In high-risk areas: sub-slab ventilation pipes with fan-ready connection.'
+        },
+    ],
+    'slab': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:1',
+            requirement: 'Slab U-value ≤ 0.15 W/m²K',
+            regulationDetail: 'Ground floor slab must achieve U-value ≤ 0.15 W/m²K. Edge insulation required to prevent thermal bridges at foundation perimeter.',
+            specificationDetail: 'Slab: 100mm C25/30 concrete with B500B reinforcement mesh. Under-slab: min 300mm EPS. Edge: 100mm vertical + horizontal insulation.'
+        },
+        {
+            id: 'eks',
+            name: 'EKS/Eurocode',
+            section: 'EKS 7',
+            requirement: 'Foundation load-bearing capacity',
+            regulationDetail: 'Foundation must be designed for soil conditions and building loads. Geotechnical investigation required for load-bearing capacity verification.',
+            specificationDetail: 'Bearing capacity verified by engineer. Typical: compacted gravel base (min 200mm), reinforced concrete slab (100mm), ground beam if needed.'
+        },
+    ],
+
+    // ============================================================
+    // WALLS - Both English and Swedish keywords
+    // ============================================================
+    'exterior wall': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 9:4',
+            requirement: 'Wall U-value ≤ 0.18 W/m²K',
+            regulationDetail: 'Exterior walls must achieve thermal transmittance ≤ 0.18 W/m²K. Thermal bridge-free design required at corners, window reveals, and wall-floor junctions.',
+            specificationDetail: 'Timber frame 45×220mm with 45×45mm service cavity. Mineral wool insulation in all cavities. Wind barrier (diffusion-open) on cold side. Vapor barrier on warm side.'
+        },
+        {
+            id: 'eks',
+            name: 'EKS/Eurocode',
+            section: 'EKS 5',
+            requirement: 'Wind load & structural stability',
+            regulationDetail: 'Wall structure must resist wind loads and transfer loads to foundation. Bracing requirements depend on building height and wind zone.',
+            specificationDetail: 'OSB/plywood sheathing for racking resistance. Metal strapping from wall plates to foundation. Wind posts at openings >1.8m.'
+        },
+    ],
+    'interior wall': [
+        {
+            id: 'ss-25267',
+            name: 'SS 25267',
+            section: 'Class C',
+            requirement: 'Sound insulation R\'w ≥ 52 dB',
+            regulationDetail: 'Walls between dwellings or between rooms and common areas must achieve airborne sound insulation R\'w ≥ 52 dB (Class C minimum for new residential).',
+            specificationDetail: 'Double stud wall with 95mm mineral wool. 2×13mm gypsum each side. Acoustic sealant at perimeter. No rigid connections between leaf frames.'
+        },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 5:5',
+            requirement: 'Fire compartmentalization',
+            regulationDetail: 'Interior walls may need fire rating depending on use. Walls to technical spaces or between units require EI 30/60. Fire stops required at service penetrations.',
+            specificationDetail: 'EI 30: 2×13mm fire-rated gypsum + 70mm mineral wool. All penetrations sealed with fire collars or intumescent sealant.'
+        },
+    ],
+    'wall': [
+        { id: 'bbr-2025', name: 'BBR 2025', requirement: 'Building regulations' },
+        { id: 'ama-hus', name: 'AMA Hus', requirement: 'Construction standards' },
+    ],
+
+    // ============================================================
+    // WET ROOMS - Both English and Swedish keywords
+    // ============================================================
+    'wet room': [
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Certified waterproofing system',
+            regulationDetail: 'All wet rooms must have a certified waterproofing system installed by a Säker Vatten-certified company. System must be type-approved and traceable.',
+            specificationDetail: 'Liquid membrane (min 2 coats, total 1.0mm DFT). Reinforcement tape at all corners and joints. Flange seals at all penetrations. 100mm minimum up walls.'
+        },
+        {
+            id: 'bbv',
+            name: 'BBV',
+            section: '21:1',
+            requirement: 'Wet room tile installation',
+            regulationDetail: 'Tiles in wet rooms must be installed according to BBV (Byggkeramikrådets branschregler för våtrum). Adhesive and grout must be type-approved for wet areas.',
+            specificationDetail: 'Thin-bed adhesive (C2TES1 minimum). Grout with ≤5% water absorption. Movement joints at wall/floor junctions and every 3m. Silicone at all internal corners.'
+        },
+    ],
+    'bathroom': [
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Full wet room protection',
+            regulationDetail: 'Bathrooms are classified as wet rooms requiring full waterproofing on floor and walls to min 2.0m height (full height in shower zone). Floor drain with 1:50 fall.',
+            specificationDetail: 'Wet room gypsum board on walls. Membrane system on all surfaces. Floor drain with min 50mm water seal. Underfloor heating recommended (prevents moisture issues).'
+        },
+        {
+            id: 'hin',
+            name: 'HIN',
+            section: '3:4',
+            requirement: 'Accessible bathroom design',
+            regulationDetail: 'At least one bathroom must be wheelchair accessible: min 1.3×1.3m turning space, grab rails, and toilet at accessible height (460-480mm).',
+            specificationDetail: 'Level-entry shower (max 20mm threshold). WC height 460-480mm. Basin at 800mm with knee clearance. Support rails: 800mm height, 150mm from wall.'
+        },
+    ],
+    'shower': [
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Shower zone waterproofing',
+            regulationDetail: 'Shower zones require waterproofing to full ceiling height. Floor fall 1:50 minimum toward drain. Splash zone extends 500mm beyond shower screen/curtain.',
+            specificationDetail: 'Membrane to ceiling in shower zone. Floor fall 1:50 to 1:100. Linear drain or floor drain with integrated fall. Glass screen: min 8mm toughened safety glass.'
+        },
+        {
+            id: 'hin',
+            name: 'HIN',
+            section: '3:4',
+            requirement: 'Level-entry shower',
+            regulationDetail: 'Accessible showers must have level entry (max 20mm threshold) and min 900×900mm floor space. Folding seat and grab rail provisions required.',
+            specificationDetail: 'Flush floor drain with prefabricated shower former. Min 900×900mm. Shower seat at 480mm height. Horizontal and vertical grab rails.'
+        },
+    ],
+    'waterproof': [
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Type-approved membrane system',
+            regulationDetail: 'Waterproofing membrane must be from a Säker Vatten type-approved system. All components (primer, membrane, tape, flanges) must be from the same system.',
+            specificationDetail: 'Liquid membrane: min 2 coats, 24h drying between coats. Sheet membrane: overlaps 50mm, hot-air welded. Flange seals at all pipe penetrations. Document installation with photos.'
+        },
+    ],
+
+    // ============================================================
+    // ELECTRICAL - Both English and Swedish keywords
+    // ============================================================
+    'electrical': [
+        {
+            id: 'ss-436',
+            name: 'SS 436 40 00',
+            section: 'SS 436 40 00:2021',
+            requirement: 'Swedish electrical installation standard',
+            regulationDetail: 'All low-voltage electrical installations must comply with SS 436 40 00. RCD (jordfelsbrytare) protection required on all circuits. Type A minimum, Type B for EV charging.',
+            specificationDetail: 'Main distribution board with RCDs (30mA). Separate circuits for lighting, sockets, kitchen, wet rooms. Cable sizing per load calculations. NYM/EKKX cable types.'
+        },
+        {
+            id: 'elsak-fs',
+            name: 'ELSÄK-FS',
+            section: '2022:3',
+            requirement: 'Certified electrician required',
+            regulationDetail: 'Electrical work must be performed by an authorized electrician registered with Elsäkerhetsverket. Work must be documented and reported.',
+            specificationDetail: 'Installation certificate (elinstallationsarbete) required after completion. As-built drawings must be provided to homeowner. 5-year warranty on installation.'
+        },
+    ],
+    'socket': [
+        {
+            id: 'ss-436',
+            name: 'SS 436 40 00',
+            requirement: 'Socket placement & quantity',
+            regulationDetail: 'Recommended minimum 2 double sockets per room. Kitchen requires dedicated 16A circuits. Wet room sockets must be IP44 rated in zone 2.',
+            specificationDetail: 'Standard height 200-300mm from floor. Kitchen countertop sockets at 1100mm. Outdoor sockets IP66 rated with RCD protection.'
+        },
+        {
+            id: 'elsak-fs',
+            name: 'ELSÄK-FS',
+            section: '2022:3',
+            requirement: 'Installation certification',
+            regulationDetail: 'Socket installation requires authorized electrician. All circuits must be tested for polarity, earth continuity, and insulation resistance.',
+            specificationDetail: 'Test documentation required: loop impedance, RCD trip time (<300ms), insulation resistance (>1MΩ). Label all circuits at distribution board.'
+        },
+    ],
+    'lighting': [
+        {
+            id: 'ss-436',
+            name: 'SS 436 40 00',
+            requirement: 'Lighting circuit requirements',
+            regulationDetail: 'Lighting circuits separate from socket circuits. Emergency egress lighting recommended for hallways. Bathroom lighting on RCD-protected circuit.',
+            specificationDetail: 'Dedicated lighting circuits (10A typical). 3-way switching for hallways/stairs. LED drivers should be accessible. Dimmer compatibility verified.'
+        },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:3',
+            requirement: 'Fire safety for recessed lights',
+            regulationDetail: 'Recessed ceiling lights must not compromise fire resistance. Minimum clearance from insulation required. Fire-rated enclosures for IC-rated fixtures.',
+            specificationDetail: 'IC-rated downlights with fire hoods in insulated ceilings. Min 50mm clearance to combustibles. LED fixtures preferred (lower heat). Document fixture ratings.'
+        },
+    ],
+
+    // ============================================================
+    // PLUMBING / VVS - Both English and Swedish keywords
+    // ============================================================
+    'plumbing': [
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Certified plumber & materials',
+            regulationDetail: 'All water-connected installations must be performed by Säker Vatten-certified plumbers. Materials must be type-approved. Installation documented with photos.',
+            specificationDetail: 'PEX piping with press fittings (not push-fit). Isolation valves at each fixture. Water hammer arrestors on washing machine lines. Insulate all hot water pipes.'
+        },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:6',
+            requirement: 'Water supply & drainage',
+            regulationDetail: 'Hot water temperature max 60°C at tap to prevent scalding. Min 38°C required. Legionella prevention requires 55°C+ at water heater.',
+            specificationDetail: 'Thermostatic mixing valves at showers/tubs. Water heater set 60°C minimum. Backflow prevention on all fixtures. Drainage slope 1:50 minimum.'
+        },
+    ],
+    'toilet': [
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'WC installation standards',
+            regulationDetail: 'WC must be connected to approved drainage system. Water-saving dual-flush (3/6L) recommended. Certified plumber required for installation.',
+            specificationDetail: 'Floor-mounted or wall-hung (with concealed cistern). Isolation valve accessible. Flexible connector for easy maintenance. Seal with silicone at floor.'
+        },
+        {
+            id: 'hin',
+            name: 'HIN',
+            section: '3:4',
+            requirement: 'Accessible WC height',
+            regulationDetail: 'At least one WC must be at accessible height 460-480mm (seat height). Support rails required on both sides at 800mm height.',
+            specificationDetail: 'Comfort-height WC (460-480mm). Side-mounted or swing-up support rails. 150mm clearance from wall for rail mounting. Clear floor space 800mm × 1300mm.'
+        },
+    ],
+    'floor drain': [
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Floor drain requirements',
+            regulationDetail: 'Floor drains in wet rooms require 1:50 minimum fall gradient. Water trap depth minimum 50mm. Drain must be accessible for cleaning.',
+            specificationDetail: 'Stainless steel drain grate. Min 50mm water seal depth. Pre-formed fall kit or screed to falls. Clean-out access within 3m. Document waterproofing flange seal.'
+        },
+    ],
+    'heat pump': [
+        {
+            id: 'energidek',
+            name: 'Energidek.',
+            section: 'BFS 2020:4',
+            requirement: 'Primary energy calculation',
+            regulationDetail: 'Heat pumps significantly improve energy rating. COP (coefficient of performance) used in energy calculations. Air-source or ground-source depending on conditions.',
+            specificationDetail: 'Air-source: COP 3.5-4.5, outdoor unit with defrost. Ground-source: COP 4.5-5.5, requires borehole or ground loops. Size for 80% of peak load (backup for coldest days).'
+        },
+        {
+            id: 'ovk',
+            name: 'OVK',
+            requirement: 'Ventilation system integration',
+            regulationDetail: 'Heat pump ventilation (FTX) integrates with mandatory ventilation inspection (OVK). Heat recovery efficiency ≥80% expected for new builds.',
+            specificationDetail: 'FTX unit with 80%+ heat recovery. Filter classes F7 supply, M5 extract. Sound attenuators in bedrooms. Commissioning with flow balancing documentation.'
+        },
+    ],
+
+    // ============================================================
+    // FLOORING - Both English and Swedish keywords
+    // ============================================================
+    'floor': [
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'MBE',
+            requirement: 'Flooring installation standards',
+            regulationDetail: 'Flooring must be installed according to AMA Hus standards. Subfloor moisture content must be verified before installation. Acclimatization period required.',
+            specificationDetail: 'Check concrete moisture <85% RH before flooring. Acclimatize materials 48h minimum. Expansion gaps at walls (8-12mm). Self-leveling compound if needed.'
+        },
+        {
+            id: 'ss-25267',
+            name: 'SS 25267',
+            section: 'Class C',
+            requirement: 'Impact sound insulation',
+            regulationDetail: 'Floor assemblies in multi-story buildings must achieve impact sound insulation L\'n,w ≤ 56 dB (Class C). Single-family homes exempt but recommended.',
+            specificationDetail: 'Floating floor with acoustic underlay (≥17 dB improvement). Soft subfloor system or acoustic mat. Avoid rigid connections to walls.'
+        },
+    ],
+    'parquet': [
+        {
+            id: 'ce-cpr',
+            name: 'CE/CPR',
+            requirement: 'CE-marked flooring product',
+            regulationDetail: 'Wood flooring products must be CE-marked showing fire classification, formaldehyde emissions (E1 minimum), and slip resistance.',
+            specificationDetail: 'Solid or engineered parquet (15mm+ wear layer). E1 emission class minimum. Pre-finished preferred. Manufacturer installation guidelines followed.'
+        },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 8:4',
+            requirement: 'Fire classification D-s2,d0',
+            regulationDetail: 'Floor coverings must achieve fire class Dfl-s1 minimum. Wood flooring typically meets this. No additional treatment needed for standard residential use.',
+            specificationDetail: 'Standard oak/ash parquet meets Dfl-s1. No fire treatment needed. Avoid high-gloss finishes that may affect rating. Keep manufacturer DoP on file.'
+        },
+    ],
+    'tile': [
+        {
+            id: 'bbv',
+            name: 'BBV',
+            section: '21:1',
+            requirement: 'Tile installation standards',
+            regulationDetail: 'Tiles must be installed according to BBV standards. In wet areas, waterproofing membrane required under tiles. Falls to drain achieved in tile bed.',
+            specificationDetail: 'C2TES1 adhesive minimum for wet areas. CG2WA grout. Movement joints every 3m and at all internal corners. Silicone at floor/wall junction.'
+        },
+        {
+            id: 'hin',
+            name: 'HIN',
+            section: '2:1',
+            requirement: 'Slip resistance for accessibility',
+            regulationDetail: 'Floor surfaces must provide adequate slip resistance. Wet areas require R10 minimum slip rating. Entrance areas with mat wells recommended.',
+            specificationDetail: 'R10 slip rating (μ > 0.4) for wet areas. R11 for ramps/slopes. Avoid polished finishes in bathrooms. Test certificates from manufacturer.'
+        },
+    ],
+
+    // ============================================================
+    // DOORS & WINDOWS - Both English and Swedish keywords
+    // ============================================================
+    'door': [
+        {
+            id: 'hin',
+            name: 'HIN',
+            section: '3:1',
+            requirement: 'Door clear width ≥ 80cm',
+            regulationDetail: 'Interior doors must have minimum 80cm clear opening width for wheelchair access. Main entrance should be 90cm. Door handles at 800-900mm height.',
+            specificationDetail: 'Standard 9M door = 80cm clear width. Lever handles (not round knobs). Contrast marking on glass doors. Max 25N opening force.'
+        },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 5:3',
+            requirement: 'Fire door requirements',
+            regulationDetail: 'Doors to garage, technical rooms, or between fire compartments require fire rating. EI 30 for residential compartment doors.',
+            specificationDetail: 'Fire door with intumescent seals. Self-closing device (overhead or floor spring). Fire-rated hardware. No modifications that compromise rating.'
+        },
+    ],
+    'window': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 9:4',
+            requirement: 'Window U-value ≤ 1.2 W/m²K',
+            regulationDetail: 'Windows must achieve U-value ≤ 1.2 W/m²K including frame. Triple glazing typically required in Swedish climate. Solar factor (g-value) considered for overheating.',
+            specificationDetail: 'Triple glazed (4-16-4-16-4 typical). Argon or krypton fill. Low-E coating. Warm-edge spacers. Uw ≤ 1.0 recommended for energy class A.'
+        },
+        {
+            id: 'energidek',
+            name: 'Energidek.',
+            section: 'BFS 2020:4',
+            requirement: 'Window area in energy calculation',
+            regulationDetail: 'Total window area affects energy declaration. Larger windows increase heating demand but may reduce lighting energy. Orientation matters (south = solar gain).',
+            specificationDetail: 'Window area typically 15-20% of floor area. South windows maximize solar gain. North windows minimize. Consider external shading for south/west windows.'
+        },
+    ],
+
+    // ============================================================
+    // EXCAVATION & DRAINAGE - English keywords
+    // ============================================================
+    'excavation': [
+        {
+            id: 'afs',
+            name: 'AFS',
+            section: '2023:3',
+            requirement: 'Excavation safety requirements',
+            regulationDetail: 'Excavations deeper than 1.5m require shoring or sloped sides. Workers must have safe entry/exit. Underground utilities must be located before digging.',
+            specificationDetail: 'Slope sides at 1:1 minimum for clay/silt. Shoring for deep trenches. Edge protection 1m from excavation. Dewatering plan if groundwater encountered.'
+        },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:1',
+            requirement: 'Site preparation standards',
+            regulationDetail: 'Building site must be prepared to prevent moisture problems. Organic material removed. Proper compaction of fill material required.',
+            specificationDetail: 'Remove topsoil and organic material. Compact fill in 200mm layers. Verify bearing capacity. Install drainage before foundation work.'
+        },
+    ],
+    'drainage': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:1',
+            requirement: 'Foundation drainage required',
+            regulationDetail: 'Drainage system required around foundation to prevent water accumulation. Must connect to municipal system or approved discharge point.',
+            specificationDetail: 'Perforated drain pipe (min 100mm) at footing level. Filter fabric around gravel bed. Slope 1:200 minimum to outlet. Inspection chambers at corners.'
+        },
+    ],
+
+    // ============================================================
+    // SWEDISH KEYWORDS (Original - kept for backward compatibility)
+    // ============================================================
     'vägg': [
         { id: 'bbr-2025', name: 'BBR 2025', requirement: 'Building regulations' },
         { id: 'ama-hus', name: 'AMA Hus', requirement: 'Construction standards' },
     ],
     'yttervägg': [
-        { id: 'bbr-2025', name: 'BBR 2025', section: 'BBR 9', requirement: 'Energy requirements' },
-        { id: 'eks', name: 'EKS/Eurocode', requirement: 'Load calculations' },
-        { id: 'energidek', name: 'Energidek.', requirement: 'U-value for rating' },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 9:4',
+            requirement: 'Wall U-value ≤ 0.18 W/m²K',
+            regulationDetail: 'Exterior walls must achieve thermal transmittance ≤ 0.18 W/m²K. Thermal bridge-free design required at corners, window reveals, and wall-floor junctions.',
+            specificationDetail: 'Timber frame 45×220mm with 45×45mm service cavity. Mineral wool insulation in all cavities. Wind barrier (diffusion-open) on cold side. Vapor barrier on warm side.'
+        },
+        {
+            id: 'eks',
+            name: 'EKS/Eurocode',
+            section: 'EKS 5',
+            requirement: 'Wind load & structural stability',
+            regulationDetail: 'Wall structure must resist wind loads and transfer loads to foundation. Bracing requirements depend on building height and wind zone.',
+            specificationDetail: 'OSB/plywood sheathing for racking resistance. Metal strapping from wall plates to foundation. Wind posts at openings >1.8m.'
+        },
     ],
     'innervägg': [
-        { id: 'ss-25267', name: 'SS 25267', requirement: 'Sound insulation' },
-        { id: 'bbr-2025', name: 'BBR 2025', section: 'BBR 5', requirement: 'Fire safety' },
+        {
+            id: 'ss-25267',
+            name: 'SS 25267',
+            section: 'Class C',
+            requirement: 'Sound insulation R\'w ≥ 52 dB',
+            regulationDetail: 'Walls between dwellings or between rooms and common areas must achieve airborne sound insulation R\'w ≥ 52 dB (Class C minimum for new residential).',
+            specificationDetail: 'Double stud wall with 95mm mineral wool. 2×13mm gypsum each side. Acoustic sealant at perimeter. No rigid connections between leaf frames.'
+        },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 5:5',
+            requirement: 'Fire compartmentalization',
+            regulationDetail: 'Interior walls may need fire rating depending on use. Walls to technical spaces or between units require EI 30/60. Fire stops required at service penetrations.',
+            specificationDetail: 'EI 30: 2×13mm fire-rated gypsum + 70mm mineral wool. All penetrations sealed with fire collars or intumescent sealant.'
+        },
     ],
     'tak': [
-        { id: 'bbr-2025', name: 'BBR 2025', section: 'BBR 9', requirement: 'Roof U-value' },
-        { id: 'eks', name: 'EKS/Eurocode', requirement: 'Snow load design' },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 9:4',
+            requirement: 'Roof U-value ≤ 0.13 W/m²K',
+            regulationDetail: 'Roof assemblies must achieve thermal transmittance ≤ 0.13 W/m²K to meet Swedish energy efficiency requirements for climate zone III (most of Sweden).',
+            specificationDetail: 'Minimum 400mm mineral wool insulation between and over rafters. Vapor barrier (PE 0.2mm) on warm side. Breathable roofing membrane under tiles/metal.'
+        },
+        {
+            id: 'eks',
+            name: 'EKS/Eurocode',
+            section: 'EKS 11',
+            requirement: 'Snow load 2.0-3.5 kN/m²',
+            regulationDetail: 'Roof structure must be designed for characteristic snow load based on location. Sweden ranges from 2.0 kN/m² (south) to 3.5+ kN/m² (north/mountains).',
+            specificationDetail: 'Truss spacing typically 600-1200mm. C24 structural timber minimum. Metal gang-nail connector plates at joints. Engineer-certified design required.'
+        },
     ],
     'grund': [
-        { id: 'radon', name: 'Radon', requirement: '< 200 Bq/m³' },
-        { id: 'bbr-2025', name: 'BBR 2025', section: 'BBR 6:1', requirement: 'Moisture protection' },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:1',
+            requirement: 'Moisture protection from ground',
+            regulationDetail: 'Foundation must prevent moisture from ground reaching the building. Capillary break and drainage required. Insulation must maintain R-value when wet.',
+            specificationDetail: 'Min 300mm EPS/XPS under slab (λ ≤ 0.036). Capillary break layer (min 150mm gravel). PE vapor barrier (0.2mm) with sealed joints.'
+        },
+        {
+            id: 'radon',
+            name: 'Radon',
+            section: 'BBR 6:23',
+            requirement: 'Indoor radon < 200 Bq/m³',
+            regulationDetail: 'Indoor radon concentration must not exceed 200 Bq/m³. In radon-risk areas, a radon barrier and possibly sub-slab ventilation is required.',
+            specificationDetail: 'Radon membrane (min 0.2mm polyethylene) with all penetrations sealed. In high-risk areas: sub-slab ventilation pipes with fan-ready connection.'
+        },
     ],
     'platta': [
-        { id: 'radon', name: 'Radon', requirement: 'Radon membrane' },
-        { id: 'eks', name: 'EKS/Eurocode', requirement: 'Foundation design' },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:1',
+            requirement: 'Slab U-value ≤ 0.15 W/m²K',
+            regulationDetail: 'Ground floor slab must achieve U-value ≤ 0.15 W/m²K. Edge insulation required to prevent thermal bridges at foundation perimeter.',
+            specificationDetail: 'Slab: 100mm C25/30 concrete with B500B reinforcement mesh. Under-slab: min 300mm EPS. Edge: 100mm vertical + horizontal insulation.'
+        },
+        {
+            id: 'eks',
+            name: 'EKS/Eurocode',
+            section: 'EKS 7',
+            requirement: 'Foundation load-bearing capacity',
+            regulationDetail: 'Foundation must be designed for soil conditions and building loads. Geotechnical investigation required for load-bearing capacity verification.',
+            specificationDetail: 'Bearing capacity verified by engineer. Typical: compacted gravel base (min 200mm), reinforced concrete slab (100mm), ground beam if needed.'
+        },
     ],
     'bjälklag': [
         { id: 'ss-25267', name: 'SS 25267', requirement: 'Impact sound' },
@@ -254,126 +755,482 @@ export const KEYWORD_REGULATIONS: Record<string, RegulationRef[]> = {
 
     // Wet room keywords
     'våtrum': [
-        { id: 'saker-vatten', name: 'Säker Vatten', requirement: 'Waterproofing' },
-        { id: 'bbv', name: 'BBV', requirement: 'Tile installation' },
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Certified waterproofing system',
+            regulationDetail: 'All wet rooms must have a certified waterproofing system installed by a Säker Vatten-certified company. System must be type-approved and traceable.',
+            specificationDetail: 'Liquid membrane (min 2 coats, total 1.0mm DFT). Reinforcement tape at all corners and joints. Flange seals at all penetrations. 100mm minimum up walls.'
+        },
+        {
+            id: 'bbv',
+            name: 'BBV',
+            section: '21:1',
+            requirement: 'Wet room tile installation',
+            regulationDetail: 'Tiles in wet rooms must be installed according to BBV (Byggkeramikrådets branschregler för våtrum). Adhesive and grout must be type-approved for wet areas.',
+            specificationDetail: 'Thin-bed adhesive (C2TES1 minimum). Grout with ≤5% water absorption. Movement joints at wall/floor junctions and every 3m. Silicone at all internal corners.'
+        },
     ],
     'badrum': [
-        { id: 'saker-vatten', name: 'Säker Vatten', requirement: 'Wet room standards' },
-        { id: 'hin', name: 'HIN', requirement: 'Accessibility' },
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Full wet room protection',
+            regulationDetail: 'Bathrooms are classified as wet rooms requiring full waterproofing on floor and walls to min 2.0m height (full height in shower zone). Floor drain with 1:50 fall.',
+            specificationDetail: 'Wet room gypsum board on walls. Membrane system on all surfaces. Floor drain with min 50mm water seal. Underfloor heating recommended (prevents moisture issues).'
+        },
+        {
+            id: 'hin',
+            name: 'HIN',
+            section: '3:4',
+            requirement: 'Accessible bathroom design',
+            regulationDetail: 'At least one bathroom must be wheelchair accessible: min 1.3×1.3m turning space, grab rails, and toilet at accessible height (460-480mm).',
+            specificationDetail: 'Level-entry shower (max 20mm threshold). WC height 460-480mm. Basin at 800mm with knee clearance. Support rails: 800mm height, 150mm from wall.'
+        },
     ],
     'dusch': [
-        { id: 'saker-vatten', name: 'Säker Vatten', requirement: 'Splash protection' },
-        { id: 'hin', name: 'HIN', requirement: 'Level entry' },
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Shower zone waterproofing',
+            regulationDetail: 'Shower zones require waterproofing to full ceiling height. Floor fall 1:50 minimum toward drain. Splash zone extends 500mm beyond shower screen/curtain.',
+            specificationDetail: 'Membrane to ceiling in shower zone. Floor fall 1:50 to 1:100. Linear drain or floor drain with integrated fall. Glass screen: min 8mm toughened safety glass.'
+        },
+        {
+            id: 'hin',
+            name: 'HIN',
+            section: '3:4',
+            requirement: 'Level-entry shower',
+            regulationDetail: 'Accessible showers must have level entry (max 20mm threshold) and min 900×900mm floor space. Folding seat and grab rail provisions required.',
+            specificationDetail: 'Flush floor drain with prefabricated shower former. Min 900×900mm. Shower seat at 480mm height. Horizontal and vertical grab rails.'
+        },
     ],
     'tätskikt': [
-        { id: 'saker-vatten', name: 'Säker Vatten', requirement: 'Membrane specs' },
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Type-approved membrane system',
+            regulationDetail: 'Waterproofing membrane must be from a Säker Vatten type-approved system. All components (primer, membrane, tape, flanges) must be from the same system.',
+            specificationDetail: 'Liquid membrane: min 2 coats, 24h drying between coats. Sheet membrane: overlaps 50mm, hot-air welded. Flange seals at all pipe penetrations. Document installation with photos.'
+        },
     ],
 
     // Electrical keywords
     'el': [
-        { id: 'ss-436', name: 'SS 436 40 00', requirement: 'Electrical standard' },
-        { id: 'elsak-fs', name: 'ELSÄK-FS', requirement: 'Safety certification' },
+        {
+            id: 'ss-436',
+            name: 'SS 436 40 00',
+            section: 'SS 436 40 00:2021',
+            requirement: 'Swedish electrical installation standard',
+            regulationDetail: 'All low-voltage electrical installations must comply with SS 436 40 00. RCD (jordfelsbrytare) protection required on all circuits. Type A minimum, Type B for EV charging.',
+            specificationDetail: 'Main distribution board with RCDs (30mA). Separate circuits for lighting, sockets, kitchen, wet rooms. Cable sizing per load calculations. NYM/EKKX cable types.'
+        },
+        {
+            id: 'elsak-fs',
+            name: 'ELSÄK-FS',
+            section: '2022:3',
+            requirement: 'Certified electrician required',
+            regulationDetail: 'Electrical work must be performed by an authorized electrician registered with Elsäkerhetsverket. Work must be documented and reported.',
+            specificationDetail: 'Installation certificate (elinstallationsarbete) required after completion. As-built drawings must be provided to homeowner. 5-year warranty on installation.'
+        },
     ],
     'uttag': [
-        { id: 'ss-436', name: 'SS 436 40 00', requirement: 'Socket placement' },
-        { id: 'elsak-fs', name: 'ELSÄK-FS', requirement: 'Installation cert.' },
+        {
+            id: 'ss-436',
+            name: 'SS 436 40 00',
+            requirement: 'Socket placement & quantity',
+            regulationDetail: 'Recommended minimum 2 double sockets per room. Kitchen requires dedicated 16A circuits. Wet room sockets must be IP44 rated in zone 2.',
+            specificationDetail: 'Standard height 200-300mm from floor. Kitchen countertop sockets at 1100mm. Outdoor sockets IP66 rated with RCD protection.'
+        },
+        {
+            id: 'elsak-fs',
+            name: 'ELSÄK-FS',
+            section: '2022:3',
+            requirement: 'Installation certification',
+            regulationDetail: 'Socket installation requires authorized electrician. All circuits must be tested for polarity, earth continuity, and insulation resistance.',
+            specificationDetail: 'Test documentation required: loop impedance, RCD trip time (<300ms), insulation resistance (>1MΩ). Label all circuits at distribution board.'
+        },
     ],
     'belysning': [
-        { id: 'ss-436', name: 'SS 436 40 00', requirement: 'Lighting circuits' },
-        { id: 'bbr-2025', name: 'BBR 2025', section: 'BBR 6:3', requirement: 'Fire around lights' },
+        {
+            id: 'ss-436',
+            name: 'SS 436 40 00',
+            requirement: 'Lighting circuit requirements',
+            regulationDetail: 'Lighting circuits separate from socket circuits. Emergency egress lighting recommended for hallways. Bathroom lighting on RCD-protected circuit.',
+            specificationDetail: 'Dedicated lighting circuits (10A typical). 3-way switching for hallways/stairs. LED drivers should be accessible. Dimmer compatibility verified.'
+        },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:3',
+            requirement: 'Fire safety for recessed lights',
+            regulationDetail: 'Recessed ceiling lights must not compromise fire resistance. Minimum clearance from insulation required. Fire-rated enclosures for IC-rated fixtures.',
+            specificationDetail: 'IC-rated downlights with fire hoods in insulated ceilings. Min 50mm clearance to combustibles. LED fixtures preferred (lower heat). Document fixture ratings.'
+        },
     ],
 
     // Plumbing keywords
     'vvs': [
-        { id: 'saker-vatten', name: 'Säker Vatten', requirement: 'Plumbing standards' },
-        { id: 'bbr-2025', name: 'BBR 2025', section: 'BBR 6:6', requirement: 'Water installations' },
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Certified plumber & materials',
+            regulationDetail: 'All water-connected installations must be performed by Säker Vatten-certified plumbers. Materials must be type-approved. Installation documented with photos.',
+            specificationDetail: 'PEX piping with press fittings (not push-fit). Isolation valves at each fixture. Water hammer arrestors on washing machine lines. Insulate all hot water pipes.'
+        },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:6',
+            requirement: 'Water supply & drainage',
+            regulationDetail: 'Hot water temperature max 60°C at tap to prevent scalding. Min 38°C required. Legionella prevention requires 55°C+ at water heater.',
+            specificationDetail: 'Thermostatic mixing valves at showers/tubs. Water heater set 60°C minimum. Backflow prevention on all fixtures. Drainage slope 1:50 minimum.'
+        },
     ],
     'wc': [
-        { id: 'saker-vatten', name: 'Säker Vatten', requirement: 'Installation cert.' },
-        { id: 'hin', name: 'HIN', requirement: 'Accessible height' },
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'WC installation standards',
+            regulationDetail: 'WC must be connected to approved drainage system. Water-saving dual-flush (3/6L) recommended. Certified plumber required for installation.',
+            specificationDetail: 'Floor-mounted or wall-hung (with concealed cistern). Isolation valve accessible. Flexible connector for easy maintenance. Seal with silicone at floor.'
+        },
+        {
+            id: 'hin',
+            name: 'HIN',
+            section: '3:4',
+            requirement: 'Accessible WC height',
+            regulationDetail: 'At least one WC must be at accessible height 460-480mm (seat height). Support rails required on both sides at 800mm height.',
+            specificationDetail: 'Comfort-height WC (460-480mm). Side-mounted or swing-up support rails. 150mm clearance from wall for rail mounting. Clear floor space 800mm × 1300mm.'
+        },
     ],
     'golvbrunn': [
-        { id: 'saker-vatten', name: 'Säker Vatten', requirement: '1:50 fall' },
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Floor drain requirements',
+            regulationDetail: 'Floor drains in wet rooms require 1:50 minimum fall gradient. Water trap depth minimum 50mm. Drain must be accessible for cleaning.',
+            specificationDetail: 'Stainless steel drain grate. Min 50mm water seal depth. Pre-formed fall kit or screed to falls. Clean-out access within 3m. Document waterproofing flange seal.'
+        },
     ],
     'värmepump': [
-        { id: 'energidek', name: 'Energidek.', requirement: 'Energy rating' },
-        { id: 'ovk', name: 'OVK', requirement: 'Ventilation integration' },
+        {
+            id: 'energidek',
+            name: 'Energidek.',
+            section: 'BFS 2020:4',
+            requirement: 'Primary energy calculation',
+            regulationDetail: 'Heat pumps significantly improve energy rating. COP (coefficient of performance) used in energy calculations. Air-source or ground-source depending on conditions.',
+            specificationDetail: 'Air-source: COP 3.5-4.5, outdoor unit with defrost. Ground-source: COP 4.5-5.5, requires borehole or ground loops. Size for 80% of peak load (backup for coldest days).'
+        },
+        {
+            id: 'ovk',
+            name: 'OVK',
+            requirement: 'Ventilation system integration',
+            regulationDetail: 'Heat pump ventilation (FTX) integrates with mandatory ventilation inspection (OVK). Heat recovery efficiency ≥80% expected for new builds.',
+            specificationDetail: 'FTX unit with 80%+ heat recovery. Filter classes F7 supply, M5 extract. Sound attenuators in bedrooms. Commissioning with flow balancing documentation.'
+        },
     ],
     'ventilation': [
-        { id: 'ovk', name: 'OVK', requirement: 'Mandatory inspection' },
-        { id: 'bbr-2025', name: 'BBR 2025', section: 'BBR 6:2', requirement: 'Air flow rates' },
+        {
+            id: 'ovk',
+            name: 'OVK',
+            section: 'BFS 2011:16',
+            requirement: 'Mandatory ventilation inspection',
+            regulationDetail: 'OVK inspection required before occupancy and every 6 years thereafter. System must achieve designed airflow rates. Inspector certified by Boverket.',
+            specificationDetail: 'OVK protocol documents: airflow per room, filter condition, sound levels, heat recovery efficiency. Deficiencies must be corrected within timeline.'
+        },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:2',
+            requirement: 'Minimum air flow rates',
+            regulationDetail: 'Living rooms: 0.35 L/s per m². Kitchen: 10 L/s base + 20 L/s boost. Bathroom: 10-15 L/s. WC: 10 L/s. Bedroom: 4 L/s per person minimum.',
+            specificationDetail: 'Supply air to bedrooms/living. Extract from kitchen/bathroom/WC. Balance to slight negative pressure. Sound level <25 dB(A) in bedrooms, <30 dB(A) elsewhere.'
+        },
     ],
 
     // Finish keywords
     'golv': [
-        { id: 'ama-hus', name: 'AMA Hus', requirement: 'Flooring standards' },
-        { id: 'ss-25267', name: 'SS 25267', requirement: 'Impact sound' },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'MBE',
+            requirement: 'Flooring installation standards',
+            regulationDetail: 'Flooring must be installed according to AMA Hus standards. Subfloor moisture content must be verified before installation. Acclimatization period required.',
+            specificationDetail: 'Check concrete moisture <85% RH before flooring. Acclimatize materials 48h minimum. Expansion gaps at walls (8-12mm). Self-leveling compound if needed.'
+        },
+        {
+            id: 'ss-25267',
+            name: 'SS 25267',
+            section: 'Class C',
+            requirement: 'Impact sound insulation',
+            regulationDetail: 'Floor assemblies in multi-story buildings must achieve impact sound insulation L\'n,w ≤ 56 dB (Class C). Single-family homes exempt but recommended.',
+            specificationDetail: 'Floating floor with acoustic underlay (≥17 dB improvement). Soft subfloor system or acoustic mat. Avoid rigid connections to walls.'
+        },
     ],
     'parkett': [
-        { id: 'ce-cpr', name: 'CE/CPR', requirement: 'CE-marked product' },
-        { id: 'bbr-2025', name: 'BBR 2025', section: 'BBR 8:4', requirement: 'Fire class' },
+        {
+            id: 'ce-cpr',
+            name: 'CE/CPR',
+            requirement: 'CE-marked flooring product',
+            regulationDetail: 'Wood flooring products must be CE-marked showing fire classification, formaldehyde emissions (E1 minimum), and slip resistance.',
+            specificationDetail: 'Solid or engineered parquet (15mm+ wear layer). E1 emission class minimum. Pre-finished preferred. Manufacturer installation guidelines followed.'
+        },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 8:4',
+            requirement: 'Fire classification D-s2,d0',
+            regulationDetail: 'Floor coverings must achieve fire class Dfl-s1 minimum. Wood flooring typically meets this. No additional treatment needed for standard residential use.',
+            specificationDetail: 'Standard oak/ash parquet meets Dfl-s1. No fire treatment needed. Avoid high-gloss finishes that may affect rating. Keep manufacturer DoP on file.'
+        },
     ],
     'kakel': [
-        { id: 'bbv', name: 'BBV', requirement: 'Tile installation' },
-        { id: 'ama-hus', name: 'AMA Hus', requirement: 'Quality standards' },
+        {
+            id: 'bbv',
+            name: 'BBV',
+            section: '21:1',
+            requirement: 'Wall tile installation',
+            regulationDetail: 'Wall tiles in wet areas must follow BBV standards. Adhesive and grout must be type-approved for wet areas. Movement joints required.',
+            specificationDetail: 'C2TES1 adhesive minimum for wet areas. CG2WA grout. Movement joints every 3m and at all internal corners. Silicone joints at floor/wall junction.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'MBE.1',
+            requirement: 'Tile work quality',
+            regulationDetail: 'Tile installation must achieve AMA quality levels: evenness ±2mm/2m, grout joints consistent width, no lippage >1mm between tiles.',
+            specificationDetail: 'Use leveling clips for large format tiles. Grout joints 2-3mm. Back-butter tiles >300×300mm. Full adhesive coverage in wet areas (no voids).'
+        },
     ],
     'klinker': [
-        { id: 'bbv', name: 'BBV', requirement: 'Ceramic tile rules' },
-        { id: 'hin', name: 'HIN', requirement: 'Slip resistance' },
+        {
+            id: 'bbv',
+            name: 'BBV',
+            section: '21:1',
+            requirement: 'Floor tile installation',
+            regulationDetail: 'Floor tiles must be suitable for foot traffic (PEI III+). In wet areas, waterproofing membrane required under tiles. Falls to drain achieved in tile bed.',
+            specificationDetail: 'PEI IV for high-traffic areas. R10 slip rating minimum for wet areas. Falls created in screed, not tile adhesive. Expansion joints at doorways.'
+        },
+        {
+            id: 'hin',
+            name: 'HIN',
+            section: '2:1',
+            requirement: 'Slip resistance for accessibility',
+            regulationDetail: 'Floor surfaces must provide adequate slip resistance. Wet areas require R10 minimum slip rating. Entrance areas with mat wells recommended.',
+            specificationDetail: 'R10 slip rating (μ > 0.4) for wet areas. R11 for ramps/slopes. Avoid polished finishes in bathrooms. Test certificates from manufacturer.'
+        },
     ],
 
     // Door/window keywords
     'dörr': [
-        { id: 'hin', name: 'HIN', requirement: '80cm clear width' },
-        { id: 'bbr-2025', name: 'BBR 2025', section: 'BBR 5:3', requirement: 'Fire doors' },
+        {
+            id: 'hin',
+            name: 'HIN',
+            section: '3:1',
+            requirement: 'Door clear width ≥ 80cm',
+            regulationDetail: 'Interior doors must have minimum 80cm clear opening width for wheelchair access. Main entrance should be 90cm. Door handles at 800-900mm height.',
+            specificationDetail: 'Standard 9M door = 80cm clear width. Lever handles (not round knobs). Contrast marking on glass doors. Max 25N opening force.'
+        },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 5:3',
+            requirement: 'Fire door requirements',
+            regulationDetail: 'Doors to garage, technical rooms, or between fire compartments require fire rating. EI 30 for residential compartment doors.',
+            specificationDetail: 'Fire door with intumescent seals. Self-closing device (overhead or floor spring). Fire-rated hardware. No modifications that compromise rating.'
+        },
     ],
     'fönster': [
-        { id: 'bbr-2025', name: 'BBR 2025', section: 'BBR 9', requirement: 'U-value limits' },
-        { id: 'energidek', name: 'Energidek.', requirement: 'Energy calculation' },
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 9:4',
+            requirement: 'Window U-value ≤ 1.2 W/m²K',
+            regulationDetail: 'Windows must achieve U-value ≤ 1.2 W/m²K including frame. Triple glazing typically required in Swedish climate. Solar factor (g-value) considered for overheating.',
+            specificationDetail: 'Triple glazed (4-16-4-16-4 typical). Argon or krypton fill. Low-E coating. Warm-edge spacers. Uw ≤ 1.0 recommended for energy class A.'
+        },
+        {
+            id: 'energidek',
+            name: 'Energidek.',
+            section: 'BFS 2020:4',
+            requirement: 'Window area in energy calculation',
+            regulationDetail: 'Total window area affects energy declaration. Larger windows increase heating demand but may reduce lighting energy. Orientation matters (south = solar gain).',
+            specificationDetail: 'Window area typically 15-20% of floor area. South windows maximize solar gain. North windows minimize. Consider external shading for south/west windows.'
+        },
     ],
     'tröskel': [
-        { id: 'hin', name: 'HIN', requirement: 'Max 15mm height' },
+        {
+            id: 'hin',
+            name: 'HIN',
+            section: '3:1',
+            requirement: 'Maximum threshold height 15mm',
+            regulationDetail: 'Thresholds must not exceed 15mm height for wheelchair accessibility. Level thresholds preferred. If threshold needed, must be beveled or ramped.',
+            specificationDetail: 'Flush thresholds where possible. If required, max 15mm with 1:2 ramp. Wet room thresholds with drain channel. Rubber or aluminum with ramps.'
+        },
     ],
 
     // Admin keywords
     'bygglov': [
-        { id: 'pbl', name: 'PBL', requirement: 'Permit process' },
+        {
+            id: 'pbl',
+            name: 'PBL',
+            section: 'Ch. 9',
+            requirement: 'Building permit required',
+            regulationDetail: 'New single-family homes require building permit (bygglov) from the municipality. Process includes neighbor notification, plan review, and design approval. Typically 10 weeks processing time.',
+            specificationDetail: 'Submit: site plan (1:500), floor plans, elevations, sections, technical description. Fee based on building size. Start permit required before construction begins.'
+        },
     ],
     'ka': [
-        { id: 'pbl', name: 'PBL', section: 'Ch. 10', requirement: 'Inspector cert.' },
+        {
+            id: 'pbl',
+            name: 'PBL',
+            section: 'Ch. 10',
+            requirement: 'Certified inspector (KA) required',
+            regulationDetail: 'All building projects requiring permit must have a Kontrollansvarig (KA) - certified inspector who ensures compliance. KA attends technical meetings and signs off on completion.',
+            specificationDetail: 'KA must be certified by Boverket (N or K level). Attends: start meeting, inspections, final meeting. Provides inspection report for slutbesked. Independent from contractor.'
+        },
     ],
     'kontrollansvarig': [
-        { id: 'pbl', name: 'PBL', requirement: 'Certified inspector' },
+        {
+            id: 'pbl',
+            name: 'PBL',
+            section: 'Ch. 10',
+            requirement: 'Independent quality control',
+            regulationDetail: 'Kontrollansvarig is the building owner\'s representative for quality control. Must be independent from the contractor. Ensures control plan is followed and documents any deviations.',
+            specificationDetail: 'KA visits site at critical stages: foundation, waterproofing, structure, completion. Signs control plan items. Issues statement for final inspection (slutbesked).'
+        },
     ],
     'klimatdeklaration': [
-        { id: 'klimatdek', name: 'Klimatdek.', requirement: 'CO2 declaration' },
-        { id: 'pbl', name: 'PBL', section: '2022:1', requirement: 'Mandatory LCA' },
+        {
+            id: 'klimatdek',
+            name: 'Klimatdek.',
+            section: 'BFS 2021:7',
+            requirement: 'Climate declaration mandatory',
+            regulationDetail: 'Since January 2022, all new buildings require a climate declaration reporting lifecycle CO2 emissions from materials (A1-A5 stages). Filed with Boverket before slutbesked.',
+            specificationDetail: 'Calculate: materials production (A1-A3), transport (A4), construction (A5). Use Boverket\'s klimatdatabas for emission factors. Submit via digital platform before final approval.'
+        },
+        {
+            id: 'pbl',
+            name: 'PBL',
+            section: '2022:1',
+            requirement: 'LCA reporting to Boverket',
+            regulationDetail: 'Climate declaration is part of the building permit process. Without approved declaration, slutbesked cannot be issued. Threshold limits expected to tighten over time.',
+            specificationDetail: 'Current: reporting only, no limits. Future: CO2 limits per m². Document all material choices with EPDs. Low-carbon alternatives reduce declared emissions.'
+        },
     ],
     'lca': [
-        { id: 'klimatdek', name: 'Klimatdek.', requirement: 'Lifecycle assessment' },
+        {
+            id: 'klimatdek',
+            name: 'Klimatdek.',
+            section: 'BFS 2021:7',
+            requirement: 'Lifecycle assessment required',
+            regulationDetail: 'Lifecycle assessment (LCA) covers cradle-to-handover emissions. Building elements included: foundation, structure, envelope, interior finishes. Excludes: installations, landscaping.',
+            specificationDetail: 'Use Boverket tools or third-party LCA software (One Click LCA, etc.). EPD data preferred. Generic data acceptable if EPD unavailable. Results in kg CO2e/m² BTA.'
+        },
     ],
     'entreprenör': [
-        { id: 'abt-06', name: 'ABT 06', requirement: 'Contract terms' },
-        { id: 'ab-04', name: 'AB 04', requirement: 'General conditions' },
-        { id: 'konsument', name: 'Kons.tjänst', requirement: '10 year liability' },
+        {
+            id: 'abt-06',
+            name: 'ABT 06',
+            requirement: 'Contractor design-build terms',
+            regulationDetail: 'ABT 06 governs design-build (totalentreprenad) contracts. Contractor responsible for design and construction. 5-year warranty on workmanship. 10-year on hidden defects.',
+            specificationDetail: 'Contract should specify: fixed price or cost-plus, payment schedule, change order process, completion date, liquidated damages. Include performance specifications.'
+        },
+        {
+            id: 'ab-04',
+            name: 'AB 04',
+            requirement: 'General contract conditions',
+            regulationDetail: 'AB 04 is the standard for traditional construction contracts (utförandeentreprenad) where client provides design. Defines responsibilities, payment terms, warranty periods.',
+            specificationDetail: 'Standard warranty: 5 years for workmanship, 2 years for materials/equipment. Retention typically 5%. Final inspection within 30 days of completion notice.'
+        },
+        {
+            id: 'konsument',
+            name: 'Kons.tjänst',
+            section: 'SFS 1985:716',
+            requirement: '10-year consumer protection',
+            regulationDetail: 'Consumer Services Act provides 10-year liability for serious hidden defects when building for consumers. Contractor must remedy defects discovered within this period.',
+            specificationDetail: 'Applies to work for private individuals. Hidden defects (not visible at handover) covered 10 years. Document condition at handover thoroughly. Insurance recommended.'
+        },
     ],
     'avtal': [
-        { id: 'abt-06', name: 'ABT 06', requirement: 'Contract terms' },
-        { id: 'ab-04', name: 'AB 04', requirement: 'General conditions' },
+        {
+            id: 'abt-06',
+            name: 'ABT 06',
+            requirement: 'Design-build contract terms',
+            regulationDetail: 'ABT 06 is standard for contracts where contractor handles both design and construction. Clear specification of functional requirements and performance targets essential.',
+            specificationDetail: 'Include: program documents, performance specs, reference standards. Define handover criteria, testing requirements, warranty terms. Change order process for variations.'
+        },
+        {
+            id: 'ab-04',
+            name: 'AB 04',
+            requirement: 'Traditional contract terms',
+            regulationDetail: 'AB 04 used when client provides complete design. Contractor executes according to drawings and specifications. Clear division of responsibility for design vs execution.',
+            specificationDetail: 'Complement with AF (administrative regulations). Specify: document hierarchy, site conditions, coordination responsibilities, insurance requirements.'
+        },
     ],
     'arbetsmiljö': [
-        { id: 'afs', name: 'AFS', section: '2023:3', requirement: 'Work environment' },
+        {
+            id: 'afs',
+            name: 'AFS',
+            section: '2023:3',
+            requirement: 'Construction site safety plan',
+            regulationDetail: 'Work environment plan required for all construction sites. BAS-P (planning coordinator) during design, BAS-U (execution coordinator) during construction. Fall protection, PPE requirements.',
+            specificationDetail: 'Plan covers: fall hazards, excavations, lifting operations, hazardous materials. Safety barriers, hard hats, hi-vis mandatory. Weekly safety walks documented.'
+        },
     ],
     'säkerhet': [
-        { id: 'afs', name: 'AFS', requirement: 'Safety requirements' },
+        {
+            id: 'afs',
+            name: 'AFS',
+            section: '2023:3',
+            requirement: 'Workplace safety requirements',
+            regulationDetail: 'Arbetsmiljöverket (Swedish Work Environment Authority) regulations apply to all construction work. Contractor responsible for site safety. Serious incidents must be reported.',
+            specificationDetail: 'PPE requirements: helmet, safety footwear, hi-vis vest. Fall protection above 2m. First aid kit on site. Emergency procedures posted. Safety training documented.'
+        },
     ],
     'handikapp': [
-        { id: 'hin', name: 'HIN', requirement: 'Barrier removal' },
-        { id: 'alm', name: 'ALM', section: 'BFS 2011:5', requirement: 'Mobility access' },
+        {
+            id: 'hin',
+            name: 'HIN',
+            section: 'BFS 2011:13',
+            requirement: 'Accessibility requirements',
+            regulationDetail: 'HIN (Boverket\'s regulations on removal of easily removed barriers) applies to new builds. Covers entrance access, interior circulation, bathroom accessibility, and emergency egress.',
+            specificationDetail: 'Level entry (max 20mm threshold). 1.5m turning circles. Accessible bathroom on entry level. Contrast marking for visually impaired. Emergency egress without stairs.'
+        },
+        {
+            id: 'alm',
+            name: 'ALM',
+            section: 'BFS 2011:5',
+            requirement: 'Universal design principles',
+            regulationDetail: 'ALM regulations ensure buildings are usable by people with reduced mobility. Applies to common areas, parking, paths, and at least one entrance route.',
+            specificationDetail: 'Ramp slope max 1:12. Handrails on both sides of stairs. 800mm clear door width. Accessible parking within 25m. Tactile guidance at hazards.'
+        },
     ],
     'rullstol': [
-        { id: 'hin', name: 'HIN', requirement: 'Wheelchair access' },
-        { id: 'alm', name: 'ALM', requirement: 'Accessibility' },
+        {
+            id: 'hin',
+            name: 'HIN',
+            section: '3:1',
+            requirement: 'Wheelchair-accessible design',
+            regulationDetail: 'Design must accommodate wheelchair users: 1.5m turning radius, 80cm minimum door width, accessible bathroom, level thresholds (max 15mm).',
+            specificationDetail: 'Entry level bathroom required. Kitchen work surfaces at accessible height (850mm). Reach ranges 400-1100mm. Pull-side clearance at doors 600mm.'
+        },
+        {
+            id: 'alm',
+            name: 'ALM',
+            section: 'BFS 2011:5',
+            requirement: 'Mobility-impaired access',
+            regulationDetail: 'At least one route through the building must be wheelchair accessible without steps or steep ramps. Elevator or lift required if more than one usable floor.',
+            specificationDetail: 'Entry ramp if >20mm step. Elevator minimum 1.1×1.4m cabin. Landing at doors 1.5×1.5m. Emergency refuge area if no elevator. Intercom at inaccessible entrances.'
+        },
     ],
 };
 

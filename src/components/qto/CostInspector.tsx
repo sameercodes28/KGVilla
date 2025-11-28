@@ -313,8 +313,13 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                                     </p>
                                                 )}
                                                 {reg.requirement && (
-                                                    <p className="text-sm text-slate-700 leading-relaxed">
+                                                    <p className="text-sm font-medium text-slate-800 leading-relaxed">
                                                         {reg.requirement}
+                                                    </p>
+                                                )}
+                                                {reg.regulationDetail && (
+                                                    <p className="text-sm text-slate-600 leading-relaxed mt-2 pt-2 border-t border-slate-100">
+                                                        {reg.regulationDetail}
                                                     </p>
                                                 )}
                                             </div>
@@ -327,16 +332,45 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                 )}
 
                 {/* STEP 2: CONSTRUCTION SPECIFICATION - How it should be built */}
-                {displayedItem.guidelineReference && (
+                {(displayedItem.guidelineReference || itemRegulations.some(reg => reg.specificationDetail)) && (
                     <Section step={2} title={t('inspector.how_built')} icon={Hammer} color="amber">
                         <div className="space-y-3">
                             <p className="text-sm text-slate-600 mb-2">
                                 {t('inspector.spec_intro')}
                             </p>
-                            <div className="p-3 bg-white rounded-lg border border-slate-200">
-                                <p className="text-xs font-medium text-amber-700 uppercase mb-1">{t('inspector.reference_standard')}</p>
-                                <p className="text-sm text-slate-700">{displayedItem.guidelineReference}</p>
-                            </div>
+
+                            {/* Specification details from regulations */}
+                            {itemRegulations.filter(reg => reg.specificationDetail).map((reg, i) => {
+                                const colors = REGULATION_COLORS[reg.id] || { bgColor: 'bg-slate-100', color: 'text-slate-700' };
+                                return (
+                                    <div key={i} className="p-3 bg-white rounded-lg border border-slate-200">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className={cn(
+                                                "px-2 py-0.5 rounded text-xs font-bold",
+                                                colors.bgColor, colors.color
+                                            )}>
+                                                {reg.name}
+                                            </span>
+                                            {reg.section && (
+                                                <span className="text-xs text-slate-400 font-mono">
+                                                    {reg.section}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-slate-700 leading-relaxed">
+                                            {reg.specificationDetail}
+                                        </p>
+                                    </div>
+                                );
+                            })}
+
+                            {/* Guideline reference if available */}
+                            {displayedItem.guidelineReference && (
+                                <div className="p-3 bg-white rounded-lg border border-slate-200">
+                                    <p className="text-xs font-medium text-amber-700 uppercase mb-1">{t('inspector.reference_standard')}</p>
+                                    <p className="text-sm text-slate-700">{displayedItem.guidelineReference}</p>
+                                </div>
+                            )}
 
                             {/* Materials breakdown if available */}
                             {displayedItem.breakdown?.components && displayedItem.breakdown.components.length > 0 && (
@@ -357,7 +391,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                 )}
 
                 {/* STEP 3: QUANTITY CALCULATION - Detailed step-by-step math */}
-                <Section step={itemRegulations.length > 0 ? (displayedItem.guidelineReference ? 3 : 2) : 1} title={t('inspector.quantity_calc')} icon={Ruler} color="blue">
+                <Section step={itemRegulations.length > 0 ? ((displayedItem.guidelineReference || itemRegulations.some(reg => reg.specificationDetail)) ? 3 : 2) : 1} title={t('inspector.quantity_calc')} icon={Ruler} color="blue">
                     <div className="space-y-3">
                         <p className="text-sm text-slate-600 mb-2">
                             {t('inspector.calc_intro')}
@@ -431,7 +465,7 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
 
                 {/* STEP 4: PRICING - Market rate, JB rate, and final cost */}
                 <Section
-                    step={itemRegulations.length > 0 ? (displayedItem.guidelineReference ? 4 : 3) : 2}
+                    step={itemRegulations.length > 0 ? ((displayedItem.guidelineReference || itemRegulations.some(reg => reg.specificationDetail)) ? 4 : 3) : 2}
                     title={t('inspector.pricing')}
                     icon={Calculator}
                     color={displayedItem.prefabDiscount ? (efficiencyInfo?.color as 'green' | 'blue' | 'purple') || 'green' : 'slate'}

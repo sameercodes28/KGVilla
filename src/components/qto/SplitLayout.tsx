@@ -78,6 +78,10 @@ function SplitLayoutContent({ projectId }: { projectId?: string }) {
                 showBackButton
                 title={project?.name || 'New Project'}
                 syncState={syncState}
+                boa={boa}
+                biarea={biarea}
+                itemsCount={items.length}
+                totalCost={totalCost}
             />
 
 
