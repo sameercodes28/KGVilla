@@ -1,6 +1,6 @@
 # KGVilla - Smart Construction Intelligence
 
-> **Version 1.5.1** | AI-powered cost estimation for Swedish residential construction
+> **Version 1.14.0** | AI-powered cost estimation for Swedish residential construction
 
 KGVilla is an AI-powered Quantity Take-Off (QTO) and cost estimation platform tailored for the Swedish residential market ("Småhus"). Built specifically for **JB Villan** prefab house customers, it analyzes floor plans against **BBR 2025** regulations and generates precise, compliant Bills of Quantities with accurate prefab pricing.
 
@@ -13,102 +13,128 @@ KGVilla reflects these savings accurately — when you upload a JB Villan floor 
 ## Features
 
 ### Deterministic OCR Analysis
-*   **Document AI OCR:** Upload PDF/Image floor plans. Google Document AI extracts room names and areas directly from the architect's annotations.
-*   **Consistent Pricing:** Same floor plan always produces the same quote — no AI variability.
-*   **Regulatory Compliance:** Automatically applies BBR 2025 (Accessibility, Energy) and Säker Vatten requirements.
-*   **Smart Inference:** Infers "hidden" costs (e.g., waterproofing in bathrooms, electrical feeds for stoves) based on room type.
+- **Document AI OCR:** Upload PDF/Image floor plans. Google Document AI extracts room names and areas directly from the architect's annotations.
+- **Consistent Pricing:** Same floor plan always produces the same quote — no AI variability.
+- **Regulatory Compliance:** Automatically applies BBR 2025 (Accessibility, Energy) and Säker Vatten requirements.
+- **Smart Inference:** Infers "hidden" costs (e.g., waterproofing in bathrooms, electrical feeds for stoves) based on room type.
 
-### JB Villan Prefab Pricing
-*   **Accurate Prefab Costs:** Pricing reflects JB Villan's factory efficiencies, not general contractor rates.
-*   **Savings Breakdown:** See exactly where prefab saves money (26% on exterior walls, 18% on roof, 17% on interior walls).
-*   **Side-by-Side Comparison:** Every quote shows JB Villan price vs what a general contractor would charge.
-*   **Green "Prefab" Badges:** Visual indicators on items that benefit from factory manufacturing.
+### JB Villan Efficiency Pricing
+
+KGVilla recognizes three types of JB Villan cost efficiencies:
+
+| Type | Color | Icon | Description |
+|------|-------|------|-------------|
+| **PREFAB** | Green | Factory | True factory manufacturing (walls, roof, interior walls) |
+| **STREAMLINED** | Blue | Lightning | Benefits from faster build time (site overhead) |
+| **STANDARDIZED** | Purple | Target | Benefits from proven designs (contingency) |
+
+**Note:** Foundation (slab on grade) is NOT prefab — concrete is poured on-site. It uses standard market pricing.
+
+**Savings by component:**
+- Exterior Walls: 26% (PREFAB - factory-manufactured panels)
+- Roof: 18% (PREFAB - pre-assembled trusses)
+- Interior Walls: 17% (PREFAB - pre-cut framing)
+- Site Overhead: 40% (STREAMLINED - faster build = less rental time)
+- Contingency: 40% (STANDARDIZED - proven designs = fewer surprises)
+
+### Cost Inspector (Step-by-Step Analysis)
+
+The Cost Inspector provides a logical narrative flow for understanding each cost item:
+
+1. **Why This Is Required** (Regulations) - Swedish building codes that mandate this element
+2. **How It Should Be Built** (Specification) - Construction standards and materials
+3. **Quantity Calculation** (Math) - Step-by-step calculation from floor plan data
+4. **Pricing** (Cost Breakdown) - Market rate, JB Villan rate, and final cost
 
 ### Professional Quoting
-*   **ABT 06 Compliance:** Generates professional quotes with risk analysis, payment schedules, and contract scope.
-*   **Client Cost Separation:** Clearly separates contractor costs from client-paid fees (permits, connections, insurance).
-*   **Assembly-Based Pricing:** Costs are built from atomic assemblies (materials + labor + waste) rather than simple square meter estimates.
+- **ABT 06 Compliance:** Generates professional quotes with risk analysis, payment schedules, and contract scope.
+- **Client Cost Separation:** Clearly separates contractor costs from client-paid fees (permits, connections, insurance).
+- **Assembly-Based Pricing:** Costs are built from atomic assemblies (materials + labor + waste) rather than simple square meter estimates.
 
 ### Modern & Resilient Interface
-*   **Interactive Split View:** A CAD-like interface connecting the visual plan with the data feed. Hover over a cost item to see it highlighted on the plan.
-*   **Cost Inspector:** Deep-dive into any item to see calculation formulas, regulatory references, and quantity breakdowns by room.
-*   **AI Chat Consultant:** Discuss the project with an AI to refine specs or ask regulatory questions.
-*   **Bilingual:** Instant toggling between English and Swedish.
-*   **Offline Resilience:** A **LocalStorage-First** architecture ensures the app loads instantly and works even if the backend is offline. Data syncs quietly in the background.
-*   **Multi-Project Support:** Create, switch between, and manage multiple projects seamlessly.
+- **Interactive Split View:** A CAD-like interface connecting the visual plan with the data feed.
+- **Bilingual:** Instant toggling between English and Swedish.
+- **Offline Resilience:** LocalStorage-First architecture ensures the app loads instantly and works offline.
+- **Multi-Project Support:** Create, switch between, and manage multiple projects seamlessly.
 
 ## Tech Stack
 
-*   **Frontend:** Next.js 16 (App Router), React 19, TypeScript 5, Tailwind CSS 4
-*   **Backend:** Python 3.11, FastAPI, Google Cloud Firestore, Google Document AI (OCR), Vertex AI (Gemini 2.0 Flash)
-*   **Infrastructure:** Docker, Google Cloud Run, GitHub Pages (static frontend)
+- **Frontend:** Next.js 16 (App Router), React 19, TypeScript 5, Tailwind CSS 4
+- **Backend:** Python 3.11, FastAPI, Google Cloud Firestore, Google Document AI (OCR), Vertex AI (Gemini 2.0 Flash)
+- **Infrastructure:** Docker, Google Cloud Run
 
 ## Getting Started
 
-1.  **Prerequisites:** Node.js 18+ and Python 3.11+
+1. **Prerequisites:** Node.js 18+ and Python 3.11+
 
-2.  **Google Cloud Setup (One-time):**
-    ```bash
-    # Enable required APIs
-    gcloud services enable firestore.googleapis.com aiplatform.googleapis.com documentai.googleapis.com
+2. **Google Cloud Setup:**
+   ```bash
+   # Enable required APIs
+   gcloud services enable firestore.googleapis.com aiplatform.googleapis.com documentai.googleapis.com
 
-    # Create Firestore Database (Native Mode)
-    gcloud firestore databases create --location=europe-north1
+   # Create Firestore Database (Native Mode)
+   gcloud firestore databases create --location=europe-north1
 
-    # Create Document AI OCR processor (EU region)
-    # Then note the Processor ID for environment variables
+   # Create Document AI OCR processor in Google Cloud Console
+   # Note the Processor ID for environment variables
+   ```
 
-    # Grant permissions to Cloud Run Service Account
-    gcloud projects add-iam-policy-binding kgvilla \
-        --member="serviceAccount:[PROJECT_NUMBER]-compute@developer.gserviceaccount.com" \
-        --role="roles/datastore.user"
+3. **Environment Variables:**
+   ```bash
+   GOOGLE_CLOUD_PROJECT=kgvilla
+   DOCUMENTAI_PROCESSOR_ID=<your-processor-id>
+   API_KEY=<your-api-key>
+   ```
 
-    gcloud projects add-iam-policy-binding kgvilla \
-        --member="serviceAccount:[PROJECT_NUMBER]-compute@developer.gserviceaccount.com" \
-        --role="roles/aiplatform.user"
+4. **Install Dependencies:**
+   ```bash
+   npm install
+   cd backend && pip install -r requirements.txt
+   ```
 
-    gcloud projects add-iam-policy-binding kgvilla \
-        --member="serviceAccount:[PROJECT_NUMBER]-compute@developer.gserviceaccount.com" \
-        --role="roles/documentai.apiUser"
-    ```
+5. **Run Development Server:**
+   ```bash
+   npm run dev
+   # Backend (in separate terminal):
+   cd backend && uvicorn main:app --reload
+   ```
 
-3.  **Environment Variables:**
-    ```bash
-    GOOGLE_CLOUD_PROJECT=kgvilla
-    DOCUMENTAI_PROCESSOR_ID=<your-processor-id>
-    API_KEY=<your-api-key>
-    ```
+## Project Structure
 
-4.  **Install Dependencies:**
-    ```bash
-    npm install
-    cd backend && pip install -r requirements.txt
-    ```
-
-5.  **Run Development Server:**
-    ```bash
-    npm run dev
-    # Backend (in separate terminal):
-    cd backend && uvicorn main:app --reload
-    ```
-
-## Architecture Highlights
-
-*   **Deterministic OCR Pipeline:** Document AI extracts room names and areas from floor plans, then applies fixed pricing rates from the Swedish Construction Knowledge Base. Same input always produces the same output.
-*   **JB Villan Prefab Pricing:** `backend/ocr_service.py` contains prefab-specific rates that reflect factory manufacturing efficiencies, with savings percentages tracked per component.
-*   **LocalStorage-First:** Frontend loads instantly from localStorage, then syncs with backend in the background. Works offline.
-*   **Context-Based State:** `ProjectDataContext` manages the complex state of the Cost Inspector and Split View, avoiding prop drilling.
-*   **Hardened Backend:** The Python service includes startup probes to gracefully report status even if Cloud credentials are missing.
+```
+KGVilla/
+├── src/
+│   ├── app/                    # Next.js App Router pages
+│   ├── components/qto/         # QTO components (CostCard, CostInspector, etc.)
+│   ├── contexts/               # React contexts (ProjectData, Language)
+│   ├── data/                   # Static data (catalog, regulations)
+│   ├── lib/                    # Utilities (apiClient, logger)
+│   └── types/                  # TypeScript type definitions
+├── backend/
+│   ├── main.py                 # FastAPI application
+│   ├── ocr_service.py          # OCR extraction and pricing logic
+│   ├── models.py               # Pydantic data models
+│   └── standards/              # Swedish construction knowledge base
+└── docs/                       # Documentation
+```
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
-| `backend/ocr_service.py` | OCR extraction, room classification, prefab pricing logic |
-| `backend/standards/SWEDISH_CONSTRUCTION_KNOWLEDGE_BASE.md` | Pricing rates, BBR 2025 rules |
-| `docs/domain_knowledge/JB_VILLAN_PREFAB_PRICING.md` | Prefab pricing analysis and research |
+| `backend/ocr_service.py` | OCR extraction, room classification, efficiency pricing logic |
+| `backend/models.py` | Data models (CostItem, PrefabDiscount, EfficiencyType) |
+| `src/types/index.ts` | Frontend TypeScript type definitions |
+| `src/components/qto/CostInspector.tsx` | Step-by-step cost analysis panel |
+| `src/components/qto/CostCard.tsx` | Individual cost item card with efficiency badges |
 | `src/contexts/ProjectDataContext.tsx` | Frontend state management |
-| `src/components/qto/CostInspector.tsx` | Cost breakdown detail panel |
+
+## Architecture
+
+- **Deterministic OCR Pipeline:** Document AI extracts room names and areas, then applies fixed pricing rates. Same input always produces same output.
+- **JB Villan Efficiency Pricing:** `backend/ocr_service.py` contains efficiency-specific rates that reflect factory manufacturing, faster build times, and proven designs.
+- **LocalStorage-First:** Frontend loads instantly from localStorage, then syncs with backend in background.
+- **Context-Based State:** `ProjectDataContext` manages complex state without prop drilling.
 
 ## License
 

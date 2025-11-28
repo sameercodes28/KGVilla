@@ -1,16 +1,10 @@
-# JB Villan Prefab Pricing Analysis
+# JB Villan Efficiency Pricing
 
 ## Overview
 
-This document captures research findings on JB Villan's prefab manufacturing business model and how it affects construction cost estimation compared to traditional general contractors.
-
-## Background
-
-**Discovery Context:** Analysis of house 1355 deed revealed sale price of 3,975,000 SEK, while our tool estimated 4,716,470 kr (~18.7% overestimation). Deep analysis of jbvillan.se identified key factors explaining the difference.
+JB Villan is a Swedish prefab house manufacturer based in Kalix. Their business model differs significantly from traditional general contractors, resulting in approximately **12% lower construction costs**.
 
 ## JB Villan Business Model
-
-JB Villan is a Swedish prefab house manufacturer based in Kalix. Their business model differs significantly from traditional general contractors:
 
 ### Factory Manufacturing Advantages
 
@@ -34,11 +28,48 @@ JB Villan is a Swedish prefab house manufacturer based in Kalix. Their business 
    - Reduced site storage requirements
    - Coordinated installation schedules
 
-## Cost Structure Differences
+## Efficiency Types
 
-### Client Costs (Byggherrekostnader) - NOT Part of Contractor Price
+KGVilla categorizes JB Villan's cost advantages into three types:
 
-These fees are paid directly by the homeowner to government agencies and service providers:
+### PREFAB (Green Badge)
+True factory manufacturing where components are built off-site.
+
+| Component | General Contractor | JB Villan | Savings |
+|-----------|-------------------|-----------|---------|
+| Exterior Walls | 3,800 kr/m² | 2,800 kr/m² | 26% |
+| Roof | 2,200 kr/m² | 1,800 kr/m² | 18% |
+| Interior Walls | 1,450 kr/m² | 1,200 kr/m² | 17% |
+
+**Why:** Factory manufacturing enables optimized material cuts, weather-independent production, pre-installed insulation/vapor barriers, and reduced on-site skilled labor requirements.
+
+### STREAMLINED (Blue Badge)
+Benefits from faster build time (downstream effect of prefab).
+
+| Component | General Contractor | JB Villan | Savings |
+|-----------|-------------------|-----------|---------|
+| Site Overhead | 5% of project | 3% of project | 40% |
+
+**Why:** Prefab walls and roof go up in days instead of weeks. This means fewer weeks of scaffolding rental, site container rental, temporary power, waste removal, and site management costs.
+
+### STANDARDIZED (Purple Badge)
+Benefits from proven, standardized designs (lower risk).
+
+| Component | General Contractor | JB Villan | Savings |
+|-----------|-------------------|-----------|---------|
+| Contingency | 10% of project | 6% of project | 40% |
+
+**Why:** JB Villan uses standardized, proven designs that have been built many times. This predictability means fewer change orders, less rework, and fewer unexpected issues.
+
+## Foundation - NOT Prefab
+
+Foundation (slab on grade) uses standard market pricing because concrete is poured on-site:
+- **Price:** ~3,500 kr/m²
+- **Reason:** Cannot be prefabricated - requires on-site excavation, formwork, and concrete pouring
+
+## Client Costs (Byggherrekostnader)
+
+These fees are paid directly by the homeowner to government agencies and service providers. They are NOT part of JB Villan's turnkey contract price:
 
 | Item | Typical Cost (SEK) | Description |
 |------|-------------------|-------------|
@@ -54,109 +85,84 @@ These fees are paid directly by the homeowner to government agencies and service
 | Försäkring | 15,000 | Builder's insurance |
 | **Total** | **~268,000** | |
 
-**Important:** These costs are often included in "total project cost" discussions but are NOT part of JB Villan's turnkey contract price.
+## Implementation
 
-## Prefab Pricing vs General Contractor
-
-### Pricing Tiers by Component
-
-| Component | General Contractor | JB Villan | Savings % | Reason |
-|-----------|-------------------|-----------|-----------|--------|
-| Exterior Walls | 3,800 kr/m² | 2,800 kr/m² | 26% | Factory-manufactured panels with optimized material cuts |
-| Roof | 2,200 kr/m² | 1,800 kr/m² | 18% | Pre-assembled trusses from factory |
-| Interior Walls | 1,200 kr/m² | 1,000 kr/m² | 17% | Pre-cut studs and panels from factory |
-| Foundation | 2,400 kr/m² | 2,200 kr/m² | 9% | Standardized slab design with efficient formwork |
-| Site Overhead | 10% | 5% | 50% | Efficient scheduling with prefab components |
-| Contingency | 8% | 5% | 37.5% | Predictable prefab process reduces unknowns |
-
-### Example Calculation (House 1355)
-
-```
-Total JB Villan Price:      4,097,820 kr
-General Contractor Price:   4,665,198 kr
-Prefab Savings:               567,378 kr (12.2%)
-
-Actual Sale Price:          3,975,000 kr
-Remaining Difference:         122,820 kr (3%)
-```
-
-The remaining 3% difference can be attributed to:
-- Volume purchasing discounts (catalog designs)
-- Regional cost variations (Kalix area)
-- Market competition factors
-- Specific lot conditions
-
-## Implementation in KGVilla
-
-### Backend (ocr_service.py)
+### Backend Configuration (ocr_service.py)
 
 ```python
-PREFAB_PRICING = {
+JB_EFFICIENCY = {
     "exterior_wall_per_m2": {
+        "type": "PREFAB",
         "general_contractor": 3800,
         "jb_villan": 2800,
         "savings_pct": 26,
-        "reason": "Factory-manufactured wall panels with optimized material cuts"
+        "reason": "Factory-manufactured wall panels",
+        "explanation": "JB Villan manufactures complete wall panels in their factory with insulation, vapor barriers, and sheathing pre-installed. This eliminates weather delays, reduces material waste from optimized cutting, and requires less skilled on-site labor for assembly."
     },
     "roof_per_m2": {
+        "type": "PREFAB",
         "general_contractor": 2200,
         "jb_villan": 1800,
         "savings_pct": 18,
-        "reason": "Pre-assembled roof trusses from factory"
+        "reason": "Pre-assembled roof trusses from factory",
+        "explanation": "Roof trusses are engineered and assembled in JB Villan's factory using precision jigs. Factory assembly ensures consistent quality, faster installation (crane sets in hours vs days of stick-framing), and eliminates on-site cutting waste."
     },
-    # ... etc
+    "interior_wall_per_m2": {
+        "type": "PREFAB",
+        "general_contractor": 1450,
+        "jb_villan": 1200,
+        "savings_pct": 17,
+        "reason": "Pre-cut framing and panels",
+        "explanation": "Interior wall studs and gypsum panels are pre-cut to exact dimensions in JB Villan's factory. This eliminates on-site measuring errors, reduces drywall waste, and speeds up installation since carpenters spend less time cutting."
+    },
+    "site_overhead_pct": {
+        "type": "STREAMLINED",
+        "general_contractor": 0.05,
+        "jb_villan": 0.03,
+        "savings_pct": 40,
+        "reason": "Faster build = lower site costs",
+        "explanation": "Because prefab walls and roof go up in days instead of weeks, JB Villan projects spend less time on site. This means fewer weeks of scaffolding rental, site container rental, temporary power, waste removal, and site management costs."
+    },
+    "contingency_pct": {
+        "type": "STANDARDIZED",
+        "general_contractor": 0.10,
+        "jb_villan": 0.06,
+        "savings_pct": 40,
+        "reason": "Proven designs = fewer surprises",
+        "explanation": "JB Villan uses standardized, proven designs that have been built many times. This predictability means fewer change orders, less rework, and fewer unexpected issues. General contractors typically budget 10% contingency; JB Villan's track record allows for 6%."
+    },
 }
 ```
 
 ### Data Model
 
 ```typescript
+type EfficiencyType = 'PREFAB' | 'STREAMLINED' | 'STANDARDIZED';
+
 interface PrefabDiscount {
-  generalContractorPrice: number;   // What a general contractor would charge
-  jbVillanPrice: number;            // JB Villan's prefab-efficient price
-  savingsAmount: number;            // generalContractorPrice - jbVillanPrice
-  savingsPercent: number;           // Percentage saved
-  reason: string;                   // Why prefab is cheaper
+  efficiencyType: EfficiencyType;
+  generalContractorPrice: number;
+  jbVillanPrice: number;
+  savingsAmount: number;
+  savingsPercent: number;
+  reason: string;
+  explanation?: string;
 }
 ```
 
 ### UI Indicators
 
-1. **Green "Prefab" badge** - Shown on items with factory efficiency
-2. **Expanded cost card** - Shows GC price vs JB price comparison
-3. **Cost Inspector** - Detailed prefab efficiency section
-4. **Bottom callout** - Total savings comparison vs general contractor
+| Badge | Color | Icon | Shown For |
+|-------|-------|------|-----------|
+| PREFAB | Green | Factory | Factory-manufactured items |
+| STREAMLINED | Blue | Lightning | Faster build benefits |
+| STANDARDIZED | Purple | Target | Proven design benefits |
 
-## Key Insights
-
-1. **Exclude Client Costs from Comparisons**
-   - When comparing to JB Villan prices, exclude byggherrekostnader
-   - These are customer-paid fees, not contractor costs
-
-2. **Prefab Efficiency Varies by Component**
-   - Highest savings: Exterior walls (26%), Roof (18%)
-   - Moderate savings: Interior walls (17%), Foundation (9%)
-   - Indirect savings: Overhead (50%), Contingency (37.5%)
-
-3. **Total Typical Savings: ~12%**
-   - This aligns with industry data on prefab vs traditional construction
-   - Actual savings can be 10-15% depending on project specifics
-
-4. **Price Validation**
-   - Always compare against actual deeds/sales when available
-   - JB Villan catalog houses have more predictable pricing
-   - Custom designs may have smaller prefab advantages
+The CostInspector shows detailed explanations of why each efficiency type applies to the specific item.
 
 ## Data Sources
 
 - JB Villan website (jbvillan.se)
 - Swedish construction industry pricing 2025
-- Lantmäteriet deed records
 - BBR 2025 building regulations
 - AMA (Allmän Material- och Arbetsbeskrivning)
-
-## Version History
-
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | 2024-11-27 | Initial documentation of prefab pricing analysis |
