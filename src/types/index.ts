@@ -94,6 +94,19 @@ export interface PrefabDiscount {
   explanation?: string;             // Detailed explanation of why this efficiency applies
 }
 
+/**
+ * Documents where a unit price came from for verifiability.
+ * All prices must be traceable to reputable Swedish sources.
+ */
+export interface PriceSource {
+  sourceName: string;              // e.g., "Byggstart.se"
+  sourceUrl?: string;              // e.g., "https://www.byggstart.se/grunda-hus"
+  verificationDate: string;        // e.g., "2025-11" (YYYY-MM format)
+  marketRangeLow?: number;         // Market low end
+  marketRangeHigh?: number;        // Market high end
+  notes?: string;                  // Any additional context
+}
+
 export interface CostItem {
   id: string;
   projectId: string;
@@ -142,6 +155,9 @@ export interface CostItem {
 
   // JB Villan Prefab Efficiency
   prefabDiscount?: PrefabDiscount; // If present, item has prefab efficiency savings
+
+  // Price Source (Verifiability)
+  priceSource?: PriceSource;       // Documents where the unit price came from
 }
 
 export interface Room {

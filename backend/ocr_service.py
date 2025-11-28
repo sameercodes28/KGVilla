@@ -9,9 +9,36 @@ import re
 import math
 import logging
 from typing import List, Dict, Tuple
-from models import CostItem, QuantityBreakdown, QuantityBreakdownItem, PrefabDiscount
+from models import CostItem, QuantityBreakdown, QuantityBreakdownItem, PrefabDiscount, PriceSource
+from standards.pricing_references_2025 import (
+    EXCAVATION_PER_M2, DRAINAGE_PER_M, FOUNDATION_PER_M2,
+    EXTERIOR_WALL_PER_M2, ROOF_PER_M2, WINDOW_PER_M2, EXTERIOR_DOOR, INTERIOR_DOOR,
+    FLOORING_PARQUET_PER_M2, FLOORING_TILE_PER_M2, FLOORING_BASIC_PER_M2, FLOORING_GARAGE_PER_M2,
+    INTERIOR_WALL_STANDARD_PER_M2, INTERIOR_WALL_WETROOM_PER_M2, CEILING_STANDARD_PER_M2, PAINTING_PER_M2,
+    WC_UNIT, WASHBASIN_UNIT, SHOWER_UNIT, FLOOR_DRAIN, BATHROOM_ACCESSORIES,
+    KITCHEN_BASE, APPLIANCES_PACKAGE,
+    HEAT_PUMP, FTX_VENTILATION, UNDERFLOOR_HEATING_PER_M2, RADIATOR, PLUMBING_BASE, WATER_HEATER,
+    SOCKET, SPOTLIGHT, DISTRIBUTION_BOARD, LIGHTING_FIXTURES,
+    FACADE_CLADDING_PER_M2, EXTERIOR_PAINT_PER_M2, GUTTERS_PER_M, SOFFIT_PER_M,
+    DRIVEWAY_PER_M2, TERRACE_PER_M2, ENTRY_STEPS,
+    VA_CONNECTION, EL_CONNECTION,
+    BYGGLOV, KA_FEE, CLIMATE_DECLARATION, CONSTRUCTION_INSURANCE, PROJECT_MANAGEMENT,
+    SITE_OVERHEAD_PCT, CONTINGENCY_PCT
+)
 
 logger = logging.getLogger(__name__)
+
+# Helper function to convert PriceReference to PriceSource for CostItem
+def make_price_source(price_ref) -> PriceSource:
+    """Convert a PriceReference from pricing_references_2025.py to a PriceSource for CostItem."""
+    return PriceSource(
+        sourceName=price_ref.source_name,
+        sourceUrl=price_ref.source_url,
+        verificationDate=price_ref.verification_date,
+        marketRangeLow=price_ref.market_range_low,
+        marketRangeHigh=price_ref.market_range_high,
+        notes=price_ref.notes
+    )
 
 # Environment
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "kgvilla")
@@ -79,8 +106,11 @@ EQUIPMENT_LABELS = {
     "hvac": ["VMS", "GVF", "GVF1", "GVF2"],  # Varmvattenberedare, Golvvärme
 }
 
-# --- Pricing Database (from SWEDISH_CONSTRUCTION_KNOWLEDGE_BASE.md) ---
-# All prices in SEK, include materials + labor + 12% ABT06 risk premium
+# --- Pricing Database (Sweden 2025) ---
+# All prices in SEK, include materials + labor
+# Source references: see backend/standards/pricing_references_2025.py
+# Last verified: 2025-11
+# Primary sources: byggstart.se, bygglov.se, husexperter.se, greenmatch.se
 PRICING = {
     # Per m² rates by room type
     "flooring": {
@@ -115,8 +145,8 @@ PRICING = {
     "floor_drain": 6500,
     "kitchen_base": 85000,   # Base kitchen installation
 
-    # Electrical per point
-    "socket": 1400,
+    # Electrical per point - UPDATED 2025-11 based on husexperter.se
+    "socket": 1800,                # New outlet (was 1400, market: 1500-2500)
     "spotlight": 1600,
 
     # Windows & Doors
@@ -139,9 +169,9 @@ PRICING = {
     "plumbing_base": 45000,      # Pipes, connections
     "water_heater": 15000,
 
-    # Ground preparation
-    "excavation_per_m2": 300,      # Site preparation
-    "drainage_per_m2": 150,        # Perimeter drainage
+    # Ground preparation - CORRECTED 2025-11 based on bygglov.se
+    "excavation_per_m2": 1000,     # Site preparation (was 300, market: 500-1500)
+    "drainage_per_m": 400,         # Perimeter drainage (was 150, market: 300-600)
 
     # Additional structure
     "insulation_per_m2": 200,      # Extra insulation beyond walls
@@ -1192,7 +1222,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=byggyta,
                 unit="m²",
                 calculationMethod=f"Building footprint: BOA ({boyta:.1f}) + Biarea ({biarea:.1f}) + walls"
-            )
+            ),
+            priceSource=make_price_source(EXCAVATION_PER_M2)
         ))
 
         # Foundation - standard pricing (NOT prefab - concrete poured on site)
@@ -1214,7 +1245,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=byggyta,
                 unit="m²",
                 calculationMethod=f"Building footprint: BOA ({boyta:.1f}) + Biarea ({biarea:.1f}) + walls"
-            )
+            ),
+            priceSource=make_price_source(FOUNDATION_PER_M2)
             # No prefabDiscount - foundation work is done on-site, not prefabricated
         ))
 
@@ -1227,8 +1259,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             description=f"Drainage system around building - {perimeter:.0f} m",
             quantity=perimeter,
             unit="m",
-            unitPrice=PRICING["drainage_per_m2"],
-            totalCost=round(perimeter * PRICING["drainage_per_m2"]),
+            unitPrice=PRICING["drainage_per_m"],
+            totalCost=round(perimeter * PRICING["drainage_per_m"]),
             confidenceScore=0.85,
             guidelineReference="BBR 6:1",
             quantityBreakdown=QuantityBreakdown(
@@ -1236,7 +1268,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=perimeter,
                 unit="m",
                 calculationMethod=f"4 × √(footprint) = 4 × √({byggyta:.1f}) = {perimeter:.1f} m"
-            )
+            ),
+            priceSource=make_price_source(DRAINAGE_PER_M)
         ))
 
     # --- STRUCTURE ---
@@ -1279,7 +1312,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 savingsPercent=roof_eff["savings_pct"],
                 reason=roof_eff["reason"],
                 explanation=roof_eff["explanation"]
-            )
+            ),
+            priceSource=make_price_source(ROOF_PER_M2)
         ))
 
         # Exterior walls - JB Villan PREFAB (factory-manufactured panels)
@@ -1316,7 +1350,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 savingsPercent=ext_wall_eff["savings_pct"],
                 reason=ext_wall_eff["reason"],
                 explanation=ext_wall_eff["explanation"]
-            )
+            ),
+            priceSource=make_price_source(EXTERIOR_WALL_PER_M2)
         ))
 
         # Additional insulation
@@ -1359,7 +1394,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=wall_area,
                 unit="m²",
                 calculationMethod=f"Same as exterior walls: {wall_area:.1f} m²"
-            )
+            ),
+            priceSource=make_price_source(FACADE_CLADDING_PER_M2)
         ))
 
         # Exterior paint
@@ -1382,7 +1418,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=wall_area,
                 unit="m²",
                 calculationMethod=f"Same as exterior walls: {wall_area:.1f} m²"
-            )
+            ),
+            priceSource=make_price_source(EXTERIOR_PAINT_PER_M2)
         ))
 
         # Gutters
@@ -1403,7 +1440,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=roof_perimeter,
                 unit="m",
                 calculationMethod=f"Building perimeter × 1.2 = {roof_perimeter:.1f} m"
-            )
+            ),
+            priceSource=make_price_source(GUTTERS_PER_M)
         ))
 
         # Soffit/fascia
@@ -1423,7 +1461,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=roof_perimeter,
                 unit="m",
                 calculationMethod=f"Same as gutters: {roof_perimeter:.1f} m"
-            )
+            ),
+            priceSource=make_price_source(SOFFIT_PER_M)
         ))
 
     # --- INTERIOR BY ROOM ---
@@ -1536,7 +1575,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=wet_room_area,
                 unit="m²",
                 calculationMethod="Wall area = perimeter × 2.5m height for each wet room"
-            )
+            ),
+            priceSource=make_price_source(INTERIOR_WALL_WETROOM_PER_M2)
         ))
 
     # Standard room walls - JB Villan PREFAB (pre-cut framing)
@@ -1569,7 +1609,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 savingsPercent=int_wall_eff["savings_pct"],
                 reason=int_wall_eff["reason"],
                 explanation=int_wall_eff["explanation"]
-            )
+            ),
+            priceSource=make_price_source(INTERIOR_WALL_STANDARD_PER_M2)
         ))
 
     # --- PLUMBING ---
@@ -1592,7 +1633,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=bathroom_count,
                 unit="st",
                 calculationMethod="1 WC per bathroom"
-            )
+            ),
+            priceSource=make_price_source(WC_UNIT)
         ))
         items.append(CostItem(
             id="plumbing-basin",
@@ -1610,7 +1652,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=bathroom_count,
                 unit="st",
                 calculationMethod="1 washbasin per bathroom"
-            )
+            ),
+            priceSource=make_price_source(WASHBASIN_UNIT)
         ))
 
     # Kitchen
@@ -1626,7 +1669,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             unitPrice=PRICING["kitchen_base"],
             totalCost=PRICING["kitchen_base"],
             confidenceScore=0.9,
-            guidelineReference="AMA Hus"
+            guidelineReference="AMA Hus",
+            priceSource=make_price_source(KITCHEN_BASE)
         ))
 
     # --- CEILING & PAINTING ---
@@ -1648,7 +1692,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=boyta,
                 unit="m²",
                 calculationMethod="Sum of all room floor areas (BOA)"
-            )
+            ),
+            priceSource=make_price_source(CEILING_STANDARD_PER_M2)
         ))
 
     # --- WINDOWS & DOORS ---
@@ -1671,7 +1716,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=window_area,
                 unit="m²",
                 calculationMethod=f"15% of BOA ({boyta:.1f} m² × 0.15 = {window_area:.1f} m²)"
-            )
+            ),
+            priceSource=make_price_source(WINDOW_PER_M2)
         ))
 
         # Exterior door
@@ -1685,7 +1731,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             unitPrice=PRICING["exterior_door"],
             totalCost=PRICING["exterior_door"],
             confidenceScore=1.0,
-            guidelineReference="BBR"
+            guidelineReference="BBR",
+            priceSource=make_price_source(EXTERIOR_DOOR)
         ))
 
         # Patio/terrace door - ONLY if terrace detected
@@ -1701,7 +1748,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 unitPrice=PRICING["patio_door"],
                 totalCost=PRICING["patio_door"],
                 confidenceScore=0.9,
-                guidelineReference="BBR"
+                guidelineReference="BBR",
+                priceSource=make_price_source(WINDOW_PER_M2)  # Patio doors use similar pricing to windows
             ))
 
         # Interior doors (estimate: 1 per room + 2 extra)
@@ -1725,7 +1773,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=door_count,
                 unit="st",
                 calculationMethod=f"1 door per room ({room_count}) + 2 extra = {door_count}"
-            )
+            ),
+            priceSource=make_price_source(INTERIOR_DOOR)
         ))
 
     # --- HVAC & VENTILATION ---
@@ -1741,7 +1790,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             unitPrice=PRICING["heat_pump"],
             totalCost=PRICING["heat_pump"],
             confidenceScore=0.9,
-            guidelineReference="BBR 9:2, SS-EN 14825"
+            guidelineReference="BBR 9:2, SS-EN 14825",
+            priceSource=make_price_source(HEAT_PUMP)
         ))
 
         # Underfloor heating in wet rooms
@@ -1762,7 +1812,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                     total=wet_room_area,
                     unit="m²",
                     calculationMethod="Sum of wet room (bathroom + laundry) floor areas"
-                )
+                ),
+                priceSource=make_price_source(UNDERFLOOR_HEATING_PER_M2)
             ))
 
         # Radiators (estimate: 1 per room)
@@ -1783,7 +1834,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=room_count,
                 unit="st",
                 calculationMethod="1 radiator per room"
-            )
+            ),
+            priceSource=make_price_source(RADIATOR)
         ))
 
         # FTX Ventilation
@@ -1797,7 +1849,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             unitPrice=PRICING["ventilation_ftx"],
             totalCost=PRICING["ventilation_ftx"],
             confidenceScore=1.0,
-            guidelineReference="BBR 6:2"
+            guidelineReference="BBR 6:2",
+            priceSource=make_price_source(FTX_VENTILATION)
         ))
 
     # --- PLUMBING BASE ---
@@ -1811,7 +1864,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         unitPrice=PRICING["plumbing_base"],
         totalCost=PRICING["plumbing_base"],
         confidenceScore=0.9,
-        guidelineReference="Säker Vatten"
+        guidelineReference="Säker Vatten",
+        priceSource=make_price_source(PLUMBING_BASE)
     ))
 
     items.append(CostItem(
@@ -1824,7 +1878,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         unitPrice=PRICING["water_heater"],
         totalCost=PRICING["water_heater"],
         confidenceScore=1.0,
-        guidelineReference="Säker Vatten"
+        guidelineReference="Säker Vatten",
+        priceSource=make_price_source(WATER_HEATER)
     ))
 
     # Showers (one per bathroom)
@@ -1845,7 +1900,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=bathroom_count,
                 unit="st",
                 calculationMethod="1 shower per bathroom"
-            )
+            ),
+            priceSource=make_price_source(SHOWER_UNIT)
         ))
 
         items.append(CostItem(
@@ -1864,7 +1920,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=bathroom_count,
                 unit="st",
                 calculationMethod="1 floor drain per bathroom"
-            )
+            ),
+            priceSource=make_price_source(FLOOR_DRAIN)
         ))
 
         # Bathroom accessories
@@ -1884,7 +1941,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 total=bathroom_count,
                 unit="st",
                 calculationMethod="1 set per bathroom"
-            )
+            ),
+            priceSource=make_price_source(BATHROOM_ACCESSORIES)
         ))
 
     # Wardrobes (for bedrooms)
@@ -1921,7 +1979,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         unitPrice=PRICING["distribution_board"],
         totalCost=PRICING["distribution_board"],
         confidenceScore=1.0,
-        guidelineReference="SS 437"
+        guidelineReference="SS 437",
+        priceSource=make_price_source(DISTRIBUTION_BOARD)
     ))
 
     socket_count = room_count * 6  # Average 6 sockets per room
@@ -1942,7 +2001,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             total=socket_count,
             unit="st",
             calculationMethod=f"~6 electrical points per room × {room_count} rooms"
-        )
+        ),
+        priceSource=make_price_source(SOCKET)
     ))
 
     # Lighting fixtures
@@ -1956,7 +2016,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         unitPrice=PRICING["lighting_fixtures"],
         totalCost=PRICING["lighting_fixtures"],
         confidenceScore=0.85,
-        guidelineReference="SS 436"
+        guidelineReference="SS 436",
+        priceSource=make_price_source(LIGHTING_FIXTURES)
     ))
 
     # --- INTERIOR: Appliances ---
@@ -1974,7 +2035,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             unitPrice=PRICING["appliances_package"],
             totalCost=PRICING["appliances_package"],
             confidenceScore=0.9,
-            guidelineReference="Market Rate"
+            guidelineReference="Market Rate",
+            priceSource=make_price_source(APPLIANCES_PACKAGE)
         ))
 
     # --- COMPLETION (External Works) ---
@@ -1994,7 +2056,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             unitPrice=PRICING["terrace_per_m2"],
             totalCost=terrace_area * PRICING["terrace_per_m2"],
             confidenceScore=1.0,  # High confidence - actually detected
-            guidelineReference="AMA Hus 23"
+            guidelineReference="AMA Hus 23",
+            priceSource=make_price_source(TERRACE_PER_M2)
         ))
 
     # NOTE: Entry steps REMOVED - was hardcoded assumption
@@ -2034,7 +2097,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         unitPrice=PRICING["va_connection"],
         totalCost=PRICING["va_connection"],
         confidenceScore=1.0,
-        guidelineReference="Municipal Rate"
+        guidelineReference="Municipal Rate",
+        priceSource=make_price_source(VA_CONNECTION)
     ))
 
     items.append(CostItem(
@@ -2047,7 +2111,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         unitPrice=PRICING["el_connection"],
         totalCost=PRICING["el_connection"],
         confidenceScore=1.0,
-        guidelineReference="Grid Company Rate"
+        guidelineReference="Grid Company Rate",
+        priceSource=make_price_source(EL_CONNECTION)
     ))
 
     # Insurance
@@ -2061,7 +2126,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         unitPrice=PRICING["construction_insurance"],
         totalCost=PRICING["construction_insurance"],
         confidenceScore=1.0,
-        guidelineReference="Insurance Standard"
+        guidelineReference="Insurance Standard",
+        priceSource=make_price_source(CONSTRUCTION_INSURANCE)
     ))
 
     items.append(CostItem(
@@ -2074,7 +2140,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         unitPrice=PRICING["climate_declaration"],
         totalCost=PRICING["climate_declaration"],
         confidenceScore=1.0,
-        guidelineReference="PBL 2025"
+        guidelineReference="PBL 2025",
+        priceSource=make_price_source(CLIMATE_DECLARATION)
     ))
     items.append(CostItem(
         id="admin-ka",
@@ -2086,7 +2153,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         unitPrice=PRICING["ka_fee"],
         totalCost=PRICING["ka_fee"],
         confidenceScore=1.0,
-        guidelineReference="PBL"
+        guidelineReference="PBL",
+        priceSource=make_price_source(KA_FEE)
     ))
     items.append(CostItem(
         id="admin-bygglov",
@@ -2098,7 +2166,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         unitPrice=PRICING["bygglov"],
         totalCost=PRICING["bygglov"],
         confidenceScore=1.0,
-        guidelineReference="PBL"
+        guidelineReference="PBL",
+        priceSource=make_price_source(BYGGLOV)
     ))
     items.append(CostItem(
         id="admin-mgmt",
@@ -2110,7 +2179,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         unitPrice=PRICING["project_mgmt"],
         totalCost=PRICING["project_mgmt"],
         confidenceScore=1.0,
-        guidelineReference="AML"
+        guidelineReference="AML",
+        priceSource=make_price_source(PROJECT_MANAGEMENT)
     ))
 
     # --- SITE OVERHEAD & CONTINGENCY (JB Villan efficiency) ---
@@ -2140,7 +2210,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             savingsPercent=overhead_eff["savings_pct"],
             reason=overhead_eff["reason"],
             explanation=overhead_eff["explanation"]
-        )
+        ),
+        priceSource=make_price_source(SITE_OVERHEAD_PCT)
     ))
 
     # Contingency - JB Villan STANDARDIZED (proven designs = fewer surprises)
@@ -2166,7 +2237,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             savingsPercent=contingency_eff["savings_pct"],
             reason=contingency_eff["reason"],
             explanation=contingency_eff["explanation"]
-        )
+        ),
+        priceSource=make_price_source(CONTINGENCY_PCT)
     ))
 
     return items

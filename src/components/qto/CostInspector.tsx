@@ -5,9 +5,9 @@ import {
     X, Loader2, BookOpen, AlertCircle, RefreshCw,
     Calculator, Ruler, FileText, CheckCircle,
     Lightbulb, ChevronDown, ChevronUp, Scale, Factory, TrendingDown,
-    Zap, Target, Hammer, ArrowRight
+    Zap, Target, Hammer, ArrowRight, ExternalLink, Calendar, Info
 } from 'lucide-react';
-import { CostItem } from '@/types';
+import { CostItem, PriceSource } from '@/types';
 import { apiClient } from '@/lib/apiClient';
 import { logger } from '@/lib/logger';
 import { getItemRegulations, REGULATION_COLORS } from '@/data/regulationMapping';
@@ -489,6 +489,46 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                     </div>
                                 </div>
 
+                                {/* Price Source - Verifiability */}
+                                {displayedItem.priceSource && (
+                                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Info className="h-4 w-4 text-slate-500" />
+                                            <span className="text-xs font-medium text-slate-600 uppercase">{t('inspector.price_source')}</span>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm text-slate-700 font-medium">{displayedItem.priceSource.sourceName}</span>
+                                                {displayedItem.priceSource.sourceUrl && (
+                                                    <a
+                                                        href={displayedItem.priceSource.sourceUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
+                                                    >
+                                                        <ExternalLink className="h-3 w-3" />
+                                                        {t('inspector.view_source')}
+                                                    </a>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-4 text-xs text-slate-500">
+                                                <div className="flex items-center gap-1">
+                                                    <Calendar className="h-3 w-3" />
+                                                    <span>{t('inspector.verified')}: {displayedItem.priceSource.verificationDate}</span>
+                                                </div>
+                                                {displayedItem.priceSource.marketRangeLow && displayedItem.priceSource.marketRangeHigh && (
+                                                    <span className="font-mono">
+                                                        {t('inspector.market_range')}: {displayedItem.priceSource.marketRangeLow.toLocaleString('sv-SE')}-{displayedItem.priceSource.marketRangeHigh.toLocaleString('sv-SE')} kr
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {displayedItem.priceSource.notes && (
+                                                <p className="text-xs text-slate-500 italic">{displayedItem.priceSource.notes}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Material/Labor split if available */}
                                 {displayedItem.breakdown && (
                                     <div className="grid grid-cols-2 gap-3">
@@ -643,6 +683,46 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Price Source - Verifiability (for prefab items) */}
+                                {displayedItem.priceSource && (
+                                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Info className="h-4 w-4 text-slate-500" />
+                                            <span className="text-xs font-medium text-slate-600 uppercase">{t('inspector.price_source')}</span>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm text-slate-700 font-medium">{displayedItem.priceSource.sourceName}</span>
+                                                {displayedItem.priceSource.sourceUrl && (
+                                                    <a
+                                                        href={displayedItem.priceSource.sourceUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
+                                                    >
+                                                        <ExternalLink className="h-3 w-3" />
+                                                        {t('inspector.view_source')}
+                                                    </a>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-4 text-xs text-slate-500">
+                                                <div className="flex items-center gap-1">
+                                                    <Calendar className="h-3 w-3" />
+                                                    <span>{t('inspector.verified')}: {displayedItem.priceSource.verificationDate}</span>
+                                                </div>
+                                                {displayedItem.priceSource.marketRangeLow && displayedItem.priceSource.marketRangeHigh && (
+                                                    <span className="font-mono">
+                                                        {t('inspector.market_range')}: {displayedItem.priceSource.marketRangeLow.toLocaleString('sv-SE')}-{displayedItem.priceSource.marketRangeHigh.toLocaleString('sv-SE')} kr
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {displayedItem.priceSource.notes && (
+                                                <p className="text-xs text-slate-500 italic">{displayedItem.priceSource.notes}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
                             </>
                         )}
 

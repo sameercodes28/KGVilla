@@ -28,6 +28,18 @@ class QuantityBreakdown(BaseModel):
     unit: str
     calculationMethod: Optional[str] = None  # e.g., "Sum of wet room floor areas"
 
+class PriceSource(BaseModel):
+    """
+    Documents where a unit price came from for verifiability.
+    All prices must be traceable to reputable Swedish sources.
+    """
+    sourceName: str                        # e.g., "Byggstart.se"
+    sourceUrl: Optional[str] = None        # e.g., "https://www.byggstart.se/grunda-hus"
+    verificationDate: str                  # e.g., "2025-11" (YYYY-MM format)
+    marketRangeLow: Optional[float] = None # Market low end
+    marketRangeHigh: Optional[float] = None # Market high end
+    notes: Optional[str] = None            # Any additional context
+
 class CostBreakdown(BaseModel):
     material: Optional[float] = 0
     labor: Optional[float] = 0
@@ -100,6 +112,9 @@ class CostItem(BaseModel):
 
     # JB Villan Prefab Efficiency
     prefabDiscount: Optional[PrefabDiscount] = None  # If present, item has prefab efficiency
+
+    # Price Source (Verifiability)
+    priceSource: Optional[PriceSource] = None  # Documents where the unit price came from
 
 class Scenario(BaseModel):
     title: str
