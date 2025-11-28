@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Plus, FolderOpen, ArrowRight, MapPin, X, UploadCloud, Trash2, Sparkles } from 'lucide-react';
+import { Plus, FolderOpen, ArrowRight, MapPin, X, UploadCloud, Trash2, Sparkles, FileText } from 'lucide-react';
 import { RegulationBadges } from '@/components/ui/RegulationBadges';
 import Link from 'next/link';
 import { useTranslation } from '@/contexts/LanguageContext';
@@ -12,6 +12,7 @@ import { CostItem, Project } from '@/types';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import { apiClient } from '@/lib/apiClient';
+import { getAssetPath } from '@/lib/constants';
 
 // Funny Swedish loading messages
 const LOADING_MESSAGES_SV = [
@@ -242,7 +243,7 @@ export default function Home() {
             {/* JB Villan Official Logo */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-                src={`${process.env.NEXT_PUBLIC_BASE_PATH || ''}/jb-villan-logo.png`}
+                src={getAssetPath('/jb-villan-logo.png')}
                 alt="JB Villan"
                 className="h-14 mx-auto mb-6"
             />
@@ -292,78 +293,97 @@ export default function Home() {
                 <p className="text-slate-400 text-sm mt-2 font-medium">{t('dash.start_blueprint')}</p>
             </button>
 
-            {/* Recent Project Cards */}
+            {/* Recent Project Cards - Floor Plan Style */}
             {recentProjects.map((project) => (
                 <Link key={project.id} href={`/qto?project=${project.id}`} className="block group relative">
-                    <div className="h-72 bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-red-200 hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden">
-                        <div className="h-36 bg-slate-50 relative flex items-center justify-center border-b border-slate-100 group-hover:bg-red-50/50 transition-colors">
-                            {/* Project Stats Display */}
-                            <div className="flex flex-col items-center justify-center space-y-2">
-                                <div className="text-center">
-                                    {(project.boa && project.boa > 0) ? (
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="text-2xl font-bold text-slate-800">{project.boa}</span>
-                                            <span className="text-sm text-slate-400">BOA</span>
-                                            {project.biarea && project.biarea > 0 && (
-                                                <>
-                                                    <span className="text-slate-300 mx-1">+</span>
-                                                    <span className="text-lg font-semibold text-slate-600">{project.biarea}</span>
-                                                    <span className="text-xs text-slate-400">Bi</span>
-                                                </>
-                                            )}
-                                            <span className="text-sm text-slate-500 ml-1">m²</span>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <span className="text-3xl font-bold text-slate-800">{project.totalArea || 0}</span>
-                                            <span className="text-lg text-slate-500 ml-1">m²</span>
-                                        </>
-                                    )}
-                                </div>
-                                <div className="text-center">
-                                    <span className="text-xl font-semibold text-red-600">
-                                        {(project.estimatedCost || 0).toLocaleString('sv-SE')}
-                                    </span>
-                                    <span className="text-sm text-slate-500 ml-1">kr</span>
-                                </div>
+                    <div className="h-72 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden relative">
+                        {/* Floor Plan Background */}
+                        {project.floorPlanUrl ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                                src={project.floorPlanUrl}
+                                alt={project.name}
+                                className="absolute inset-0 w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
+                                <FileText className="h-16 w-16 text-slate-300" />
                             </div>
-                            <div className="absolute top-4 right-4 flex space-x-2">
-                                <button
-                                    onClick={(e) => handleStatusToggle(e, project)}
-                                    className={cn(
-                                        "backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase shadow-sm transition-all border z-20",
-                                        project.status === 'final'
-                                            ? "bg-green-100/90 text-green-700 border-green-200 hover:bg-green-200"
-                                            : "bg-white/90 text-slate-500 border-slate-200 hover:bg-slate-100"
-                                    )}
-                                >
-                                    {project.status || 'DRAFT'}
-                                </button>
-                            </div>
+                        )}
+
+                        {/* Gradient Overlay for readability */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-slate-900/10 group-hover:from-slate-900/95 transition-all" />
+
+                        {/* Status Badge - Top Right */}
+                        <div className="absolute top-4 right-4 z-20">
+                            <button
+                                onClick={(e) => handleStatusToggle(e, project)}
+                                className={cn(
+                                    "backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold uppercase shadow-lg transition-all border",
+                                    project.status === 'final'
+                                        ? "bg-green-500/90 text-white border-green-400/50 hover:bg-green-400"
+                                        : "bg-white/20 text-white border-white/30 hover:bg-white/30"
+                                )}
+                            >
+                                {project.status || 'DRAFT'}
+                            </button>
                         </div>
-                        <div className="p-6 flex-1 flex flex-col justify-between bg-white relative z-10">
-                            <div>
-                                <h3 className="font-bold text-slate-900 text-xl mb-1 line-clamp-1">{project.name}</h3>
-                                <div className="flex items-center text-slate-500 text-sm">
-                                    <MapPin className="h-3.5 w-3.5 mr-1" />
-                                    {project.location}
+
+                        {/* Delete Button - Top Left */}
+                        <button
+                            onClick={(e) => handleDelete(e, project.id)}
+                            className="absolute top-4 left-4 p-2 bg-black/30 hover:bg-red-500 text-white/80 hover:text-white rounded-full backdrop-blur-md transition-all shadow-lg opacity-0 group-hover:opacity-100 z-20 border border-white/20"
+                            title="Delete Project"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </button>
+
+                        {/* Content Overlay - Bottom */}
+                        <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
+                            {/* Project Name */}
+                            <h3 className="font-bold text-white text-xl mb-2 line-clamp-1 drop-shadow-lg">{project.name}</h3>
+
+                            {/* Stats Row */}
+                            <div className="flex items-center gap-3 mb-3">
+                                {/* Area Badge */}
+                                <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-white/15 backdrop-blur-md border border-white/20">
+                                    {(project.boa && project.boa > 0) ? (
+                                        <span className="text-sm font-semibold text-white">
+                                            {project.boa}
+                                            {project.biarea && project.biarea > 0 && (
+                                                <span className="text-white/70">+{project.biarea}</span>
+                                            )}
+                                            <span className="text-white/60 ml-1 text-xs">m²</span>
+                                        </span>
+                                    ) : (
+                                        <span className="text-sm font-semibold text-white">
+                                            {project.totalArea || 0}
+                                            <span className="text-white/60 ml-1 text-xs">m²</span>
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Price Badge */}
+                                <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-red-500/80 backdrop-blur-md border border-red-400/30">
+                                    <span className="text-sm font-bold text-white">
+                                        {(project.estimatedCost || 0).toLocaleString('sv-SE')}
+                                        <span className="text-white/80 ml-1 text-xs">kr</span>
+                                    </span>
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between text-xs text-slate-400 mt-4 pt-4 border-t border-slate-50">
-                                <span>{t('dash.updated')} {project.lastModified}</span>
-                                <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-all">
-                                    <ArrowRight className="h-4 w-4" />
+
+                            {/* Location & Arrow */}
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center text-white/70 text-sm">
+                                    <MapPin className="h-3.5 w-3.5 mr-1" />
+                                    <span className="truncate max-w-[150px]">{project.location || t('dash.updated') + ' ' + project.lastModified}</span>
+                                </div>
+                                <div className="h-9 w-9 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:bg-red-500 group-hover:scale-110 transition-all border border-white/20">
+                                    <ArrowRight className="h-4 w-4 text-white" />
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <button 
-                        onClick={(e) => handleDelete(e, project.id)}
-                        className="absolute top-4 left-4 p-2 bg-white/80 hover:bg-white text-slate-400 hover:text-red-500 rounded-full backdrop-blur transition-all shadow-sm hover:shadow-md opacity-0 group-hover:opacity-100 z-20 border border-slate-200"
-                        title="Delete Project"
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </button>
                 </Link>
             ))}
         </div>
