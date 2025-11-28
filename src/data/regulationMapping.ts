@@ -332,6 +332,206 @@ export const KEYWORD_REGULATIONS: Record<string, RegulationRef[]> = {
     ],
 
     // ============================================================
+    // PAINTING / FACADE - English and Swedish keywords
+    // ============================================================
+    'painting': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:7',
+            requirement: 'VOC emission limits for indoor air quality',
+            regulationDetail: 'Interior and exterior paints must comply with VOC emission limits to ensure healthy indoor air quality. Products should be labeled with emissions class (M1, EC1, or similar).',
+            specificationDetail: 'Use low-VOC or zero-VOC paints. Interior walls: 2 coats acrylic latex over primer. Exterior wood: 2-3 coats alkyd or acrylic with UV protection. Follow manufacturer drying times between coats.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'MBE.3',
+            requirement: 'Surface preparation and paint quality standards',
+            regulationDetail: 'AMA Hus specifies surface preparation requirements, primer selection, and minimum dry film thickness for different substrates. Quality class specified in contract documents.',
+            specificationDetail: 'Exterior wood: prime all end grain, fill nail holes with exterior filler, sand between coats. Minimum DFT 100μm total. Interior: seal knots, fill imperfections, sand to P120 minimum.'
+        },
+    ],
+    'paint': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:7',
+            requirement: 'VOC emission limits for indoor air quality',
+            regulationDetail: 'Interior and exterior paints must comply with VOC emission limits to ensure healthy indoor air quality. Products should be labeled with emissions class (M1, EC1, or similar).',
+            specificationDetail: 'Use low-VOC or zero-VOC paints. Interior walls: 2 coats acrylic latex over primer. Exterior wood: 2-3 coats alkyd or acrylic with UV protection. Follow manufacturer drying times between coats.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'MBE.3',
+            requirement: 'Surface preparation and paint quality standards',
+            regulationDetail: 'AMA Hus specifies surface preparation requirements, primer selection, and minimum dry film thickness for different substrates. Quality class specified in contract documents.',
+            specificationDetail: 'Exterior wood: prime all end grain, fill nail holes with exterior filler, sand between coats. Minimum DFT 100μm total. Interior: seal knots, fill imperfections, sand to P120 minimum.'
+        },
+    ],
+    'facade': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 5:6',
+            requirement: 'Facade fire spread protection',
+            regulationDetail: 'Facade materials and systems must prevent fire spread along building exterior. Fire barriers required at floor levels for buildings over 2 stories. Surface material fire class D-s2,d0 minimum.',
+            specificationDetail: 'Wood cladding permitted with fire stops at floor levels. Ventilation cavity fire barriers every 2 floors. Avoid combustible insulation in ventilated cavities. Document material fire classifications.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'HUS.5',
+            requirement: 'Facade cladding installation standards',
+            regulationDetail: 'Facade systems must be installed according to AMA Hus for weather protection, ventilation, and durability. Ventilated rainscreen with 20-25mm gap is standard practice.',
+            specificationDetail: 'Horizontal wood cladding: overlap 25mm min, pre-treated all sides. Vertical board-on-batten: 22mm boards on 45×45mm battens. Ventilation openings top and bottom (min 25mm). Stainless steel or hot-dip galvanized fasteners.'
+        },
+    ],
+    'målning': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:7',
+            requirement: 'VOC emission limits for indoor air quality',
+            regulationDetail: 'Interior and exterior paints must comply with VOC emission limits to ensure healthy indoor air quality. Products should be labeled with emissions class (M1, EC1, or similar).',
+            specificationDetail: 'Use low-VOC or zero-VOC paints. Interior walls: 2 coats acrylic latex over primer. Exterior wood: 2-3 coats alkyd or acrylic with UV protection. Follow manufacturer drying times between coats.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'MBE.3',
+            requirement: 'Surface preparation and paint quality standards',
+            regulationDetail: 'AMA Hus specifies surface preparation requirements, primer selection, and minimum dry film thickness for different substrates. Quality class specified in contract documents.',
+            specificationDetail: 'Exterior wood: prime all end grain, fill nail holes with exterior filler, sand between coats. Minimum DFT 100μm total. Interior: seal knots, fill imperfections, sand to P120 minimum.'
+        },
+    ],
+    'fasad': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 5:6',
+            requirement: 'Facade fire spread protection',
+            regulationDetail: 'Facade materials and systems must prevent fire spread along building exterior. Fire barriers required at floor levels for buildings over 2 stories. Surface material fire class D-s2,d0 minimum.',
+            specificationDetail: 'Wood cladding permitted with fire stops at floor levels. Ventilation cavity fire barriers every 2 floors. Avoid combustible insulation in ventilated cavities. Document material fire classifications.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'HUS.5',
+            requirement: 'Facade cladding installation standards',
+            regulationDetail: 'Facade systems must be installed according to AMA Hus for weather protection, ventilation, and durability. Ventilated rainscreen with 20-25mm gap is standard practice.',
+            specificationDetail: 'Horizontal wood cladding: overlap 25mm min, pre-treated all sides. Vertical board-on-batten: 22mm boards on 45×45mm battens. Ventilation openings top and bottom (min 25mm). Stainless steel or hot-dip galvanized fasteners.'
+        },
+    ],
+
+    // ============================================================
+    // GUTTERS & ROOFLINE - English and Swedish keywords
+    // ============================================================
+    'gutter': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:1',
+            requirement: 'Rainwater drainage away from building',
+            regulationDetail: 'Rainwater must be collected and directed away from building foundation to prevent moisture damage. Gutters sized for roof area and local rainfall intensity. Downspouts to ground drainage or splash blocks.',
+            specificationDetail: 'Half-round or box gutters sized for roof area (125mm typical for houses). Slope 3-5mm per meter toward downspouts. Downspouts every 10m max. Connect to storm drain or direct 2m+ from foundation.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'JT',
+            requirement: 'Roof drainage installation standards',
+            regulationDetail: 'Gutter and downspout installation must follow AMA Hus for material selection, bracket spacing, joint sealing, and connection to drainage system.',
+            specificationDetail: 'Gutter brackets: 600mm spacing max. Expansion joints in runs over 10m. Downspout brackets: 2m spacing. Leaf guards at valleys and near trees. Galvanized steel, painted steel, or copper materials.'
+        },
+    ],
+    'gutters': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:1',
+            requirement: 'Rainwater drainage away from building',
+            regulationDetail: 'Rainwater must be collected and directed away from building foundation to prevent moisture damage. Gutters sized for roof area and local rainfall intensity. Downspouts to ground drainage or splash blocks.',
+            specificationDetail: 'Half-round or box gutters sized for roof area (125mm typical for houses). Slope 3-5mm per meter toward downspouts. Downspouts every 10m max. Connect to storm drain or direct 2m+ from foundation.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'JT',
+            requirement: 'Roof drainage installation standards',
+            regulationDetail: 'Gutter and downspout installation must follow AMA Hus for material selection, bracket spacing, joint sealing, and connection to drainage system.',
+            specificationDetail: 'Gutter brackets: 600mm spacing max. Expansion joints in runs over 10m. Downspout brackets: 2m spacing. Leaf guards at valleys and near trees. Galvanized steel, painted steel, or copper materials.'
+        },
+    ],
+    'downspout': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:1',
+            requirement: 'Rainwater management at ground level',
+            regulationDetail: 'Downspouts must discharge rainwater away from foundation. Direct connection to storm drainage preferred. If surface discharge, use splash blocks directing water 2m+ from building.',
+            specificationDetail: 'Downspout diameter 75-100mm typical. Connect to below-grade drainage or splash block. Avoid discharging near basement windows or entries. Flexible bottom section if prone to frost heave.'
+        },
+    ],
+    'soffit': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:2',
+            requirement: 'Roof space ventilation requirements',
+            regulationDetail: 'Soffits must provide adequate ventilation to cold roof spaces to prevent condensation. Ventilation area typically 1/500 of roof area minimum, split between soffit and ridge.',
+            specificationDetail: 'Perforated or vented soffit panels. Min 10mm continuous slot or equivalent. Mesh to prevent insect entry (4mm max opening). Maintain clear air path from soffit to ridge vent.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'HUS.52',
+            requirement: 'Soffit and fascia installation standards',
+            regulationDetail: 'Soffit and fascia boards protect rafter tails and provide neat finish at eaves. Must be securely fixed and allow for thermal movement. Joints sealed against weather.',
+            specificationDetail: 'Soffit boards: 9-12mm exterior grade. Fascia: 22mm timber or composite. Paint all sides before installation. Stainless steel screws. Ventilation maintained per roof design.'
+        },
+    ],
+    'fascia': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:1',
+            requirement: 'Weather protection at roof edge',
+            regulationDetail: 'Fascia boards protect rafter ends from weather and provide fixing for gutters. Must be durable and weather-resistant. Proper flashing at roof/fascia junction.',
+            specificationDetail: 'Fascia board min 22mm thickness. Prime all surfaces including back. Drip edge flashing over fascia top. Gutter behind fascia face for clean appearance.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'HUS.52',
+            requirement: 'Fascia installation and finishing',
+            regulationDetail: 'AMA Hus specifies fascia board dimensions, fixing methods, and paint/stain requirements for durability and appearance.',
+            specificationDetail: 'Fix to each rafter tail. Scarf joints over rafters with sealant. Prime and paint all sides. Consider composite or aluminum-clad for reduced maintenance.'
+        },
+    ],
+    'hängrännor': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:1',
+            requirement: 'Rainwater drainage away from building',
+            regulationDetail: 'Rainwater must be collected and directed away from building foundation to prevent moisture damage. Gutters sized for roof area and local rainfall intensity.',
+            specificationDetail: 'Half-round or box gutters sized for roof area (125mm typical for houses). Slope 3-5mm per meter toward downspouts. Downspouts every 10m max.'
+        },
+    ],
+    'takfot': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:2',
+            requirement: 'Roof space ventilation and weather protection',
+            regulationDetail: 'Soffits at takfot (eaves) must provide ventilation while protecting from weather and pests. Critical for preventing condensation in cold roof spaces.',
+            specificationDetail: 'Perforated or vented soffit. Insect mesh required. Continuous ventilation slot or discrete vents. Match material to fascia/cladding.'
+        },
+    ],
+
+    // ============================================================
     // WET ROOMS - Both English and Swedish keywords
     // ============================================================
     'wet room': [
@@ -576,6 +776,258 @@ export const KEYWORD_REGULATIONS: Record<string, RegulationRef[]> = {
             requirement: 'Slip resistance for accessibility',
             regulationDetail: 'Floor surfaces must provide adequate slip resistance. Wet areas require R10 minimum slip rating. Entrance areas with mat wells recommended.',
             specificationDetail: 'R10 slip rating (μ > 0.4) for wet areas. R11 for ramps/slopes. Avoid polished finishes in bathrooms. Test certificates from manufacturer.'
+        },
+    ],
+
+    // ============================================================
+    // KITCHEN - English and Swedish keywords
+    // ============================================================
+    'kitchen': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 3:2',
+            requirement: 'Kitchen functional requirements',
+            regulationDetail: 'Kitchens must have adequate working space, storage, and ventilation. Minimum 10 L/s extract ventilation with boost to 20 L/s. Cooker hood or equivalent required.',
+            specificationDetail: 'Min 600mm between opposing counters. Extract over cooktop (hood or downdraft). Dedicated electrical circuits for appliances. GFCI protection for countertop outlets.'
+        },
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Kitchen plumbing standards',
+            regulationDetail: 'All water connections in kitchen must be installed by Säker Vatten certified plumber. Dishwasher connections require water stop valve and backflow prevention.',
+            specificationDetail: 'Isolation valves under sink. Flexible hoses max 2m. Water stop valve for dishwasher. Trap with clean-out access. Hot water max 60°C to prevent scalding.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'YSB',
+            requirement: 'Kitchen cabinet installation',
+            regulationDetail: 'Kitchen cabinets must be securely mounted to wall using appropriate fixings for wall type. Countertops level and properly sealed at walls.',
+            specificationDetail: 'Wall cabinets: 2 fixings per cabinet to studs or heavy-duty anchors. Base cabinets leveled on adjustable legs. Countertop joints sealed with silicone. Splashback min 50mm.'
+        },
+    ],
+    'kök': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 3:2',
+            requirement: 'Kitchen functional requirements',
+            regulationDetail: 'Kitchens must have adequate working space, storage, and ventilation. Minimum 10 L/s extract ventilation with boost to 20 L/s. Cooker hood or equivalent required.',
+            specificationDetail: 'Min 600mm between opposing counters. Extract over cooktop (hood or downdraft). Dedicated electrical circuits for appliances. GFCI protection for countertop outlets.'
+        },
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Kitchen plumbing standards',
+            regulationDetail: 'All water connections in kitchen must be installed by Säker Vatten certified plumber. Dishwasher connections require water stop valve and backflow prevention.',
+            specificationDetail: 'Isolation valves under sink. Flexible hoses max 2m. Water stop valve for dishwasher. Trap with clean-out access. Hot water max 60°C to prevent scalding.'
+        },
+    ],
+    'ikea': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 3:2',
+            requirement: 'Kitchen installation requirements',
+            regulationDetail: 'Factory-made kitchen systems must meet same functional requirements as custom kitchens. Ventilation, electrical, and plumbing must comply with Swedish standards.',
+            specificationDetail: 'Follow manufacturer assembly instructions. Professional installation recommended for plumbing and electrical. Verify appliance energy ratings. Document warranty terms.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'YSB',
+            requirement: 'Cabinet and worktop installation',
+            regulationDetail: 'Even factory kitchen systems must be installed level, plumb, and securely fixed. Countertop joints sealed. Appliances properly connected and tested.',
+            specificationDetail: 'Level base cabinets to ±2mm. Wall cabinets on rail system or individual brackets to studs. Countertop sealed at walls. Appliances connected per manufacturer specs.'
+        },
+    ],
+
+    // ============================================================
+    // CEILING - English and Swedish keywords
+    // ============================================================
+    'ceiling': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 5:5',
+            requirement: 'Ceiling fire resistance requirements',
+            regulationDetail: 'Ceiling surfaces contribute to fire compartmentalization. In residential buildings, ceiling finish typically EI 15-30 depending on construction. Fire stops at penetrations required.',
+            specificationDetail: 'Standard gypsum board (12.5mm) on timber joists meets basic requirements. Fire-rated assemblies for floors above: 2×15mm fire-rated gypsum. Seal all penetrations with fire-rated materials.'
+        },
+        {
+            id: 'ss-25267',
+            name: 'SS 25267',
+            section: 'Class C',
+            requirement: 'Ceiling acoustic performance',
+            regulationDetail: 'Ceiling assemblies in multi-story buildings contribute to sound insulation. Impact sound insulation L\'n,w ≤ 56 dB required. Ceiling absorbers improve room acoustics.',
+            specificationDetail: 'Suspended acoustic ceiling panels (NRC 0.7+) improve room acoustics. Resilient channels reduce structure-borne sound. Acoustic insulation above ceiling cavity.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'MBE.2',
+            requirement: 'Ceiling finish quality standards',
+            regulationDetail: 'Ceiling surfaces must meet AMA quality tolerances for evenness and joint finish. Painted ceilings require specific preparation and coating specification.',
+            specificationDetail: 'Gypsum board joints taped and filled to level 3-4. Prime before painting. 2 coats matt ceiling paint. Light fixtures require reinforced backing.'
+        },
+    ],
+    'innertak': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 5:5',
+            requirement: 'Ceiling fire resistance requirements',
+            regulationDetail: 'Ceiling surfaces contribute to fire compartmentalization. In residential buildings, ceiling finish typically EI 15-30 depending on construction.',
+            specificationDetail: 'Standard gypsum board (12.5mm) on timber joists meets basic requirements. Fire-rated assemblies for floors above: 2×15mm fire-rated gypsum.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'MBE.2',
+            requirement: 'Ceiling finish quality standards',
+            regulationDetail: 'Ceiling surfaces must meet AMA quality tolerances for evenness and joint finish. Painted ceilings require specific preparation.',
+            specificationDetail: 'Gypsum board joints taped and filled to level 3-4. Prime before painting. 2 coats matt ceiling paint.'
+        },
+    ],
+
+    // ============================================================
+    // HEATING SYSTEMS - English and Swedish keywords
+    // ============================================================
+    'underfloor': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:4',
+            requirement: 'Underfloor heating surface temperature limits',
+            regulationDetail: 'Underfloor heating surface temperature limited to 27°C in living areas for comfort, 33°C in bathrooms. Higher temps in perimeter zones (<1m from external walls) permitted.',
+            specificationDetail: 'Pipe spacing 100-300mm depending on heat demand. Manifold with individual circuit control. Insulation under pipes (min 30mm EPS). Screed thickness 45-65mm over pipes.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'PJB.6',
+            requirement: 'Underfloor heating installation standards',
+            regulationDetail: 'Underfloor heating systems must be installed according to AMA Hus with pressure testing before screed. System documentation including pipe layout required.',
+            specificationDetail: 'PE-X or PE-RT pipes, oxygen barrier required. Pressure test at 6 bar for 24h before screed. Flow balancing after commissioning. Provide as-built drawings showing pipe runs.'
+        },
+        {
+            id: 'saker-vatten',
+            name: 'Säker Vatten',
+            section: '2021:1',
+            requirement: 'Hydronic system certification',
+            regulationDetail: 'Water-based underfloor heating connected to domestic water system requires Säker Vatten certified installer. Separate circuits with isolation valves recommended.',
+            specificationDetail: 'Certified installer for connections to boiler/heat pump. Expansion vessel sized for system. Mixing valve for temperature control. Antifreeze if freeze risk.'
+        },
+    ],
+    'golvvärme': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:4',
+            requirement: 'Underfloor heating surface temperature limits',
+            regulationDetail: 'Underfloor heating surface temperature limited to 27°C in living areas for comfort, 33°C in bathrooms. Higher temps in perimeter zones (<1m from external walls) permitted.',
+            specificationDetail: 'Pipe spacing 100-300mm depending on heat demand. Manifold with individual circuit control. Insulation under pipes (min 30mm EPS). Screed thickness 45-65mm over pipes.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'PJB.6',
+            requirement: 'Underfloor heating installation standards',
+            regulationDetail: 'Underfloor heating systems must be installed according to AMA Hus with pressure testing before screed. System documentation including pipe layout required.',
+            specificationDetail: 'PE-X or PE-RT pipes, oxygen barrier required. Pressure test at 6 bar for 24h before screed. Flow balancing after commissioning. Provide as-built drawings showing pipe runs.'
+        },
+    ],
+    'radiator': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:4',
+            requirement: 'Radiator surface temperature and placement',
+            regulationDetail: 'Radiator surface temperatures must not cause burn risk - max 60°C on accessible surfaces recommended. Placement typically under windows to counter cold downdrafts.',
+            specificationDetail: 'Size radiators for design heat loss. Thermostatic radiator valves (TRV) on each unit. 100mm clearance below and behind for airflow. Bleed valves accessible.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'PJB.5',
+            requirement: 'Radiator installation standards',
+            regulationDetail: 'Radiators must be securely mounted with appropriate brackets for wall type. Pipe connections neat and accessible. System balanced for even heat distribution.',
+            specificationDetail: 'Wall brackets rated for radiator weight. Level installation. Isolation valves each side. Pipe runs concealed or neatly clipped. System flushed and balanced.'
+        },
+        {
+            id: 'energidek',
+            name: 'Energidek.',
+            section: 'BFS 2020:4',
+            requirement: 'Heating system efficiency',
+            regulationDetail: 'Radiator systems contribute to building energy calculation. Low-temperature systems (55/45°C) compatible with heat pumps improve efficiency ratings.',
+            specificationDetail: 'Size for 55/45°C flow/return for heat pump compatibility. Individual room control via TRVs. Weather compensation on boiler/heat pump. Insulate distribution pipes.'
+        },
+    ],
+    'element': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 6:4',
+            requirement: 'Radiator surface temperature and placement',
+            regulationDetail: 'Radiator surface temperatures must not cause burn risk - max 60°C on accessible surfaces recommended. Placement typically under windows to counter cold downdrafts.',
+            specificationDetail: 'Size radiators for design heat loss. Thermostatic radiator valves (TRV) on each unit. 100mm clearance below and behind for airflow.'
+        },
+        {
+            id: 'ama-hus',
+            name: 'AMA Hus',
+            section: 'PJB.5',
+            requirement: 'Radiator installation standards',
+            regulationDetail: 'Radiators must be securely mounted with appropriate brackets for wall type. Pipe connections neat and accessible.',
+            specificationDetail: 'Wall brackets rated for radiator weight. Level installation. Isolation valves each side. System flushed and balanced.'
+        },
+    ],
+
+    // ============================================================
+    // INSULATION - English and Swedish keywords
+    // ============================================================
+    'insulation': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 9:4',
+            requirement: 'Thermal insulation U-value requirements',
+            regulationDetail: 'Building envelope must meet maximum U-values: walls 0.18, roof 0.13, floor 0.15, windows 1.2 W/m²K. Thermal bridges must be minimized at junctions.',
+            specificationDetail: 'Mineral wool or cellulose in timber frames. EPS/XPS for ground contact. Continuous insulation layer to avoid thermal bridges. Vapor barrier on warm side, wind barrier on cold side.'
+        },
+        {
+            id: 'ce-cpr',
+            name: 'CE/CPR',
+            requirement: 'CE-marked insulation products',
+            regulationDetail: 'Insulation materials must be CE-marked with declared thermal conductivity (λ), fire class, and compressive strength where relevant. Declaration of Performance (DoP) required.',
+            specificationDetail: 'Mineral wool: λ ≤ 0.035 W/mK, fire class A1. EPS: λ ≤ 0.036 W/mK, fire class E. Document DoP for each product. Store materials dry before installation.'
+        },
+        {
+            id: 'energidek',
+            name: 'Energidek.',
+            section: 'BFS 2020:4',
+            requirement: 'Insulation affects energy declaration',
+            regulationDetail: 'Insulation levels directly affect building energy performance rating. Higher insulation reduces heating demand and improves energy class.',
+            specificationDetail: 'Calculate U-values including thermal bridges (Ψ-values). Blower door test to verify airtightness <0.6 L/s.m² at 50Pa. Document insulation installation with photos.'
+        },
+    ],
+    'isolering': [
+        {
+            id: 'bbr-2025',
+            name: 'BBR 2025',
+            section: 'BBR 9:4',
+            requirement: 'Thermal insulation U-value requirements',
+            regulationDetail: 'Building envelope must meet maximum U-values: walls 0.18, roof 0.13, floor 0.15, windows 1.2 W/m²K. Thermal bridges must be minimized at junctions.',
+            specificationDetail: 'Mineral wool or cellulose in timber frames. EPS/XPS for ground contact. Continuous insulation layer to avoid thermal bridges. Vapor barrier on warm side, wind barrier on cold side.'
+        },
+        {
+            id: 'ce-cpr',
+            name: 'CE/CPR',
+            requirement: 'CE-marked insulation products',
+            regulationDetail: 'Insulation materials must be CE-marked with declared thermal conductivity (λ), fire class, and compressive strength where relevant.',
+            specificationDetail: 'Mineral wool: λ ≤ 0.035 W/mK, fire class A1. EPS: λ ≤ 0.036 W/mK, fire class E. Store materials dry before installation.'
         },
     ],
 
