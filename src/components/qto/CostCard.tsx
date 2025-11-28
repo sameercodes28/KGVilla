@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CostItem } from '@/types';
-import { ChevronDown, Info, Edit2, Save, X, Calculator, BookOpen, ShieldCheck, ToggleLeft, ToggleRight, Factory, TrendingDown, Zap, Target } from 'lucide-react';
+import { ChevronDown, Info, Edit2, Save, X, Calculator, BookOpen, ShieldCheck, ToggleLeft, ToggleRight, Factory, TrendingDown, Zap, Target, ShoppingCart, Handshake, Package } from 'lucide-react';
 import { getItemRegulations, REGULATION_COLORS, RegulationRef } from '@/data/regulationMapping';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
@@ -202,25 +202,34 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                             {hasCustomValues && !item.isUserAdded && !isDisabled && (
                                 <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold uppercase rounded">{t('card.edited')}</span>
                             )}
-                            {item.prefabDiscount && !isDisabled && (
-                                <span className={cn(
-                                    "px-1.5 py-0.5 text-[10px] font-bold uppercase rounded flex items-center gap-1",
-                                    item.prefabDiscount.efficiencyType === 'STREAMLINED'
-                                        ? "bg-blue-100 text-blue-700"
-                                        : item.prefabDiscount.efficiencyType === 'STANDARDIZED'
-                                        ? "bg-purple-100 text-purple-700"
-                                        : "bg-green-100 text-green-700"
-                                )}>
-                                    {item.prefabDiscount.efficiencyType === 'STREAMLINED' ? (
-                                        <Zap className="h-3 w-3" />
-                                    ) : item.prefabDiscount.efficiencyType === 'STANDARDIZED' ? (
-                                        <Target className="h-3 w-3" />
-                                    ) : (
-                                        <Factory className="h-3 w-3" />
-                                    )}
-                                    {item.prefabDiscount.efficiencyType || 'PREFAB'}
-                                </span>
-                            )}
+                            {item.prefabDiscount && !isDisabled && (() => {
+                                const effType = item.prefabDiscount.efficiencyType || 'PREFAB';
+                                const badgeColors: Record<string, string> = {
+                                    PREFAB: 'bg-green-100 text-green-700',
+                                    STREAMLINED: 'bg-blue-100 text-blue-700',
+                                    STANDARDIZED: 'bg-purple-100 text-purple-700',
+                                    BULK: 'bg-orange-100 text-orange-700',
+                                    VENDOR: 'bg-cyan-100 text-cyan-700',
+                                    BUNDLED: 'bg-amber-100 text-amber-700',
+                                };
+                                const BadgeIcon = {
+                                    PREFAB: Factory,
+                                    STREAMLINED: Zap,
+                                    STANDARDIZED: Target,
+                                    BULK: ShoppingCart,
+                                    VENDOR: Handshake,
+                                    BUNDLED: Package,
+                                }[effType] || Factory;
+                                return (
+                                    <span className={cn(
+                                        "px-1.5 py-0.5 text-[10px] font-bold uppercase rounded flex items-center gap-1",
+                                        badgeColors[effType] || badgeColors.PREFAB
+                                    )}>
+                                        <BadgeIcon className="h-3 w-3" />
+                                        {effType}
+                                    </span>
+                                );
+                            })()}
                         </div>
                         <div className="flex items-center space-x-2 mt-1">
                             <p className="text-sm text-slate-500">{translatedDesc}</p>
@@ -355,15 +364,33 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                     {/* JB Villan Efficiency */}
                     {item.prefabDiscount && (() => {
                         const effType = item.prefabDiscount.efficiencyType || 'PREFAB';
-                        const colors = {
+                        const colorMap: Record<string, { bg: string; border: string; text: string; badge: string }> = {
                             PREFAB: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', badge: 'bg-green-200 text-green-800' },
                             STREAMLINED: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-200 text-blue-800' },
                             STANDARDIZED: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', badge: 'bg-purple-200 text-purple-800' },
-                        }[effType];
-                        const Icon = effType === 'STREAMLINED' ? Zap : effType === 'STANDARDIZED' ? Target : Factory;
-                        const title = effType === 'PREFAB' ? t('prefab.title') :
-                                      effType === 'STREAMLINED' ? t('prefab.streamlined_title') :
-                                      t('prefab.standardized_title');
+                            BULK: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-700', badge: 'bg-orange-200 text-orange-800' },
+                            VENDOR: { bg: 'bg-cyan-50', border: 'border-cyan-200', text: 'text-cyan-700', badge: 'bg-cyan-200 text-cyan-800' },
+                            BUNDLED: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', badge: 'bg-amber-200 text-amber-800' },
+                        };
+                        const colors = colorMap[effType] || colorMap.PREFAB;
+                        const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+                            PREFAB: Factory,
+                            STREAMLINED: Zap,
+                            STANDARDIZED: Target,
+                            BULK: ShoppingCart,
+                            VENDOR: Handshake,
+                            BUNDLED: Package,
+                        };
+                        const Icon = iconMap[effType] || Factory;
+                        const titleMap: Record<string, string> = {
+                            PREFAB: t('prefab.title'),
+                            STREAMLINED: t('prefab.streamlined_title'),
+                            STANDARDIZED: t('prefab.standardized_title'),
+                            BULK: 'Volume B2B Pricing',
+                            VENDOR: 'Vendor Partnership',
+                            BUNDLED: 'Bundled (Turn-Key)',
+                        };
+                        const title = titleMap[effType] || t('prefab.title');
 
                         return (
                             <div className={cn("mb-4 p-3 rounded-xl border", colors.bg, colors.border)}>

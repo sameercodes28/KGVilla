@@ -5,7 +5,8 @@ import {
     X, Loader2, BookOpen, AlertCircle, RefreshCw,
     Calculator, Ruler, FileText, CheckCircle,
     Lightbulb, ChevronDown, ChevronUp, Scale, Factory, TrendingDown,
-    Zap, Target, Hammer, ArrowRight, ExternalLink, Calendar, Info
+    Zap, Target, Hammer, ArrowRight, ExternalLink, Calendar, Info,
+    ShoppingCart, Handshake, Package
 } from 'lucide-react';
 import { CostItem, PriceSource } from '@/types';
 import { apiClient } from '@/lib/apiClient';
@@ -241,10 +242,26 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
     const getEfficiencyInfo = () => {
         if (!displayedItem.prefabDiscount) return null;
         const effType = displayedItem.prefabDiscount.efficiencyType || 'PREFAB';
+        const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+            PREFAB: Factory,
+            STREAMLINED: Zap,
+            STANDARDIZED: Target,
+            BULK: ShoppingCart,
+            VENDOR: Handshake,
+            BUNDLED: Package,
+        };
+        const colorMap: Record<string, string> = {
+            PREFAB: 'green',
+            STREAMLINED: 'blue',
+            STANDARDIZED: 'purple',
+            BULK: 'orange',
+            VENDOR: 'cyan',
+            BUNDLED: 'amber',
+        };
         return {
             type: effType,
-            icon: effType === 'STREAMLINED' ? Zap : effType === 'STANDARDIZED' ? Target : Factory,
-            color: effType === 'STREAMLINED' ? 'blue' : effType === 'STANDARDIZED' ? 'purple' : 'green',
+            icon: iconMap[effType] || Factory,
+            color: colorMap[effType] || 'green',
         };
     };
 
@@ -574,11 +591,18 @@ export function CostInspector({ item, onClose, context = {} }: CostInspectorProp
                                             "text-xs font-bold uppercase",
                                             efficiencyInfo.color === 'green' ? "text-green-700" :
                                             efficiencyInfo.color === 'blue' ? "text-blue-700" :
-                                            "text-purple-700"
+                                            efficiencyInfo.color === 'purple' ? "text-purple-700" :
+                                            efficiencyInfo.color === 'orange' ? "text-orange-700" :
+                                            efficiencyInfo.color === 'cyan' ? "text-cyan-700" :
+                                            efficiencyInfo.color === 'amber' ? "text-amber-700" : "text-green-700"
                                         )}>
                                             {efficiencyInfo.type === 'PREFAB' ? t('prefab.title') :
                                              efficiencyInfo.type === 'STREAMLINED' ? t('prefab.streamlined_title') :
-                                             t('prefab.standardized_title')}
+                                             efficiencyInfo.type === 'STANDARDIZED' ? t('prefab.standardized_title') :
+                                             efficiencyInfo.type === 'BULK' ? 'Volume B2B Pricing' :
+                                             efficiencyInfo.type === 'VENDOR' ? 'Vendor Partnership' :
+                                             efficiencyInfo.type === 'BUNDLED' ? 'Bundled (Turn-Key)' :
+                                             t('prefab.title')}
                                         </p>
                                         <p className="text-sm text-slate-600">
                                             {displayedItem.prefabDiscount.reason}

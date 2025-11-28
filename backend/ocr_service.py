@@ -282,6 +282,77 @@ JB_EFFICIENCY = {
         "reason": "Proven designs = fewer surprises",
         "explanation": "JB Villan uses standardized, proven designs that have been built many times. This predictability means fewer change orders, less rework, and fewer unexpected issues. General contractors typically budget 10% contingency; JB Villan's track record allows for 6%."
     },
+
+    # BULK - Volume purchasing agreements with specific brands
+    "kitchen_complete": {
+        "type": "BULK",
+        "brand": "Vedum",
+        "general_contractor": 150000,
+        "jb_villan": 95000,
+        "savings_pct": 37,
+        "reason": "Vedum B2B partnership pricing",
+        "explanation": "JB Villan has volume agreements with Vedum Kök & Bad, Sweden's largest kitchen manufacturer. While consumer pricing for a Vedum kitchen (e.g., 'Life' or 'Sense' series) starts at 100,000-200,000 kr, B2B hustillverkare pricing with volume discounts is 30-40% lower. Source: Vedum.se price list 2025, Byggahus.se forum discussions on prefab kitchen pricing."
+    },
+    "bathroom_per_room": {
+        "type": "BULK",
+        "brand": "Vedum",
+        "general_contractor": 85000,
+        "jb_villan": 59000,
+        "savings_pct": 31,
+        "reason": "Vedum B2B bathroom fixtures",
+        "explanation": "JB Villan sources bathroom vanities and fixtures from Vedum (e.g., 'Free 600' vanity at 4,776 kr B2B, 'Flow 1000' at 7,550 kr). Toilets typically Gustavsberg Nordic (3,909 kr B2B). Consumer pricing would be 25-40% higher. This includes vanity, WC, shower fixtures, and tiling. Source: Vedum official price list 2025."
+    },
+    "appliances_package": {
+        "type": "BULK",
+        "brand": "Siemens/Bosch",
+        "general_contractor": 100000,
+        "jb_villan": 65000,
+        "savings_pct": 35,
+        "reason": "Volume appliance purchasing",
+        "explanation": "JB Villan purchases appliances in bulk from BSH (Siemens/Bosch) or Electrolux. Standard package includes: refrigerator/freezer (~12,000 kr), induction hob (~8,000 kr), oven (~7,000 kr), dishwasher (~6,000 kr), washer (~7,000 kr), dryer (~6,000 kr), microwave (~4,000 kr), range hood (~5,000 kr). Volume pricing 35% below retail. Source: Prisjakt.nu comparison, BSH trade pricing."
+    },
+
+    # VENDOR - Long-term supplier relationships
+    "heat_pump": {
+        "type": "VENDOR",
+        "brand": "NIBE",
+        "general_contractor": 120000,
+        "jb_villan": 95000,
+        "savings_pct": 21,
+        "reason": "NIBE vendor partnership pricing",
+        "explanation": "JB Villan uses NIBE F2120 air-to-water heat pumps (or similar F-series). Retail price ~130,000 kr installed, but JB Villan's volume purchasing and certified installer network reduces total cost. NIBE is Sweden's leading heat pump manufacturer. Materials ~72,000 kr (pump unit, buffer tank, controls), Labor ~23,000 kr (3-day installation). Source: NIBE.se, Värmepumpsforum."
+    },
+
+    # STREAMLINED - Benefits from turn-key model
+    "electrical_total": {
+        "type": "STREAMLINED",
+        "brand": "Schneider/ABB",
+        "general_contractor": 180000,
+        "jb_villan": 162000,
+        "savings_pct": 10,
+        "reason": "Standardized electrical layout",
+        "explanation": "JB Villan uses standardized electrical plans with pre-determined outlet/switch locations (Schneider or ABB components). This reduces planning time and installation complexity. Includes main panel, wiring, outlets (50-70 double outlets), switches (30-40), outdoor lighting, and connection to grid. Consumer/elbehörighet rates would add 10%+ for custom planning."
+    },
+    "plumbing_total": {
+        "type": "STREAMLINED",
+        "brand": "Gustavsberg/Geberit",
+        "general_contractor": 110000,
+        "jb_villan": 99000,
+        "savings_pct": 10,
+        "reason": "Standardized plumbing runs",
+        "explanation": "JB Villan designs optimize plumbing runs with bathrooms/kitchen adjacent to minimize pipe lengths. Uses Gustavsberg/Geberit fixtures (Säker Vatten certified). Includes all rough-in, supply lines, drain connections, water heater hookup. Standardized layouts reduce labor by 10% vs custom plumbing designs."
+    },
+
+    # BUNDLED - Costs absorbed in turn-key price
+    "admin_bundled": {
+        "type": "BUNDLED",
+        "brand": "N/A",
+        "general_contractor": 115000,
+        "jb_villan": 0,
+        "savings_pct": 100,
+        "reason": "Admin costs bundled in turn-key price",
+        "explanation": "In JB Villan's totalentreprenad (turn-key) model, administrative costs are absorbed into the package price rather than itemized separately. This includes: Bygglov (building permit ~40,000 kr), KA-kontroll (35,000 kr), project management (40,000 kr). These costs exist but are part of JB Villan's overhead, not billed separately. Source: JB Villan contract terms."
+    },
 }
 
 
@@ -1613,15 +1684,16 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             priceSource=make_price_source(INTERIOR_WALL_STANDARD_PER_M2)
         ))
 
-    # --- PLUMBING ---
+    # --- PLUMBING - Vedum/Gustavsberg bathroom fixtures ---
     # Count bathrooms from rooms
     bathroom_count = sum(1 for r in rooms if r["category"] == "bathroom")
+    bathroom_eff = JB_EFFICIENCY["bathroom_per_room"]
     if bathroom_count > 0:
         items.append(CostItem(
             id="plumbing-wc",
             phase="plumbing",
-            elementName="WC Installation",
-            description=f"Wall-hung WC with frame - {bathroom_count} units",
+            elementName="WC Installation (Gustavsberg Nordic)",
+            description=f"Wall-hung Gustavsberg Nordic WC with concealed cistern frame - {bathroom_count} units. B2B price ~3,909 kr/unit.",
             quantity=bathroom_count,
             unit="st",
             unitPrice=PRICING["wc_unit"],
@@ -1639,8 +1711,8 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         items.append(CostItem(
             id="plumbing-basin",
             phase="plumbing",
-            elementName="Washbasin & Mixer",
-            description=f"Porcelain basin with mixer tap - {bathroom_count} units",
+            elementName="Washbasin & Mixer (Vedum)",
+            description=f"Vedum Free 600 vanity with porcelain basin and Mora mixer tap - {bathroom_count} units. B2B price ~4,776 kr/unit.",
             quantity=bathroom_count,
             unit="st",
             unitPrice=PRICING["washbasin_unit"],
@@ -1653,23 +1725,42 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
                 unit="st",
                 calculationMethod="1 washbasin per bathroom"
             ),
+            prefabDiscount=PrefabDiscount(
+                efficiencyType=bathroom_eff["type"],
+                generalContractorPrice=bathroom_eff["general_contractor"],
+                jbVillanPrice=bathroom_eff["jb_villan"],
+                savingsAmount=bathroom_eff["general_contractor"] - bathroom_eff["jb_villan"],
+                savingsPercent=bathroom_eff["savings_pct"],
+                reason=bathroom_eff["reason"],
+                explanation=bathroom_eff["explanation"]
+            ),
             priceSource=make_price_source(WASHBASIN_UNIT)
         ))
 
-    # Kitchen
+    # Kitchen - Vedum B2B pricing
     kitchen_rooms = [r for r in rooms if r["category"] == "kitchen"]
     if kitchen_rooms:
+        kitchen_eff = JB_EFFICIENCY["kitchen_complete"]
         items.append(CostItem(
             id="interior-kitchen",
             phase="interior",
-            elementName="Kitchen Installation",
-            description="Cabinets, countertop, appliances, plumbing",
+            elementName="Kitchen Installation (Vedum)",
+            description=f"Vedum kitchen package: base cabinets, upper cabinets, worktop, sink, mixer tap. Brand: {kitchen_eff['brand']}. Installation included.",
             quantity=1,
             unit="st",
-            unitPrice=PRICING["kitchen_base"],
-            totalCost=PRICING["kitchen_base"],
+            unitPrice=kitchen_eff["jb_villan"],
+            totalCost=kitchen_eff["jb_villan"],
             confidenceScore=0.9,
             guidelineReference="AMA Hus",
+            prefabDiscount=PrefabDiscount(
+                efficiencyType=kitchen_eff["type"],
+                generalContractorPrice=kitchen_eff["general_contractor"],
+                jbVillanPrice=kitchen_eff["jb_villan"],
+                savingsAmount=kitchen_eff["general_contractor"] - kitchen_eff["jb_villan"],
+                savingsPercent=kitchen_eff["savings_pct"],
+                reason=kitchen_eff["reason"],
+                explanation=kitchen_eff["explanation"]
+            ),
             priceSource=make_price_source(KITCHEN_BASE)
         ))
 
@@ -1779,18 +1870,28 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
 
     # --- HVAC & VENTILATION ---
     if boyta > 0:
-        # Heat pump
+        # Heat pump - NIBE vendor pricing
+        heat_pump_eff = JB_EFFICIENCY["heat_pump"]
         items.append(CostItem(
             id="hvac-heatpump",
             phase="plumbing",
-            elementName="Heat Pump (Bergvärme/Luft-vatten)",
-            description="Air-to-water heat pump ~8-10 kW sized for Swedish climate zone III. Includes indoor unit, outdoor unit, buffer tank, and controls. COP ≥4.0 required for BBR 9 energy compliance. Installation and commissioning included.",
+            elementName=f"Heat Pump ({heat_pump_eff['brand']} F2120)",
+            description=f"{heat_pump_eff['brand']} air-to-water heat pump ~8-10 kW sized for Swedish climate zone III. Includes: pump unit (~72,000 kr), buffer tank, controls. Labor: ~23,000 kr (3-day installation). COP ≥4.0 required for BBR 9 energy compliance.",
             quantity=1,
             unit="st",
-            unitPrice=PRICING["heat_pump"],
-            totalCost=PRICING["heat_pump"],
+            unitPrice=heat_pump_eff["jb_villan"],
+            totalCost=heat_pump_eff["jb_villan"],
             confidenceScore=0.9,
             guidelineReference="BBR 9:2, SS-EN 14825",
+            prefabDiscount=PrefabDiscount(
+                efficiencyType=heat_pump_eff["type"],
+                generalContractorPrice=heat_pump_eff["general_contractor"],
+                jbVillanPrice=heat_pump_eff["jb_villan"],
+                savingsAmount=heat_pump_eff["general_contractor"] - heat_pump_eff["jb_villan"],
+                savingsPercent=heat_pump_eff["savings_pct"],
+                reason=heat_pump_eff["reason"],
+                explanation=heat_pump_eff["explanation"]
+            ),
             priceSource=make_price_source(HEAT_PUMP)
         ))
 
@@ -1853,18 +1954,28 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             priceSource=make_price_source(FTX_VENTILATION)
         ))
 
-    # --- PLUMBING BASE ---
+    # --- PLUMBING BASE - Streamlined pricing ---
+    plumbing_eff = JB_EFFICIENCY["plumbing_total"]
     items.append(CostItem(
         id="plumbing-base",
         phase="plumbing",
-        elementName="Plumbing System",
-        description="Water pipes, drainage, connections",
+        elementName=f"Plumbing System ({plumbing_eff['brand']})",
+        description=f"Water pipes, drainage, connections. Optimized layout with kitchen/bathrooms adjacent minimizes pipe runs. Brand: {plumbing_eff['brand']} (Säker Vatten certified).",
         quantity=1,
         unit="st",
         unitPrice=PRICING["plumbing_base"],
         totalCost=PRICING["plumbing_base"],
         confidenceScore=0.9,
         guidelineReference="Säker Vatten",
+        prefabDiscount=PrefabDiscount(
+            efficiencyType=plumbing_eff["type"],
+            generalContractorPrice=plumbing_eff["general_contractor"],
+            jbVillanPrice=plumbing_eff["jb_villan"],
+            savingsAmount=plumbing_eff["general_contractor"] - plumbing_eff["jb_villan"],
+            savingsPercent=plumbing_eff["savings_pct"],
+            reason=plumbing_eff["reason"],
+            explanation=plumbing_eff["explanation"]
+        ),
         priceSource=make_price_source(PLUMBING_BASE)
     ))
 
@@ -1967,19 +2078,29 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
             )
         ))
 
-    # --- ELECTRICAL (estimate based on room count) ---
+    # --- ELECTRICAL (estimate based on room count) - Streamlined pricing ---
     # Distribution board
+    electrical_eff = JB_EFFICIENCY["electrical_total"]
     items.append(CostItem(
         id="electrical-panel",
         phase="electrical",
-        elementName="Distribution Board",
-        description="Main electrical panel with breakers",
+        elementName=f"Distribution Board ({electrical_eff['brand']})",
+        description=f"Main electrical panel with breakers. Standardized layout with pre-determined outlet/switch locations. Brand: {electrical_eff['brand']}.",
         quantity=1,
         unit="st",
         unitPrice=PRICING["distribution_board"],
         totalCost=PRICING["distribution_board"],
         confidenceScore=1.0,
         guidelineReference="SS 437",
+        prefabDiscount=PrefabDiscount(
+            efficiencyType=electrical_eff["type"],
+            generalContractorPrice=electrical_eff["general_contractor"],
+            jbVillanPrice=electrical_eff["jb_villan"],
+            savingsAmount=electrical_eff["general_contractor"] - electrical_eff["jb_villan"],
+            savingsPercent=electrical_eff["savings_pct"],
+            reason=electrical_eff["reason"],
+            explanation=electrical_eff["explanation"]
+        ),
         priceSource=make_price_source(DISTRIBUTION_BOARD)
     ))
 
@@ -2020,22 +2141,32 @@ def calculate_pricing(rooms: List[Dict], summary: Dict[str, float]) -> List[Cost
         priceSource=make_price_source(LIGHTING_FIXTURES)
     ))
 
-    # --- INTERIOR: Appliances ---
+    # --- INTERIOR: Appliances - Volume purchasing ---
     # Appliances - ONLY if kitchen or laundry detected
     has_kitchen = any(r["category"] == "kitchen" for r in rooms)
     has_laundry = any(r["category"] == "laundry" for r in rooms)
     if has_kitchen or has_laundry:
+        appliances_eff = JB_EFFICIENCY["appliances_package"]
         items.append(CostItem(
             id="interior-appliances",
-            phase="interior",  # Moved from completion to interior
-            elementName="Kitchen & Laundry Appliances",
-            description="Stove, fridge, dishwasher, washer, dryer",
+            phase="interior",
+            elementName=f"Kitchen & Laundry Appliances ({appliances_eff['brand']})",
+            description=f"Package: refrigerator/freezer (~12k kr), induction hob (~8k kr), oven (~7k kr), dishwasher (~6k kr), washer (~7k kr), dryer (~6k kr), microwave (~4k kr), range hood (~5k kr). Brand: {appliances_eff['brand']}.",
             quantity=1,
             unit="st",
-            unitPrice=PRICING["appliances_package"],
-            totalCost=PRICING["appliances_package"],
+            unitPrice=appliances_eff["jb_villan"],
+            totalCost=appliances_eff["jb_villan"],
             confidenceScore=0.9,
             guidelineReference="Market Rate",
+            prefabDiscount=PrefabDiscount(
+                efficiencyType=appliances_eff["type"],
+                generalContractorPrice=appliances_eff["general_contractor"],
+                jbVillanPrice=appliances_eff["jb_villan"],
+                savingsAmount=appliances_eff["general_contractor"] - appliances_eff["jb_villan"],
+                savingsPercent=appliances_eff["savings_pct"],
+                reason=appliances_eff["reason"],
+                explanation=appliances_eff["explanation"]
+            ),
             priceSource=make_price_source(APPLIANCES_PACKAGE)
         ))
 

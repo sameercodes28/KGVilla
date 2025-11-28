@@ -55,8 +55,11 @@ class PrefabDiscount(BaseModel):
     - PREFAB: Item is manufactured off-site in JB Villan's factory
     - STREAMLINED: Item benefits from faster build time (downstream effect of prefab)
     - STANDARDIZED: Item benefits from proven, standardized designs (lower risk)
+    - BULK: Item benefits from volume purchasing agreements (B2B pricing)
+    - VENDOR: Item benefits from long-term vendor partnerships
+    - BUNDLED: Item costs are bundled into turn-key price (absorbed overhead)
     """
-    efficiencyType: Literal['PREFAB', 'STREAMLINED', 'STANDARDIZED'] = 'PREFAB'
+    efficiencyType: Literal['PREFAB', 'STREAMLINED', 'STANDARDIZED', 'BULK', 'VENDOR', 'BUNDLED'] = 'PREFAB'
     generalContractorPrice: float     # What a general contractor would charge
     jbVillanPrice: float              # JB Villan's price
     savingsAmount: float              # generalContractorPrice - jbVillanPrice

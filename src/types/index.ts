@@ -81,8 +81,11 @@ export interface QuantityBreakdown {
  * - PREFAB: Item manufactured off-site in JB Villan's factory
  * - STREAMLINED: Benefits from faster build time (downstream effect of prefab)
  * - STANDARDIZED: Benefits from proven, standardized designs (lower risk)
+ * - BULK: Benefits from volume purchasing agreements (B2B pricing)
+ * - VENDOR: Benefits from long-term vendor partnerships
+ * - BUNDLED: Costs bundled into turn-key price (absorbed overhead)
  */
-export type EfficiencyType = 'PREFAB' | 'STREAMLINED' | 'STANDARDIZED';
+export type EfficiencyType = 'PREFAB' | 'STREAMLINED' | 'STANDARDIZED' | 'BULK' | 'VENDOR' | 'BUNDLED';
 
 export interface PrefabDiscount {
   efficiencyType?: EfficiencyType;  // Type of efficiency (defaults to PREFAB for backwards compat)

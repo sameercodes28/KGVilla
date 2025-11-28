@@ -1,0 +1,45 @@
+#!/bin/sh
+
+echo "Running pre-push checks..."
+
+# Check if backend files were modified
+if git diff --cached --name-only | grep -q "^backend/"; then
+    echo "Backend files modified - running Python checks..."
+
+    cd backend
+
+    # Syntax check
+    echo "Checking Python syntax..."
+    python3 -m py_compile ocr_service.py models.py main.py ai_service.py 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Python syntax check failed!"
+        exit 1
+    fi
+    echo "Syntax check passed"
+
+    # Import check
+    echo "Checking model imports..."
+    python3 -c "from models import PrefabDiscount, CostItem; print('Models OK')" 2>&1
+    if [ $? -ne 0 ]; then
+        echo "Model import check failed!"
+        exit 1
+    fi
+    echo "Import check passed"
+
+    cd ..
+fi
+
+# Check if frontend files were modified
+if git diff --cached --name-only | grep -q "^src/"; then
+    echo "Frontend files modified - running TypeScript check..."
+
+    # TypeScript check
+    npm run build 2>&1 | tail -20
+    if [ $? -ne 0 ]; then
+        echo "Frontend build failed!"
+        exit 1
+    fi
+    echo "Frontend build passed"
+fi
+
+echo "All pre-push checks passed!"

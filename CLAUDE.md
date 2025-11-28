@@ -61,7 +61,25 @@ If Cloud Run shows different values, Cloud Run is WRONG - deploy.sh is RIGHT.
 
 ## Backend Deployment Checklist
 
+### MANDATORY PRE-DEPLOYMENT TESTS
+Before deploying backend, you MUST run these commands:
+
+```bash
+# 1. Syntax check all Python files
+cd backend
+python3 -m py_compile ocr_service.py models.py main.py ai_service.py
+
+# 2. Import check - verifies models are compatible
+python3 -c "from models import PrefabDiscount, CostItem; print('Models OK')"
+
+# 3. Test any Pydantic model changes
+# If you added new Literal types, verify they work:
+python3 -c "from models import PrefabDiscount; pd = PrefabDiscount(efficiencyType='BULK', generalContractorPrice=100, jbVillanPrice=65, savingsAmount=35, savingsPercent=35, reason='test'); print('PrefabDiscount OK:', pd.efficiencyType)"
+```
+
 Before deploying backend:
+- [ ] **SYNTAX CHECK**: `python3 -m py_compile *.py` passes
+- [ ] **IMPORT CHECK**: `python3 -c "from models import *"` works
 - [ ] Changes tested locally with `uvicorn main:app --reload`
 - [ ] No values in deploy.sh were changed (or user approved changes)
 - [ ] Understand what the deployment will change
@@ -70,7 +88,7 @@ After deploying backend:
 - [ ] Health check passes
 - [ ] API key validation passes (deploy.sh does this automatically)
 - [ ] **TEST OCR**: Upload a floor plan and verify items are generated
-- [ ] Check for errors in Cloud Run logs
+- [ ] Check for errors in Cloud Run logs: `gcloud run services logs read kgvilla-backend --region=europe-north1 --limit=20`
 
 ```bash
 # Always deploy using:
@@ -119,3 +137,12 @@ When making significant changes, update version in `package.json`. This helps wi
 - **Cause**: Copied processor ID from broken Cloud Run config instead of deploy.sh
 - **Fix**: Reverted to correct ID from deploy.sh
 - **Prevention**: NEVER trust broken deployment state. deploy.sh is source of truth.
+
+### 2024-11-28: PrefabDiscount Pydantic Validation Error
+- **Cause**: Added new efficiency types (BULK, VENDOR, BUNDLED) to `ocr_service.py` but forgot to update the `Literal` type in `models.py`
+- **Error**: `pydantic_core._pydantic_core.ValidationError: Input should be 'PREFAB', 'STREAMLINED' or 'STANDARDIZED' [type=literal_error, input_value='BULK']`
+- **Fix**: Updated `models.py` to add new types: `Literal['PREFAB', 'STREAMLINED', 'STANDARDIZED', 'BULK', 'VENDOR', 'BUNDLED']`
+- **Prevention**:
+  1. ALWAYS run `python3 -c "from models import *"` before deploying
+  2. When adding new Literal values, update BOTH backend (models.py) AND frontend (types/index.ts)
+  3. Test with a simple model instantiation before deploying
