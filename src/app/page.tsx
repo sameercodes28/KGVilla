@@ -435,13 +435,10 @@ export default function Home() {
                 <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-100">
                     <tr>
                         <th className="px-6 py-4 font-medium">{t('dash.project_name')}</th>
-                        <th className="px-6 py-4 font-medium">{t('dash.location')}</th>
                         <th className="px-6 py-4 font-medium text-right">BOA</th>
                         <th className="px-6 py-4 font-medium text-right">Biarea</th>
                         <th className="px-6 py-4 font-medium text-right">{t('dash.estimated_cost')}</th>
                         <th className="px-6 py-4 font-medium">{t('dash.status')}</th>
-                        <th className="px-6 py-4 font-medium">{t('dash.last_updated')}</th>
-                        <th className="px-6 py-4 font-medium text-right">{t('dash.actions')}</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -451,7 +448,6 @@ export default function Home() {
                                 <FolderOpen className="h-4 w-4 mr-3 text-slate-400" />
                                 {project.name}
                             </td>
-                            <td className="px-6 py-4 text-slate-500">{project.location}</td>
                             <td className="px-6 py-4 text-right text-slate-700">{project.boa || project.totalArea || 0} m²</td>
                             <td className="px-6 py-4 text-right text-slate-500">{project.biarea || 0} m²</td>
                             <td className="px-6 py-4 text-right font-medium text-red-600">{getProjectCost(project).toLocaleString('sv-SE')} kr</td>
@@ -468,20 +464,11 @@ export default function Home() {
                                     {project.status || 'Draft'}
                                 </button>
                             </td>
-                            <td className="px-6 py-4 text-slate-500">{project.lastModified}</td>
-                            <td className="px-6 py-4 text-right">
-                                <button
-                                    onClick={(e) => handleDelete(e, project.id)}
-                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
-                            </td>
                         </tr>
                     ))}
                     {filteredProjects.length === 0 && (
                         <tr>
-                            <td colSpan={8} className="px-6 py-12 text-center text-slate-400">
+                            <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
                                 {t('dash.no_projects_found')} &quot;{searchQuery}&quot;
                             </td>
                         </tr>
