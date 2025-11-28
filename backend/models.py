@@ -36,12 +36,21 @@ class CostBreakdown(BaseModel):
     source: Optional[str] = "Generic Market Rate 2025"
 
 class PrefabDiscount(BaseModel):
-    """Shows JB Villan prefab efficiency discount vs general contractor pricing."""
+    """
+    Shows JB Villan efficiency advantage vs general contractor pricing.
+
+    Efficiency Types:
+    - PREFAB: Item is manufactured off-site in JB Villan's factory
+    - STREAMLINED: Item benefits from faster build time (downstream effect of prefab)
+    - STANDARDIZED: Item benefits from proven, standardized designs (lower risk)
+    """
+    efficiencyType: Literal['PREFAB', 'STREAMLINED', 'STANDARDIZED'] = 'PREFAB'
     generalContractorPrice: float     # What a general contractor would charge
-    jbVillanPrice: float              # JB Villan's prefab-efficient price
+    jbVillanPrice: float              # JB Villan's price
     savingsAmount: float              # generalContractorPrice - jbVillanPrice
     savingsPercent: int               # Percentage saved
-    reason: str                       # Why prefab is cheaper
+    reason: str                       # Short reason for the savings
+    explanation: Optional[str] = None # Detailed explanation of why this efficiency applies
 
 class CostItem(BaseModel):
     """

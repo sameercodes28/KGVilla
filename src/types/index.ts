@@ -76,12 +76,22 @@ export interface QuantityBreakdown {
   calculationMethod?: string;  // e.g., "Sum of wet room floor areas"
 }
 
+/**
+ * JB Villan Efficiency Types:
+ * - PREFAB: Item manufactured off-site in JB Villan's factory
+ * - STREAMLINED: Benefits from faster build time (downstream effect of prefab)
+ * - STANDARDIZED: Benefits from proven, standardized designs (lower risk)
+ */
+export type EfficiencyType = 'PREFAB' | 'STREAMLINED' | 'STANDARDIZED';
+
 export interface PrefabDiscount {
+  efficiencyType?: EfficiencyType;  // Type of efficiency (defaults to PREFAB for backwards compat)
   generalContractorPrice: number;   // What a general contractor would charge
-  jbVillanPrice: number;            // JB Villan's prefab-efficient price
+  jbVillanPrice: number;            // JB Villan's price
   savingsAmount: number;            // generalContractorPrice - jbVillanPrice
   savingsPercent: number;           // Percentage saved
-  reason: string;                   // Why prefab is cheaper
+  reason: string;                   // Short reason for savings
+  explanation?: string;             // Detailed explanation of why this efficiency applies
 }
 
 export interface CostItem {

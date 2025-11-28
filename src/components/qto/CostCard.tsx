@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CostItem } from '@/types';
-import { ChevronDown, Info, Edit2, Save, X, Calculator, BookOpen, ShieldCheck, ToggleLeft, ToggleRight, Factory, TrendingDown } from 'lucide-react';
+import { ChevronDown, Info, Edit2, Save, X, Calculator, BookOpen, ShieldCheck, ToggleLeft, ToggleRight, Factory, TrendingDown, Zap, Target } from 'lucide-react';
 import { getItemRegulations, REGULATION_COLORS, RegulationRef } from '@/data/regulationMapping';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
@@ -203,9 +203,22 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                                 <span className="px-1.5 py-0.5 bg-amber-100 text-amber-700 text-[10px] font-bold uppercase rounded">{t('card.edited')}</span>
                             )}
                             {item.prefabDiscount && !isDisabled && (
-                                <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase rounded flex items-center gap-1">
-                                    <Factory className="h-3 w-3" />
-                                    {t('prefab.badge')}
+                                <span className={cn(
+                                    "px-1.5 py-0.5 text-[10px] font-bold uppercase rounded flex items-center gap-1",
+                                    item.prefabDiscount.efficiencyType === 'STREAMLINED'
+                                        ? "bg-blue-100 text-blue-700"
+                                        : item.prefabDiscount.efficiencyType === 'STANDARDIZED'
+                                        ? "bg-purple-100 text-purple-700"
+                                        : "bg-green-100 text-green-700"
+                                )}>
+                                    {item.prefabDiscount.efficiencyType === 'STREAMLINED' ? (
+                                        <Zap className="h-3 w-3" />
+                                    ) : item.prefabDiscount.efficiencyType === 'STANDARDIZED' ? (
+                                        <Target className="h-3 w-3" />
+                                    ) : (
+                                        <Factory className="h-3 w-3" />
+                                    )}
+                                    {item.prefabDiscount.efficiencyType || 'PREFAB'}
                                 </span>
                             )}
                         </div>
@@ -339,43 +352,61 @@ export function CostCard({ item, onUpdate, onInspect }: CostCardProps) {
                         </div>
                     </div>
 
-                    {/* JB Villan Prefab Efficiency */}
-                    {item.prefabDiscount && (
-                        <div className="mb-4 p-3 bg-green-50 rounded-xl border border-green-200">
-                            <div className="flex items-center text-green-700 mb-2">
-                                <Factory className="h-3.5 w-3.5 mr-1.5" />
-                                <span className="text-xs font-bold uppercase tracking-wide">{t('prefab.title')}</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3 text-sm">
-                                <div>
-                                    <div className="text-slate-500 text-xs mb-0.5">{t('prefab.general_contractor')}</div>
-                                    <div className="font-mono text-slate-400 line-through">
-                                        {Math.round(item.prefabDiscount.generalContractorPrice).toLocaleString('sv-SE')} kr
+                    {/* JB Villan Efficiency */}
+                    {item.prefabDiscount && (() => {
+                        const effType = item.prefabDiscount.efficiencyType || 'PREFAB';
+                        const colors = {
+                            PREFAB: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', badge: 'bg-green-200 text-green-800' },
+                            STREAMLINED: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-700', badge: 'bg-blue-200 text-blue-800' },
+                            STANDARDIZED: { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-700', badge: 'bg-purple-200 text-purple-800' },
+                        }[effType];
+                        const Icon = effType === 'STREAMLINED' ? Zap : effType === 'STANDARDIZED' ? Target : Factory;
+                        const title = effType === 'PREFAB' ? t('prefab.title') : `JB VILLAN ${effType}`;
+
+                        return (
+                            <div className={cn("mb-4 p-3 rounded-xl border", colors.bg, colors.border)}>
+                                <div className={cn("flex items-center mb-2", colors.text)}>
+                                    <Icon className="h-3.5 w-3.5 mr-1.5" />
+                                    <span className="text-xs font-bold uppercase tracking-wide">{title}</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                    <div>
+                                        <div className="text-slate-500 text-xs mb-0.5">{t('prefab.general_contractor')}</div>
+                                        <div className="font-mono text-slate-400 line-through">
+                                            {Math.round(item.prefabDiscount.generalContractorPrice).toLocaleString('sv-SE')} kr
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="text-slate-500 text-xs mb-0.5">{t('prefab.jb_price')}</div>
+                                        <div className={cn("font-mono font-semibold", colors.text)}>
+                                            {Math.round(item.prefabDiscount.jbVillanPrice).toLocaleString('sv-SE')} kr
+                                        </div>
                                     </div>
                                 </div>
-                                <div>
-                                    <div className="text-slate-500 text-xs mb-0.5">{t('prefab.jb_price')}</div>
-                                    <div className="font-mono font-semibold text-green-700">
-                                        {Math.round(item.prefabDiscount.jbVillanPrice).toLocaleString('sv-SE')} kr
+                                <div className={cn("mt-2 pt-2 border-t flex items-center justify-between", colors.border)}>
+                                    <div className={cn("flex items-center gap-1.5", colors.text)}>
+                                        <TrendingDown className="h-3.5 w-3.5" />
+                                        <span className="text-xs font-medium">
+                                            {t('prefab.you_save')} <span className="font-bold font-mono">{Math.round(item.prefabDiscount.savingsAmount).toLocaleString('sv-SE')} kr</span>
+                                        </span>
+                                        <span className={cn("px-1.5 py-0.5 text-[10px] font-bold rounded-full", colors.badge)}>
+                                            -{item.prefabDiscount.savingsPercent}%
+                                        </span>
                                     </div>
                                 </div>
+                                {/* Short reason */}
+                                <p className={cn("mt-2 text-xs font-medium leading-relaxed", colors.text)}>
+                                    {item.prefabDiscount.reason}
+                                </p>
+                                {/* Detailed explanation (if available) */}
+                                {item.prefabDiscount.explanation && (
+                                    <p className="mt-2 text-xs text-slate-600 leading-relaxed bg-white/50 rounded-lg p-2 border border-slate-100">
+                                        {item.prefabDiscount.explanation}
+                                    </p>
+                                )}
                             </div>
-                            <div className="mt-2 pt-2 border-t border-green-200 flex items-center justify-between">
-                                <div className="flex items-center gap-1.5 text-green-700">
-                                    <TrendingDown className="h-3.5 w-3.5" />
-                                    <span className="text-xs font-medium">
-                                        {t('prefab.you_save')} <span className="font-bold font-mono">{Math.round(item.prefabDiscount.savingsAmount).toLocaleString('sv-SE')} kr</span>
-                                    </span>
-                                    <span className="px-1.5 py-0.5 bg-green-200 text-green-800 text-[10px] font-bold rounded-full">
-                                        -{item.prefabDiscount.savingsPercent}%
-                                    </span>
-                                </div>
-                            </div>
-                            <p className="mt-2 text-xs text-green-700 leading-relaxed">
-                                {item.prefabDiscount.reason}
-                            </p>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                         {/* Calculation Logic */}
